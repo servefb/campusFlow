@@ -2,7 +2,6 @@ import asyncio
 import datetime
 import json
 import logging
-import os
 import re
 import uuid
 from typing import Iterable
@@ -27,6 +26,13 @@ from src.db.db_conversation import conversation
 from src.models.meassage import Message
 from src.graph.create_Graph import get_app, DB_URI
 from src.agent.state import common_state
+from src.agent.supplement_inject import (
+    clear_pause,
+    clear_supplements,
+    pause_requested,
+    queue_supplement,
+    request_pause,
+)
 from snowflake import SnowflakeGenerator
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage, SystemMessage
 from src.db.db_message import messages as input_message
@@ -37,19 +43,18 @@ from langchain.agents import create_agent
 
 logger = logging.getLogger(__name__)
 
-AGENT_NAME = {
-    "policy_agent": "校规与奖助政策 Agent",
-    "academic_agent": "学业事务 Agent",
-    "workflow_agent": "流程办理 Agent",
-    "campusflow_agent": "CampusFlow Agent"
-}
 
 # 这些节点的 LLM token 需要 SSE 转发给前端（新增对话型节点后要加进来）。
 # ⚠️ 节点名必须与 create_Graph.py 里 add_node 的名字逐字一致——09-18 实测：
 # 图里把 campusflow_agent_node 改名 common_agent_node 后这里没跟上，消息块被
 # 下面 `outer_node not in STREAMING_NODES` 的闸门静默 continue 滤光（不报错），
 # 前端只剩 tool_result + done。改节点名时这两处必须一起改。
-STREAMING_NODES = {"common_agent_node", "workflow_agent_node"}
+#
+# 09-23：图里只剩主智能体一个节点（workflow_agent_node 已归档，见
+# _legacy_multi_agent/README.md）。子智能体**不在这张表里** —— 它们由 deepagents
+# 托管，token 走的是同一个外层节点，本来就放行。_graph_selftest.py 里有断言守着
+# 「图里的节点名 ⊆ 这张表」。
+STREAMING_NODES = {"common_agent_node"}
 
 # 校本项目面向东八区用户，自然日边界按 UTC+8 计算；库里存 naive UTC(见 db 模型的 _utcnow)
 TZ_OFFSET = datetime.timedelta(hours=8)
@@ -136,8 +141,12 @@ def _is_approved(answers: list) -> bool:
 
 
 def _classify_interrupt(value) -> tuple[str, object]:
-    """识别中断载荷 → ("ask_user", questions) / ("permission", action_requests) / ("unknown", value)。"""
+    """识别中断载荷 → ("stop_pause", value) / ("ask_user", questions) / ("permission", action_requests) / ("unknown", value)。"""
     if isinstance(value, dict):
+        # 「暂停」（2026-10-08）：停止按钮的软暂停落地。必须排在最前 ——
+        # 它的载荷是 {"type":"stop_pause"}，不能落进 unknown 当错误处理。
+        if value.get("type") == "stop_pause":
+            return "stop_pause", value
         questions = value.get("questions")
         if isinstance(questions, list):
             return "ask_user", questions
@@ -384,22 +393,63 @@ async def get_conversation_title(content: str):
     return model.ainvoke(message)
 
 
-# ---------- 运行中的流任务注册表（「停止执行」功能的落点，09-19） ----------
+# ---------- 运行中的流任务注册表（「停止执行」功能的落点） ----------
 # key=thread_id，value=生产者 task。asyncio 单线程内 dict 读写无 await 间隙，无需加锁。
+#
+# 「停止」语义（2026-10-08 改版：软暂停优先，强杀兜底）：
+#   第一次点击 → 置暂停位，StopPauseMiddleware 在下一次模型调用边界 interrupt() ——
+#   图停在干净 superstep 边界（模型未响应，无悬空 tool_calls），前端把「停止」换成
+#   「继续」；继续 = Command(resume={"action":"continue"})，从断点续跑（已由
+#   _stop_pause_probe2.py 实测：内层 agent 从 checkpoint 续跑，工具不重复执行）。
+#   暂停位迟迟不落地（卡在长工具/子代理里，中间件没有执行机会）→ 看门狗到点强杀；
+#   连点第二次 → 立即强杀。强杀 = 旧版硬取消，不可续跑（前端没有「继续」按钮）。
 _STREAM_TASKS: dict[str, asyncio.Task] = {}
 _STOP_REQUESTED: set[str] = set()
+# 软暂停已落地（图停在 stop_pause interrupt 上）。与 _STOP_REQUESTED 分开记：
+# 看门狗靠它区分「暂停已落地（别杀）」和「暂停位还没消费（该杀了）」。
+_PAUSED_THREADS: set[str] = set()
+# 软暂停的强杀截止时间（stop_stream 登记，看门狗消费）。看门狗本身由流的
+# TaskGroup 托管（见 create_conversation），这里只传"何时杀"，不另起裸 create_task
+# —— 裸句柄没人强引用会被 GC（本项目在 laya 预热上踩过）。
+_PAUSE_ARMED: dict[str, float] = {}
+# 软暂停等待落地的时限：超时视为卡在长工具/子代理里，强杀兜底。
+import os  # 本模块的 os 是后置 import（CHUNK_SIZE 一带），注册表段先用先引
+PAUSE_FORCE_CANCEL_S = int(os.getenv("PAUSE_FORCE_CANCEL_S", "8"))
 
 
 def stop_stream(thread_id: str) -> bool:
-    """请求停止某会话正在运行的流。True=取消已下发（含已在停止中）；False=没有在跑的流。"""
-    if thread_id in _STOP_REQUESTED:
-        return True  # 幂等：连点停止不重复 cancel（避免打断收尾落库）
+    """请求停止某会话正在运行的流。True=停止已受理；False=没有在跑的流。"""
     task = _STREAM_TASKS.get(thread_id)
     if task is None or task.done():
         return False
+    if thread_id in _STOP_REQUESTED:
+        # 连点第二次：软暂停还没落地（或用户等不及）→ 立即强杀（不可续跑）
+        if thread_id not in _PAUSED_THREADS:
+            logger.info("[stop] 连点停止，强杀 thread=%s", thread_id)
+            task.cancel()
+        return True
     _STOP_REQUESTED.add(thread_id)
-    task.cancel()
+    request_pause(thread_id)
+    # 只登记截止时间；到点强杀由流自己的看门狗执行（TaskGroup 托管，见
+    # create_conversation._pause_watchdog），这里不 create_task。
+    _PAUSE_ARMED[thread_id] = asyncio.get_running_loop().time() + PAUSE_FORCE_CANCEL_S
     return True
+
+
+async def pending_stop_interrupt(graph_app, config: dict) -> bool:
+    """该线程当前是否停在「暂停」中断上（前端此时发来新消息 = 隐式继续+补充）。"""
+    try:
+        snap = await graph_app.aget_state(config)
+    except Exception:
+        logger.exception("aget_state 失败，按「未暂停」处理 thread=%s",
+                         (config.get("configurable") or {}).get("thread_id"))
+        return False
+    for t in (getattr(snap, "tasks", None) or []):
+        for it in (getattr(t, "interrupts", None) or ()):
+            v = getattr(it, "value", None)
+            if isinstance(v, dict) and v.get("type") == "stop_pause":
+                return True
+    return False
 
 
 CHUNK_SIZE = 1024 * 1024
@@ -527,8 +577,8 @@ async def route_files(files: Iterable[UploadFile], user_folder: str | None):
     saved 每项：{filename, path, abs_path, size, kind}
       · path     —— /user/ 虚拟路径，给内置文件工具（read_file / glob）用；
       · abs_path —— 磁盘绝对路径，给 run_on_host 和"告诉用户文件在哪"用；
-      · kind     —— text（可直接 read_file）/ binary（pdf、docx、xlsx、图片等，
-                    需 upload_to_sandbox 后跑代码解析）。
+      · kind     —— text（可直接 read_file）/ binary（pdf、docx、xlsx 等文档需
+                    upload_to_sandbox 后跑代码解析；图片可直接 read_file，模型有视觉）。
     rejected 每项：{filename, reason}，如实交给模型转述，**不整轮报错**
     （旧版一个文件失败会把整轮对话 413 杀掉）。
 
@@ -612,8 +662,6 @@ def build_attachment_block(saved: list, rejected: list, is_default: bool = False
     if saved:
         where = ("默认附件目录（用户未选工作文件夹）" if is_default
                  else "工作文件夹的 uploads/ 目录")
-        lead = ("本会话最近一次上传的附件（仍在本机，可直接按路径读回）" if reuse
-                else "本轮上传的附件")
         # 不 dump JSON：Windows 路径在 JSON 里会变成 `C:\\dir\\a.xlsx`（反斜杠被转义），
         # 模型把这串照抄进命令就是坏的。改成逐条可读清单，路径原样出现。
         lines = []
@@ -622,13 +670,27 @@ def build_attachment_block(saved: list, rejected: list, is_default: bool = False
                          f"   大小 {it.get('size')} B，kind={it.get('kind')}\n"
                          f"   path（内置文件工具用）: {it.get('path')}\n"
                          f"   abs_path（宿主机命令 / 回答文件位置用）: {it.get('abs_path')}")
-        segs.append(
-            f"\n\n{lead}保存在{where}，**这里只给路径，内容需要时自己读**：\n"
-            + "\n".join(lines)
-            + "\n读法：kind=text 的直接 read_file 读 path；kind=binary（pdf/docx/xlsx/图片等）"
-              "不要 read_file，先 upload_to_sandbox 再用代码解析。"
-              "只回答「文件在哪」时直接用给到的路径，不必先读。不要凭文件名猜内容。"
-        )
+        if reuse:
+            # 沿用轮次只给「位置索引」，措辞必须被动式：之前写成「可直接按路径读回」+ 全套
+            # 读法说明，结果每轮都把附件重新喂到模型眼前，无关问题它也会去把图片读一遍
+            # （2026-10-07 用户实测反馈），白烧 token 还拖慢响应。
+            segs.append(
+                f"\n\n历史附件记录（本会话此前上传，文件仍在本机），保存在{where}：\n"
+                + "\n".join(lines)
+                + "\n这只是位置索引，不是本轮任务的材料："
+                  "仅当用户本轮的问题明确涉及这些附件（追问内容、要求处理等）时才按需读取"
+                  "（图片可直接 read_file 读 path）；问题没有提到它们时，"
+                  "不要读取、不要查看，也不要在回答里主动提及。"
+            )
+        else:
+            segs.append(
+                f"\n\n本轮上传的附件保存在{where}，**这里只给路径，内容需要时自己读**：\n"
+                + "\n".join(lines)
+                + "\n读法：kind=text 和**图片（png/jpg/webp/gif 等）**直接 read_file 读 path；"
+                  "kind=binary 里的 pdf/docx/xlsx 等文档不要 read_file（读不出正文），"
+                  "先 upload_to_sandbox 再用代码解析。"
+                  "只回答「文件在哪」时直接用给到的路径，不必先读。不要凭文件名猜内容。"
+            )
     if rejected:
         rej_lines = [f"{i}) {r.get('filename')} —— {r.get('reason')}"
                      for i, r in enumerate(rejected, 1)]
@@ -649,6 +711,19 @@ async def create_conversation(messages: Message, session: AsyncSession, user_id:
     gen = SnowflakeGenerator(instance=1)
     # 客户端回传 conversation_id 则续接同一线程(多轮对话)，否则新开线程
     thread_id = messages.conversation_id or str(next(gen))
+
+    # ---------- 「执行中追加」（09-23 二次定稿）：上一轮流还在跑时来了新消息 ----------
+    # 语义 = **软注入**，不是停旧续新（用户拍板：追加的话是给正在执行任务的补充材料，
+    # 旧任务不能丢）。补充走 POST /conversations/{id}/supplement（send_supplement）：
+    # 用户消息即时落库 + 进补充队列，主智能体下一次调用模型前由 SupplementInjectionMiddleware
+    # 拼进上下文，任务照常跑。
+    # 本端点（流式）撞上执行中的流则一律拒绝 —— 两个 run 同时写一个 thread 会交错写
+    # checkpoint（状态竞争），resume/空载荷/正文都一样，没有例外。
+    prev_task = _STREAM_TASKS.get(thread_id)
+    if prev_task is not None and not prev_task.done():
+        yield _sse("error", {"error": "stream_running",
+                             "message": "上一条消息还在执行中，请等它结束或先停止再操作。"})
+        return
 
     queue: asyncio.Queue = asyncio.Queue()
 
@@ -675,20 +750,89 @@ async def create_conversation(messages: Message, session: AsyncSession, user_id:
         finally:
             _STREAM_TASKS.pop(thread_id, None)
             _STOP_REQUESTED.discard(thread_id)
+            _PAUSE_ARMED.pop(thread_id, None)  # 轮次结束，强杀截止时间作废
+            # 「执行中追加」：轮次结束，补充队列作废（残留 = 模型已交卷没看到，见
+            # supplement_inject 模块注释 —— 用户消息已落库，界面历史不丢）
+            clear_supplements(thread_id)
             queue.put_nowait(None)  # 唤醒消费者收摊
 
-    produce_task = asyncio.create_task(_produce())
+    async def _pause_watchdog(produce_task: asyncio.Task) -> None:
+        """软暂停落地看门狗（由下方 TaskGroup 托管，随流而生、随流而灭）。
+
+        stop_stream 只往 _PAUSE_ARMED 里登记截止时间（不裸 create_task——裸句柄
+        没人强引用会被 GC）。到截止时间暂停位还没落地（卡在长工具/子代理里，
+        中间件没有执行机会）→ 强杀生产者（= 旧版硬取消，不可续跑）。
+        """
+        loop = asyncio.get_running_loop()
+        while not produce_task.done():
+            deadline = _PAUSE_ARMED.get(thread_id)
+            if deadline is None:
+                await asyncio.wait({produce_task}, timeout=0.5)
+                continue
+            remaining = deadline - loop.time()
+            if remaining > 0:
+                await asyncio.wait({produce_task}, timeout=min(remaining, 0.5))
+                continue
+            if not produce_task.done() and thread_id not in _PAUSED_THREADS \
+                    and pause_requested(thread_id):
+                logger.warning("[stop] 软暂停 %ss 未落地（长工具/子代理执行中），强杀 thread=%s",
+                               PAUSE_FORCE_CANCEL_S, thread_id)
+                produce_task.cancel()
+            return
+
+    # ---------- 流生命周期：TaskGroup 结构化托管（2026-10-08 代替裸 create_task） ----------
+    # produce（SSE 生产者）+ 暂停看门狗 同组。语义已由 _taskgroup_stream_probe.py 实测：
+    #  · 强杀 produce（外部 cancel）→ produce 的 finally 哨兵照常被消费，消费侧干净收口；
+    #  · 客户端断开（aclose→GeneratorExit）→ 组自动 cancel 生产者（替代旧 finally 手动 cancel），
+    #    但 TaskGroup 会把 GeneratorExit 包成 BaseExceptionGroup 抛出 —— 下方必须拆包安静收口；
+    #  · produce 抛异常同理以 ExceptionGroup 冒出（生产里 _produce 已自兜 error 事件，此处兜底记日志）。
     try:
-        while True:
-            ev = await queue.get()
-            if ev is None:
-                break
-            yield ev
-    finally:
-        # 正常结束：生产者已完成，cancel 是 no-op；
-        # 客户端断开/响应被取消：生产者多半还在跑 —— 取消它，别让没人看的对话继续烧 token
-        if not produce_task.done():
-            produce_task.cancel()
+        async with asyncio.TaskGroup() as tg:
+            produce_task = tg.create_task(_produce(), name=f"produce:{thread_id}")
+            tg.create_task(_pause_watchdog(produce_task),
+                           name=f"pause-watchdog:{thread_id}")
+            while True:
+                ev = await queue.get()
+                if ev is None:
+                    break
+                yield ev
+    except asyncio.CancelledError:
+        raise  # 响应任务自身被取消（客户端断开走任务取消路径）——照常向上传播
+    except BaseExceptionGroup as eg:
+        if all(isinstance(e, GeneratorExit) for e in eg.exceptions):
+            return  # aclose 收口：生成器正在关闭，子任务已被组取消，别把组炸回调用方
+        for e in eg.exceptions:
+            logger.error("SSE 流子任务异常终止 thread=%s", thread_id, exc_info=e)
+        return
+
+
+async def send_supplement(messages: Message, session: AsyncSession, user_id: int) -> dict:
+    """「执行中追加」端点的实现：把补充内容递给**正在执行**的轮次（不打断、不重开）。
+
+    09-23 二次定稿：追加 = 给当前任务的补充材料，不是新问题。链路：
+    本函数（即时落库 + 入队）→ SupplementInjectionMiddleware 在主智能体下一次
+    调用模型前把队列里的补充拼进上下文 → 轮次收尾时清队。
+
+    - 该会话没有在跑的流 → queued=False（流刚好自己结束了的竞态由前端提示兜住）；
+    - 有 → 用户消息**即时**落库：正在跑的那轮收尾时只落它自己 state 里的消息，
+      补充不自己插队的话，界面历史里就永远没有这条。
+    """
+    thread_id = str(messages.conversation_id or "")
+    content = (messages.content or "").strip()
+    if not thread_id or not content:
+        return {"queued": False, "reason": "bad_request", "conversation_id": thread_id}
+    prev_task = _STREAM_TASKS.get(thread_id)
+    if prev_task is None or prev_task.done():
+        return {"queued": False, "reason": "not_running", "conversation_id": thread_id}
+    ims = input_message()
+    ims.conversation_id = thread_id
+    ims.content = content
+    ims.role = "user"
+    ims.status = "completed"
+    session.add(ims)
+    await session.commit()
+    queue_supplement(thread_id, content)
+    return {"queued": True, "conversation_id": thread_id}
 
 
 _WS_CACHE_TTL = 7 * 86400  # 工作区绑定缓存 7 天
@@ -713,6 +857,10 @@ async def _agent_stream(messages: Message, session: AsyncSession, user_id: int, 
 
     config = {"configurable": {
         "thread_id": thread_id,
+        # user_id 兜底通道：主智能体的工具从 astream(context=...) 读到它，但 deepagents
+        # 的 task 工具起子图时不带 context，子智能体的 wiki_* 工具只能从 configurable
+        # 拿 —— 与 knowledge_wiki_tool._current_user_id 成对，去掉一边就查错用户库。
+        "user_id": str(user_id),
         # 权限档位（ask/auto/full）：节点据此生成 deepagents 的文件权限规则
         "permission_mode": messages.permission_mode or "ask",
         # 思考等级：**原值透传**（前端约定 off/low/high/max，见 src/models/meassage.py）。
@@ -813,39 +961,63 @@ async def _agent_stream(messages: Message, session: AsyncSession, user_id: int, 
             yield _sse("error", {"error": "invalid_resume",
                                  "message": "resume 载荷不合法：不接受客户端直传的 decisions，请改用 answers。"})
             return
-        # 挂起的是「权限确认」时，前端回传的仍是 ask_user 形状的 answers，
-        # 而 HITL 中间件要的是 {"decisions":[...]}（条数须等于被拦截的调用数）——
-        # 在这里翻译。pending 来自下发卡片时的登记，取到即清，避免串轮。
-        # 用户点「允许」时同时发放**一次性凭证**（approvals.grant_digests）：
-        # 那是 run_on_host 执行前唯一认的东西。
-        pending = await approvals.pop_pending(thread_id)
-        if pending is None:
+        # 「暂停续跑」（2026-10-08）：停止按钮的「继续」。与权限确认互斥 ——
+        # 若此刻还挂着权限卡，说明状态错乱，拒绝而不是把控制类载荷喂给 HITL。
+        if resume_payload.get("action") == "continue":
+            pending = await approvals.pop_pending(thread_id)
+            if pending is not None:
+                yield _sse("error", {"error": "invalid_resume",
+                                     "message": "该会话还挂着待确认的操作，请先处理确认卡片。"})
+                return
             graph_input = Command(resume=resume_payload)
-        elif "answers" not in resume_payload:
-            # 卡片还挂着却没带 answers：别把畸形载荷丢给 HITL（它会 KeyError 崩流）
-            yield _sse("error", {"error": "invalid_resume",
-                                 "message": "这条确认还没有作答，请重新提交允许或拒绝。"})
-            return
         else:
-            answers = resume_payload.get("answers") or []
-            count = int(pending.get("count") or 1)
-            if _is_approved(answers):
-                granted = await approvals.grant_digests(
-                    thread_id, [a.get("digest") for a in (pending.get("actions") or [])]
-                )
-                logger.info("[audit] 用户批准 thread=%s 动作=%s 凭证=%s",
-                            thread_id, count, granted)
+            # 挂起的是「权限确认」时，前端回传的仍是 ask_user 形状的 answers，
+            # 而 HITL 中间件要的是 {"decisions":[...]}（条数须等于被拦截的调用数）——
+            # 在这里翻译。pending 来自下发卡片时的登记，取到即清，避免串轮。
+            # 用户点「允许」时同时发放**一次性凭证**（approvals.grant_digests）：
+            # 那是 run_on_host 执行前唯一认的东西。
+            pending = await approvals.pop_pending(thread_id)
+            if pending is None:
+                graph_input = Command(resume=resume_payload)
+            elif "answers" not in resume_payload:
+                # 卡片还挂着却没带 answers：别把畸形载荷丢给 HITL（它会 KeyError 崩流）
+                yield _sse("error", {"error": "invalid_resume",
+                                     "message": "这条确认还没有作答，请重新提交允许或拒绝。"})
+                return
             else:
-                logger.info("[audit] 用户拒绝 thread=%s 动作=%s", thread_id, count)
-            resume_payload = {"decisions": _permission_decisions(answers, count)}
-            graph_input = Command(resume=resume_payload)
+                answers = resume_payload.get("answers") or []
+                count = int(pending.get("count") or 1)
+                if _is_approved(answers):
+                    granted = await approvals.grant_digests(
+                        thread_id, [a.get("digest") for a in (pending.get("actions") or [])]
+                    )
+                    logger.info("[audit] 用户批准 thread=%s 动作=%s 凭证=%s",
+                                thread_id, count, granted)
+                else:
+                    logger.info("[audit] 用户拒绝 thread=%s 动作=%s", thread_id, count)
+                resume_payload = {"decisions": _permission_decisions(answers, count)}
+                graph_input = Command(resume=resume_payload)
     elif messages.content is not None:
         # 用户直接开了新话题（不是作答）：上一轮挂起的权限确认已作废，
         # 清掉登记与未消费的凭证，免得后面某次 ask_user 作答被误当成权限确认翻译成 decisions
         await approvals.clear_pending(thread_id)
-        # 注意：右侧必须用 messages.content，不能用 graph_input——
-        # 赋值语句右侧读到的是旧值(None)，question 就成了 None
-        graph_input = common_state.MultiAgentState(question=messages.content, agent_mode=messages.agent_mode)
+        if await pending_stop_interrupt(graph_app, config):
+            # 暂停中用户直接输入 = 隐式「继续」+ 把新消息当【用户补充】喂给断点后
+            # 的模型调用（由 StopPauseMiddleware 消费 resume 值时注入）。
+            # 用户消息即时落库（同 send_supplement：暂停轮自己的落库已经结束，
+            # 不在这里补一条，界面历史里就永远没有这条）。
+            ims = input_message()
+            ims.conversation_id = thread_id
+            ims.content = messages.content
+            ims.role = "user"
+            ims.status = "completed"
+            session.add(ims)
+            await session.commit()
+            graph_input = Command(resume={"action": "continue", "supplement": messages.content})
+        else:
+            # 注意：右侧必须用 messages.content，不能用 graph_input——
+            # 赋值语句右侧读到的是旧值(None)，question 就成了 None
+            graph_input = common_state.MultiAgentState(question=messages.content, agent_mode=messages.agent_mode)
 
     con = conversation(title=messages.title, user_id=user_id, source=messages.source, id=thread_id,
                        last_message_at=datetime.datetime.now(datetime.timezone.utc))
@@ -882,6 +1054,9 @@ async def _agent_stream(messages: Message, session: AsyncSession, user_id: int, 
     # msg_id -> {index: {"name","args","node","answer_sent"}}（answer_sent 仅 submit_answer 用）
     tool_buffer: dict[str, dict] = {}
     submit_seen = False  # 本轮是否出现过 submit_answer（决定流末尾走哪条路径）
+    # 已在流中实时推过 tool_result 的 call_id：流末尾从 state 补发时按它去重，
+    # 同一个结果绝不发两遍（工具在子图里执行时消息可能跨命名空间重复出现，也一并挡掉）。
+    results_sent: set[str] = set()
 
     def _drain_tool_events(msg_id: str) -> list[str]:
         """把某条消息累积的工具调用结算成 event: tool 事件。
@@ -920,13 +1095,8 @@ async def _agent_stream(messages: Message, session: AsyncSession, user_id: int, 
                                              "msg_id": msg_id, "text": prefix[sent:]}))
         return events
 
-    # 「停止」语义（09-19）：点停止 → stop_stream() 取消生产者 task → CancelledError
-    # 打在 __anext__ 的最近 await 上（通常正是进行中的 LLM 请求）→ 在这里捕获并转为
-    # 优雅停止：落到下方既有收尾逻辑（checkpoint 里最后完整 superstep 的状态照常落库），
-    # 流末发 stopped 而不是 done。只吞这一处的取消；若取消恰好落在之后的落库段，
-    # 让它继续传播 —— 宁可这轮不落库，也不写半份坏数据。
     stopped = False
-    _aiter = graph_app.astream(graph_input, config=config, stream_mode=["messages", "values"],
+    _aiter = graph_app.astream(graph_input, config=config,context={"user_id": str(user_id)}, stream_mode=["messages", "values"],
                                subgraphs=True).__aiter__()
     while True:
         try:
@@ -952,7 +1122,6 @@ async def _agent_stream(messages: Message, session: AsyncSession, user_id: int, 
         if mode == "values" and isinstance(payload, dict):
             if not ns:
                 if base_count is None:
-                    input_message.elapsed_ms = payload.get("response_time_ms")
                     base_count = len(payload.get("messages") or [])
 
                 final_state = payload
@@ -966,7 +1135,14 @@ async def _agent_stream(messages: Message, session: AsyncSession, user_id: int, 
                 interrupt_data = payload.get("__interrupt__")
                 if interrupt_data:
                     kind, info = _classify_interrupt(interrupt_data[0].value)
-                    if kind == "ask_user":
+                    if kind == "stop_pause":
+                        # 「暂停」落地（2026-10-08）：图已停在干净的模型调用边界，
+                        # 状态可续。前端收到 paused 事件后把「停止」按钮换成「继续」；
+                        # 继续 = resume={"action":"continue"}，暂停中输入新消息 =
+                        # 隐式继续 + supplement（见本文件输入分支）。
+                        _PAUSED_THREADS.add(thread_id)
+                        yield _sse("paused", {"type": "stop_pause"})
+                    elif kind == "ask_user":
                         # 追问：推 questions，然后结束这条流（前端作答后带 resume 续跑）
                         yield _sse("question", {"type": "ask_user", "questions": info})
                     elif kind == "permission":
@@ -991,21 +1167,12 @@ async def _agent_stream(messages: Message, session: AsyncSession, user_id: int, 
                         yield _sse("error", {"error": "unsupported_interrupt",
                                              "message": "本轮需要人工确认，但当前版本还不支持该类型的确认。"
                                                         "请把「批准方式」切换为「帮我批准」或「完全访问」后重试。"})
-                    # 中断返回前，把当前消息攒的东西结算完，别丢（本轮暂停等作答）。
-                    # ⚠️ tool_buffer 也要 drain：被拦的 task / search 调用帧已进缓冲，
-                    # 不结算的话前端工作过程面板就看不到"这次到底要调什么工具"
-                    # （09-19 实测：联网调研卡弹出后，面板里连"联网调研"这一行都没有）。
-                    # 顺序与常规消息切换一致：先 step 文本，后工具行。
 
                     for ev in _flush_step_text(cur_msg_id or ""):
                         yield ev
                     for ev in _drain_tool_events(cur_msg_id or ""):
                         yield ev
-                    # 中断轮也要把会话行落库（09-19 修）：此前裸 return 跳过整个落库块，
-                    # 首轮就弹卡的会话在 conversations 表里永远没有行——侧栏查不到、
-                    # 消息成孤儿、工作区绑定的 DB 兜底也落空（resume 轮只 update
-                    # agent_mode，不会补插，所以必须在这里把行建出来）。
-                    # 消息/标题仍留给续跑完成后的常规落库路径。
+
                     if not messages.conversation_id:
                         session.add(con)
                         try:
@@ -1019,7 +1186,7 @@ async def _agent_stream(messages: Message, session: AsyncSession, user_id: int, 
         chunk, meta = payload
 
         outer_node = (meta.get("checkpoint_ns") or "").split(":")[0]
-        # 所有对话型节点都要转发 token（workflow_agent 加入后只放行 common 会丢流）
+        # 所有对话型节点都要转发 token（漏一个 = 那个节点的答复静默不显示，只留 tool_result）
         if outer_node not in STREAMING_NODES:
             continue
         # 工具内部的辅助 LLM 调用（如模板匹配器）会打进 messages 流，
@@ -1074,6 +1241,35 @@ async def _agent_stream(messages: Message, session: AsyncSession, user_id: int, 
             continue
 
         if isinstance(chunk, ToolMessage):
+            # 工具执行完，ToolMessage 会从 messages 流里整个掉出来 —— 这正是
+            # 实时推 tool_result 的时机（旧版只在流末尾从 state 快照补发，
+            # 结果等到整轮跑完才一次性涌出来，前端全程显示「执行中」被用户投诉）。
+            call_id = getattr(chunk, "tool_call_id", None) or ""
+            if not call_id or call_id in results_sent:
+                continue  # 拿不到 id 的旧数据仍走流末尾按时序兜底；重复帧去重
+            # submit_answer 的 ToolMessage 不在过程区展示（它的参数/返回就是回答本身，
+            # 已按 token 实时推出）。按 name 判定而不是查 tool_buffer：ToolMessage
+            # 带自己的 msg_id，到达时上面 1202 行的消息切换早就把 buffer 里这条
+            # submit 登记清掉了，查 buffer 永远落空 → 回答原文会漏进过程区，
+            # 前端按 call_id 配不到调用，兜底挂到上一张工具卡上（10-08 用户实测）。
+            if getattr(chunk, "name", None) == "submit_answer":
+                continue
+            submit_ids = {call.get("id") for calls in tool_buffer.values()
+                          for call in calls.values() if call.get("name") == "submit_answer"}
+            if call_id in submit_ids:
+                continue
+            # 前端时间线要求「前言 → 工具 → 结果」按序到达，而 ToolMessage 早于
+            # 下一条 AIMessage 出现 —— 此时这条消息攒的 step / event: tool 可能还没
+            # 结算，先结它们再发结果，顺序才不会倒。
+            for ev in _flush_step_text(cur_msg_id or ""):
+                yield ev
+            for ev in _drain_tool_events(cur_msg_id or ""):
+                yield ev
+            results_sent.add(call_id)
+            preview = chunk.content if isinstance(chunk.content, str) else str(chunk.content)
+            yield _sse("tool_result", {"tool": getattr(chunk, "name", None),
+                                       "content": preview[:500],
+                                       "call_id": call_id})
             continue
         if chunk.content:
             step_text[msg_id] = step_text.get(msg_id, "") + chunk.content
@@ -1096,13 +1292,51 @@ async def _agent_stream(messages: Message, session: AsyncSession, user_id: int, 
             yield _sse("token", {"node": step_node.pop(cur_msg_id, None),
                                  "msg_id": cur_msg_id, "text": tail_text})
 
+    stopped_values = None
+    if stopped:
+        half_answer = ""
+        for calls in tool_buffer.values():
+            for call in calls.values():
+                if call.get("name") != "submit_answer":
+                    continue
+                # 与 _submit_answer_deltas 同一来源：取"已完整到达"的 answer 前缀，
+                # 前端正文区推的就是它，存库保持一致（多段取最长，return_direct 下通常只有一段）
+                prefix, _closed = _extract_answer_prefix(call.get("args") or "")
+                if prefix and len(prefix) > len(half_answer):
+                    half_answer = prefix
+        stopped_msgs: list = [HumanMessage(content=messages.content or "")]
+        if half_answer.strip():
+            stopped_msgs.append(AIMessage(content=half_answer))
+        stopped_values = {"messages": stopped_msgs}
+        base_count = 0  # 让下方循环恰好只处理这两条，不碰历史消息
+        # checkpointer 同步补上这一轮：下轮节点读到的历史 = 用户在界面上看到的历史，
+        # 模型才知道"这题问过、答了一半被停了"。messages 通道挂 add_messages reducer，追加语义。
+        try:
+            await graph_app.aupdate_state(config, {"messages": stopped_msgs})
+        except Exception:
+            # 回补失败只影响下轮上下文，不能让本轮落库跟着失败
+            logger.exception("停止轮 checkpoint 回补失败 thread=%s", thread_id)
+        # 新会话首轮就被停止：流循环里 947 行那段标题检查没跑到（或 task 未完成），
+        # 在这里把 title_task 等完，别让侧栏出现无标题会话
+        if not messages.conversation_id and not con.title and title_task is not None and not title_sent:
+            try:
+                generated = await title_task
+                if generated and (generated.content or "").strip():
+                    con.title = generated.content
+                    title_sent = True
+                    yield _sse("title", {"title": con.title})
+            except Exception:
+                logger.warning("停止轮标题生成失败 thread=%s", thread_id, exc_info=True)
+
     # 注意：这一段跑在 token 已经推给前端之后。任何异常(编码、连接被中断、
     # 上一轮遗留的坏数据……)都会让消息静默消失 —— 前端刷新后新消息就"不见了"。
     # 所以整体兜住：打完整堆栈 + 给前端一个 error 事件，绝不再悄悄丢数据。
     try:
-        # 配置 checkpointer 后可随时按 thread_id 取回线程的完整 state
-        snapshot = await graph_app.aget_state(config)
-        values = snapshot.values if snapshot and snapshot.values else (final_state or {})
+        # 配置 checkpointer 后可随时按 thread_id 取回线程的完整 state。
+        # 停止轮不读快照（checkpoint 里没有本轮消息），用上面抢救出的消息代替。
+        snapshot = None if stopped else await graph_app.aget_state(config)
+        values = stopped_values if stopped else (
+            snapshot.values if snapshot and snapshot.values else (final_state or {}))
         # 不要把整个 state 打到控制台：values 里含本轮所有 ToolMessage（execute 的
         # ls/mount 输出之类），一打就是一大坨，还容易被误当成"回答里混进了工具输出"。
         logger.debug("本轮结束 thread_id=%s 消息数=%s", thread_id, len(values.get("messages") or []))
@@ -1110,18 +1344,27 @@ async def _agent_stream(messages: Message, session: AsyncSession, user_id: int, 
             base_count = len(values.get("messages") or [])
 
         # 把本轮的工具执行结果也推给前端（只在流里补发，同样不落库），
-        # 让"工作过程"能看到调了哪个工具、拿到什么
+        # 让"工作过程"能看到调了哪个工具、拿到什么。
+        # ⚠️ 只补「流中没实时推到」的：停轮/中断等异常路径漏掉的，以及
+        # 拿不到 call_id 的旧数据 —— 正常路径 results_sent 已全覆盖，这里全是空跑。
         for m in values.get("messages", [])[base_count:]:
             if isinstance(m, ToolMessage):
+                # submit_answer 的返回就是回答本身，已按 token 推过，绝不进过程区
+                if getattr(m, "name", None) == "submit_answer":
+                    continue
+                _cid = getattr(m, "tool_call_id", None)
+                if _cid and _cid in results_sent:
+                    continue
                 preview = m.content if isinstance(m.content, str) else str(m.content)
                 # call_id 与 event: tool 按键配对（09-17 契约化）；旧数据拿不到就是 null，前端按时序兜底
                 yield _sse("tool_result", {"tool": getattr(m, "name", None),
                                            "content": preview[:500],
-                                           "call_id": getattr(m, "tool_call_id", None)})
+                                           "call_id": _cid})
 
         # token 消耗直接取 state 里最后一条 AIMessage 的 usage_metadata(随 checkpoint 持久化)
         message_list = []
         for m in values.get("messages", [])[base_count:]:
+            elapsed_ms=values.get("response_time_ms")
             if not isinstance(m, (AIMessage, HumanMessage)):
                 continue
             if isinstance(m, AIMessage):
@@ -1144,6 +1387,7 @@ async def _agent_stream(messages: Message, session: AsyncSession, user_id: int, 
                 if not (m.content or "").strip():
                     continue
             ims = input_message()
+            ims.elapsed_ms = elapsed_ms
             ims.content = m.content
             ims.role = "assistant" if isinstance(m, AIMessage) else "user"
             if ims.role == "assistant":
@@ -1168,6 +1412,13 @@ async def _agent_stream(messages: Message, session: AsyncSession, user_id: int, 
                 }
             ims.conversation_id = thread_id
             message_list.append(ims)
+
+        if stopped:
+            # 库里 status 枚举自带 cancelled（db_message.py）：半截回答标 cancelled，
+            # 与正常完成的回答区分。列表接口不筛 status，只影响语义与后续排查。
+            for ims in message_list:
+                if ims.role == "assistant":
+                    ims.status = "cancelled"
 
         if messages.conversation_id:
             if con.agent_mode:
@@ -1233,8 +1484,6 @@ async def get_conversations_service(page: page_query, session: AsyncSession, use
         )).all()
         counts = {cid: cnt for cid, cnt in count_rows}
         for item in items:
-            mode = item.pop("agent_mode", None)
-            item["agent_name"] = AGENT_NAME.get(mode, "智能调度" if not mode or mode == "auto" else mode)
             item["id"] = str(item["id"])
             # 库里是 naive UTC，补上时区再交给 FastAPI 序列化，前端才能转成正确的本地时间
             if item.get("updated_at") is not None:
@@ -1266,8 +1515,6 @@ async def get_conversation_detail_service(conversation_id: str, session: AsyncSe
     re_dict = dict(res._mapping)
     # 雪花ID转字符串，避免前端 JS 解析丢精度
     re_dict["id"] = str(re_dict["id"])
-    mode = re_dict.pop("agent_mode", None)
-    re_dict["agent_name"] = AGENT_NAME.get(mode, "智能调度" if not mode or mode == "auto" else mode)
     rows = (await session.execute(
         select(input_message.id, input_message.role, input_message.content, input_message.created_at,
                input_message.reasoning_content)

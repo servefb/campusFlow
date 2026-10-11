@@ -19,13 +19,21 @@ import logging
 import os
 
 from dotenv import load_dotenv
-from langchain_deepseek import ChatDeepSeek
+
+from src.agent.llm.chat_model import CampusFlowChatDeepSeek
 
 load_dotenv()
 
 logger = logging.getLogger(__name__)
 
 MODEL_NAME = "deepseek-flash"
+
+# 模型输入上限（profile），deepagents 用它算 summarization 触发阈值 = 0.85 × 此值。
+# ⚠️ 必须与网关的真实上下文窗口对齐：写大了单轮 summarization 永远不触发，
+# 超限报错直接落在流内部（又是"转半天空流"式故障）；写小了过早折叠浪费上下文。
+# 2026-10-08：仓库 .env / 进程环境 / 用户环境里都没有网关地址与密钥，本机无法实测
+# 真实窗口，所以做成环境变量由部署侧按网关规格配置；默认维持历史值 1_000_000。
+MAX_INPUT_TOKENS = int(os.getenv("MODEL_MAX_INPUT_TOKENS", "1000000"))
 
 # 网关（deepseek-flash 所在服务）对 reasoning_effort 的严格枚举。
 # 来源：上面那段服务端反序列化报错原文，不是猜的。
@@ -47,7 +55,7 @@ REASONING_ALIASES = {
     "normal": "medium",
     "standard": "medium",
     "default": "medium",
-    "balance": "medium",   # 旧默认值：曾被当思考等级发出去 → 直接 422
+    "balance": "medium",  # 旧默认值：曾被当思考等级发出去 → 直接 422
     "balanced": "medium",
     "high": "high",
     "xhigh": "xhigh",
@@ -83,25 +91,29 @@ def normalize_reasoning_effort(value) -> str:
     return mapped
 
 
-def get_model(cacheKey: str, reasoning_effort=None) -> ChatDeepSeek:
+def get_model(cacheKey: str, reasoning_effort=None) -> CampusFlowChatDeepSeek:
     effort = normalize_reasoning_effort(reasoning_effort)
-    return ChatDeepSeek(
+    return CampusFlowChatDeepSeek(
         model=MODEL_NAME,
         prompt_cache_options={"cacheKey": cacheKey},  # 核心：同一对话始终用这个值
         temperature=0,
         stream_usage=True,
         reasoning_effort=effort,
-        profile={"max_input_tokens": 1_000_000},
+        profile={"max_input_tokens": MAX_INPUT_TOKENS},
     )
 
 
-def get_com_model() -> ChatDeepSeek:
-    return ChatDeepSeek(
+def get_com_model() -> CampusFlowChatDeepSeek:
+    return CampusFlowChatDeepSeek(
         model=MODEL_NAME,
         temperature=0,
         stream_usage=True,
-        profile={"max_input_tokens": 1_000_000},
+        profile={"max_input_tokens": MAX_INPUT_TOKENS},
     )
+
+
+def get_structured_model(cacheKey: str) -> CampusFlowChatDeepSeek:
+    return get_model(cacheKey, "none")
 
 
 # 全局单例：进程内只构造一次（路由 / 标题 / 抽取等轻量调用用，不设思考等级）

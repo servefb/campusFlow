@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
-DATABASE_URL = "mysql+aiomysql://root:123@192.168.150.101:3306/campus_flow"
+DATABASE_URL = "mysql+aiomysql://root:0706@192.168.150.100:3306/campus_flow"
 engine_mysql = create_async_engine(DATABASE_URL, pool_pre_ping=True)
 AsyncSessionLocal = async_sessionmaker(
     engine_mysql,

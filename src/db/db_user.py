@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy import BigInteger, String, Boolean, DateTime, ForeignKey, Index, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.db.db_agent import Base
+from src.db.db_base import Base
 
 
 class User(Base):

@@ -10,7 +10,7 @@ from src.agent.embedding_model.embedding_alli_model import get_embeddings
 logger = logging.getLogger(__name__)
 
 # 允许用环境变量覆盖，默认值保持与历史一致（内网 Chroma）。
-CHROMA_HOST = os.getenv("CHROMA_HOST", "192.168.150.101")
+CHROMA_HOST = os.getenv("CHROMA_HOST", "192.168.150.100")
 CHROMA_PORT = int(os.getenv("CHROMA_PORT", "8000"))
 CHROMA_SSL = os.getenv("CHROMA_SSL", "false").strip().lower() in ("1", "true", "yes")
 
