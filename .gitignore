@@ -1,0 +1,28 @@
+# 开发阶段用户上传的附件默认落在这里（src/repositories/conversations_repo.py
+# 的 DEFAULT_ATTACH_DIR），属于运行时数据，不要进版本库。
+uploads/
+
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.bak*
+.idea/
+
+# 个人简历相关（隐私）
+我的简历_*.pdf
+_resume_*.html
+_resume_*.png
+_fill_resume.py
+CampusFlow-简历*.md
+
+# 本地工具目录 / 备份 / 日志 / 缓存
+.dafeiyu-install/
+.backup-*/
+.workbuddy/
+unsloth_compiled_cache/
+logs/
+debug.log
+*.log
+_resume_*.pdf
+_resume_*_out.*
