@@ -1,0 +1,381 @@
+/* ============================================================================
+   全站玻璃体系（glass.css）
+   ----------------------------------------------------------------------------
+   历史页（/history）先行的三级材质，这里抽成全站共用的层，其余页面「同步」过去：
+
+   | 层        | 处理                                                        | 形态 |
+   |-----------|-------------------------------------------------------------|------|
+   | 页底色     | **各页保持自己原来的实色底**，不铺全站色场（见下方「已撤销」说明）  | 平面 |
+   | 承托板     | 一整块磨砂玻璃托盘：半透明冷灰底 + 白描边 + 顶部白色斜切高光       | 凹   |
+   | 内容卡     | 实色白卡 + 细边框 + 双层投影（各页原有写法保留）                  | 凸   |
+   | 焦点玻璃   | 全页唯一浮起层：近白半透明 + 细砂噪点 + 重投影                    | 浮   |
+
+   为什么是「层」不是「卡」：玻璃表达的是层级。同屏多块玻璃 + 底又是平的浅色面时，
+   半透明互相渗透，谁浮起来读不出来，只会糊成一团。所以 —— 同屏只保留一个焦点玻璃。
+   详细论证见 .workbuddy/memory/MEMORY.md「玻璃材质只用『层』，不用『卡』」。
+
+   ⚠️ 本文件必须在 main.tsx 里最后引入，靠「同特异性 + 后出现」覆盖各页原有底色与卡片底。
+   ============================================================================ */
+
+:root {
+  --glass-board-bg: rgba(236, 240, 245, .58);
+  --glass-board-line: rgba(255, 255, 255, .82);
+  --glass-board-shadow: 0 18px 44px rgba(15, 23, 42, .08), inset 0 1px 0 rgba(255, 255, 255, .95);
+  --glass-focus-bg: rgba(255, 255, 255, .68);
+  --glass-focus-line: rgba(255, 255, 255, .92);
+  --glass-focus-shadow: 0 22px 50px rgba(15, 23, 42, .14), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(15, 23, 42, .04);
+  --glass-blur: 22px;
+  /* 卡面细砂：slope .05 —— 肉眼不读成脏，是「玻璃自身的磨砂质感」。
+     特别注意：这是给玻璃层用的，不是往页底铺颗粒（那条路踩过坑，见 MEMORY.md）。 */
+  --glass-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncA type='linear' slope='0.05'/></feComponentTransfer></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
+  /* 加强版细砂（slope .12）：给「浮在平面色底上的孤块」用。
+     实测标定（900×300 截图上取 260×180 区域统计）：
+       slope .05 → 色阶 min249 max253 stddev 0.60（±2，等于看不见）
+       slope .12 → 色阶 min243 max252 stddev 1.27（±9，浅磨砂感）
+       slope .25 → 色阶 min231 max251 stddev 2.61（±20，明显，但整体压暗 6 个色阶、开始显脏）
+     所以「孤块玻璃」用 .12；有承托板衬托的大面积玻璃仍用 .05，别整体加浓。 */
+  --glass-noise-frost: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncA type='linear' slope='0.12'/></feComponentTransfer></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
+}
+
+/* ===== 1. 页底色 —— 【已撤销】============================================
+   这里原来铺过一层全站氛围色场（body 上两团 1400px 级冷暖径向渐变），
+   并把各页自己在 .main-canvas 上的底改写成 none、把自带不透明底的页面改透明，
+   好让那层色场连着透出来。
+
+   用户看过之后要求：「把页面都还原成纯色背景」。所以这一整段撤掉了 ——
+   各页恢复自己本来的实色底：
+     · body / 多数页 → `--base` (#f9f9f8)（global.css 里的原定义）
+     · /news        → `#f9f9f8`（news.css 原定义）
+     · 会话页        → `--base`（pages.css 原定义）
+   什么都没覆盖，靠的就是「不再写规则」。
+
+   ⚠️ 历史页（/history）除外：它自己那层色场写在 history.css 里，是它玻璃承托板的依托，
+   属于该页既有设计，不在这轮"还原"范围内。要一起压平的话说一声。
+
+   保留的结论（写在这里免得以后有人再试一遍）：浅色平面上的玻璃**不该靠"喂背景"来成立**。
+   铺色场不会让孤块玻璃更好看，只会让整页变脏。 */
+
+/* ===== 2. 外壳（顶栏 / 侧栏 / 移动底栏）常驻玻璃 ===========================
+   这几块是全站共用的 chrome，做成毛玻璃后「其他页面」与历史页才真正同属一套材质语言。
+   只做半透明 + 轻模糊，不做重投影——它们长期驻留，不能抢内容的视线。 */
+.topbar {
+  background: rgba(255, 255, 255, .74);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-bottom-color: rgba(15, 23, 42, .06);
+}
+.app-shell .nav-rail {
+  background: rgba(248, 250, 252, .62);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-right-color: rgba(15, 23, 42, .06);
+}
+.mobile-nav {
+  background: rgba(255, 255, 255, .78);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+}
+
+/* ===== 3. 承托板（凹）====================================================
+   包住「一组同类内容卡」的容器。面积大、对比低，靠描边 / 影 / 通透感成立；
+   大面板不需要「看得见的模糊」就能读成玻璃。 */
+.tasks-page .task-list,
+.knowledge-page .document-list-panel,
+.news-page .news-feed,
+.news-page .source-governance,
+.dashboard-grid,
+.dashboard-bottom,
+.admin-stats,
+.admin-layout .admin-doc-list,
+.settings-page .settings-sections,
+.settings-page .settings-rail {
+  border: 1px solid var(--glass-board-line);
+  border-radius: 18px;
+  background-color: var(--glass-board-bg);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .6) 0%, rgba(255, 255, 255, 0) 22%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(135%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(135%);
+  box-shadow: var(--glass-board-shadow);
+  padding: 16px 18px 20px;
+}
+
+/* 各容器原有内边距差异较大，逐个收一收，避免板子把卡挤扁 */
+.tasks-page .task-list { padding: 14px; }
+.knowledge-page .document-list-panel { padding: 14px; }
+.news-page .news-feed { padding: 20px 22px 4px; }
+.news-page .source-governance { padding: 18px; }
+.dashboard-grid,
+.dashboard-bottom { padding: 18px; }
+.admin-stats { padding: 14px; }
+.admin-layout .admin-doc-list { padding: 14px; margin-top: 14px; }
+.settings-page .settings-sections { padding: 14px; }
+/* 左侧配置导航板（2026-09 设置页改版）：板内导航项直接落在玻璃上，
+   板上唯一的白卡是集群状态 .rail-cluster（实色，凸），层级与右侧 板→白卡 一致。 */
+.settings-page .settings-rail { padding: 12px; }
+
+/* ===== 3b. 页头承托板（凹）===============================================
+   2026-09-12 用户看过 /history 页头的效果后要求「其他页面都同步上」，于是把页头这一档
+   从 history.css 上提到这里统一登记 —— 以后改一处全站同步。
+
+   为什么页头要单独一档、而不是直接并进 §3：
+   · 圆角 **24px**（§3 的内容板是 18px）—— 半径更大读成「更外的一层」，与内容板形成主次；
+   · 页头里往往带**控件**（搜索框 / 药丸 / 按钮），它们的底色按「白色页底」配死在了各自 CSS 里，
+     板一变成玻璃，控件就与本页页底/托盘同色阶而「消失」——配套的凹槽处理见 §3c。
+
+   ⚠️ 页面版式差异（flex 方向 / 对齐 / margin）仍留在各页 CSS，这里只声明材质与内边距。
+   ⚠️ 不要用焦点玻璃那档近白填充（.68）：页底是平的 #f9f9f8，纯白叠纯白等于没材质（见 §4b）。 */
+.page-heading,
+.tasks-page .task-page-heading,
+.news-page .news-page-head,
+.history-page .history-page-header {
+  padding: 18px 22px;
+  border: 1px solid var(--glass-board-line);
+  border-radius: 24px;
+  background-color: var(--glass-board-bg);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .6) 0%, rgba(255, 255, 255, 0) 28%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(135%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(135%);
+  box-shadow: var(--glass-board-shadow);
+}
+/* /news 页头原本自带一条底部分隔线（与下方分类条分家）；托盘自己就是一块有边界的板，
+   那条线会横穿托盘内部 → 去掉。页头与下方内容的关系靠 margin-bottom 保持。 */
+.news-page .news-page-head { border-bottom: 0; }
+
+/* ===== 3c. 板上的凹槽控件 =================================================
+   ⚠️ 页头变玻璃后，原来按「白色页底」配色的搜索框会与本页页底/托盘同色阶而**整块消失**：
+     · /history .history-search  #f1f3f5(241)  vs 托盘合成 ~241 → 完全同色
+     · /news    .news-search     #f1f3f4(241)  vs 同上
+     · /news    .news-head-actions > button（非 active 态）#f1f3f4(241)  同上
+   统一改成比托盘再深一档的中性凹槽（合成 ~231，低 10 个色阶）+ 白描边 + 内阴影，
+   读成「玻璃上嵌进去的一块」。这与全站输入框「比背景略暗」的取向一致，只是背景由页底换成了玻璃。
+   圆角统一 12px（原 8/7/10 差异很小，统一后页头里的「凹槽控件」视觉一致）。
+   ⚠️ 2026-09-15：/tasks 页头的搜索框与「从对话流转新建」主按钮已整块删除，
+   `.tasks-page .compact-search` 这两条随之失效并移除 —— 该页头现在只剩标题与状态药丸，
+   没有任何凹槽控件；以后若把搜索加回来，记得把它重新登记进这一组。 */
+.news-page .news-search,
+.news-page .news-head-actions > button:not(.governance-button):not(.active),
+.history-page .history-page-header .history-search {
+  background: rgba(226, 232, 240, .62);
+  border: 1px solid rgba(255, 255, 255, .72);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 3px rgba(15, 23, 42, .06);
+}
+/* 聚焦态：原方案是「底色变白」——在托盘上白色=凸起，聚焦反而不合物理。
+   改成凹槽再深一档 + 描边换成可读的中性色，保持「沉下去」的语感。 */
+.news-page .news-search:focus-within {
+  background: rgba(216, 224, 234, .8);
+  border-color: #aebdcb;
+}
+
+/* ===== 4. 焦点玻璃（浮）==================================================
+   每页最多一块。挑的是「当前选中项的详情面板」——它本来就该是页面上最靠前的一层。
+   ⚠️ 历史页的 `.history-page .history-detail-rich` **不在这里登记**：
+   history.css 里已经有一份同款内联定义（同填充 .68、同 slope .05 细砂、同 blur 22、
+   同 0 22px 50px 投影），差别只在圆角（14px vs 这里的 16px）。
+   它是最早做成玻璃的那一块，材质本来就一致 —— 再登记一次只会把圆角改掉。
+   ⚠️ 设置页（2026-09 改版）的 `.settings-page .profile-card` 已随旧版一起移除：
+   新版没有「选中详情」型浮层，右侧是 板→白卡 两级，不再有焦点玻璃。
+   （底部保存条走 §2 外壳 chrome 的轻模糊档，样式在 settings.css。） */
+.tasks-page .task-detail,
+.knowledge-page .reading-panel,
+.admin-layout .review-panel {
+  border: 1px solid var(--glass-focus-line);
+  border-radius: 16px;
+  background-color: var(--glass-focus-bg);
+  background-image: var(--glass-noise);
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  box-shadow: var(--glass-focus-shadow);
+}
+
+/* ===== 4b. 提问输入框（助手页 /workspace + 会话页 /conversations/:id）==========
+   两页共用**同一款**输入框。这不是"照抄一份样式"，而是本来就是一个组件：
+   `ConversationPage` 里写的是 `<form className="assistant-prompt convo-composer">`，
+   同一个 `.assistant-prompt` 类，所以材质天然继承，这里只是把它显式声明成一组、
+   并把会话页那条更高特异性的覆盖规则拉回同一材质（见下）。
+
+   用户要求：**只动输入框**，且**尺寸 / 圆角完全保持原样**，只把它变成毛玻璃。
+
+   ⚠️ 圆角是 **24px，不是 12px**！`workspace.css` 里 `.assistant-prompt` 有两条：
+      · 第 248 行（大段合并规则里）写着 `border-radius:12px`
+      · 第 287 行（后面的补丁区）覆盖成 `border-radius:24px`
+      后者才是生效值（实测前端圆角轨迹半径≈24px）。当初只看到前一条就写成 12px，
+      把原值改小了一圈——这就是用户说的"改回之前的大小尺寸"。**抄原值要抄计算样式，不要抄第一条规则。**
+   （会话页 `pages.css` 那边也是 24px，两边一致。）
+
+   所以这里：
+   - 圆角用 24px；
+   - padding / width / max-width / 字号 / 位置 一个都不写 → 尺寸沿用各页原值
+     （助手页实测 940 × 133；会话页顶栏形态 864 宽、内边距 10/12，属它自己的版式，不动。
+      ⚠️ 会话页**侧栏形态**下输入框 = 对话内容宽 = 800px，见 `pages.css` 的 `--convo-col`；
+      那条选择器特意写成 (0,4,0) 就是为了盖住这里的 `.assistant-prompt{max-width:864px}`）；
+   - **投影也保持原值** `0 8px 24px .10`：玻璃组那套 `0 22px 50px` 会把阴影晕开 50px，
+     盒子看着"变大了一圈"；
+   - 描边保留原色 #e2e8f0，不用玻璃组的白色：两页底下都是平的浅灰面，白描边压上去等于没有边。
+   材质上怎么让它在**平色底**上也读得出「毛玻璃」（背后没有东西可模糊，只能靠自身像素）。
+
+   ⚠️ 关键（踩过两轮）：**纯白叠纯白等于没有材质**。页底是 #f9f9f8，玻璃若也用近白填充，
+   合成出来 251 vs 页面 249 —— 差 2 个色阶，肉眼就是"一张白卡"，用户原话「里面还是纯白背景」。
+   所以玻璃填充必须**比页面略暗一点点**，才读得出"盖在上面的一片"。
+   这里用中性冷灰 rgba(233,238,244,.55)（**无色相**，不是彩色；用户明确不要暖/冷彩色调），
+   合成后框内约 240-244，比页底低 5-9 个色阶 —— 刚好读成"透光的一片"而不是"白卡"。
+   三条线索缺一不可：
+     ① 顶部白色内高光（顶部 .62 → 34% 处落到 .14 → 底部回 .26）：亮上缘 = 玻璃的厚度。
+        峰值压到 .62，推到 255 就变不透明纸，玻璃感反而没了。
+     ② 加强版细砂噪点（--glass-noise-frost）：磨砂颗粒。
+     ③ 内描边「上白下灰」：读成有厚度的玻璃片。
+   试过再加两团与全站色场同源的极淡彩色径向渐变来"透光"——**用户最终不要颜色**，已撤。
+   （旧坑：圆心写在框外 `at 6% -30%`，框内只剩渐变尾巴，色偏只剩 1 个色阶，等于白写。）
+
+   ⚠️ 会话页那条选择器为什么要写这么长：`pages.css` 里有一条
+   `.app-shell:has(.convo-page) .convo-composer`（特异性 0,3,0），把背景打回 `transparent`、
+   投影打回 `none`、描边换成 `#dbe2ea` —— 它赢过这里单独的 `.convo-composer`（0,1,0），
+   于是会话页的输入框只剩一圈空描边、完全读不出玻璃（同一个 `.assistant-prompt` 类被白挂了）。
+   本文件在 main.tsx 里**最后**引入，所以用**同特异性**的选择器重写一遍即可夺回控制权。
+   这样两页的材质由同一段声明产出，以后改一处两页同步。
+
+   09-23 追加 `.convo-ask`：会话页的 ask_user 追问/权限浮层改成「完全压在输入框上」，
+   用户拍板它与输入框**同一材质** —— 所以直接进本组，与输入框逐字共用同一段声明
+   （不是抄一份副本；抄副本会跟真实值脱节）。浮层背后是消息流，backdrop-filter 有东西可模糊。 */
+.assistant-prompt,
+.app-shell:has(.convo-page) .convo-composer,
+.convo-ask {
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  background-color: rgba(233, 238, 244, .55);
+  background-image:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, .62) 0%,
+      rgba(255, 255, 255, .14) 34%,
+      rgba(255, 255, 255, .26) 100%),
+    var(--glass-noise-frost);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, .10),
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(15, 23, 42, .045);
+}
+/* 输入框内部必须清底：`<textarea>` 自带浏览器默认白底（UA 的 `field` 色），
+   global.css 只重置了 button 的 background，没管 textarea —— 于是它把整块玻璃
+   盖成了"纯白卡片"，玻璃材质只剩四周一圈 padding 露出来。
+   这就是用户截图里「框住的里面还是纯白背景」。清成透明，内部与框体共用同一层材质。
+   （同族的 select / 工具条按钮自带 #f8fafc 小底色，那是控件自己的颜色，保留。） */
+.assistant-prompt textarea { background-color: transparent; }
+/* 聚焦反馈沿用原来的中性描边色（#aebdcb），投影不跳变，免得聚焦时反而"沉下去"。
+   会话页必须一并写上：上面那条 (0,3,0) 会盖掉这里单独的 `.assistant-prompt:focus-within` (0,2,0)，
+   不写的话会话页聚焦时描边纹丝不动。 */
+.assistant-prompt:focus-within,
+.app-shell:has(.convo-page) .convo-composer:focus-within {
+  border-color: #aebdcb;
+  box-shadow:
+    0 10px 26px rgba(15, 23, 42, .13),
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(15, 23, 42, .045);
+}
+/* ===== 4c. 侧边栏主操作「新建会话」—— 液态玻璃按钮（09-19 二十四改）=============
+   十八改曾做成墨底白字实色主按钮，二十一味改白底细边描边款，均已退役；
+   二十四改用户：「材质改成液态玻璃效果」—— 沿用 §4b 输入框同一套液态玻璃配方
+   （半透明冷灰底 + 顶部高光渐变 + 噪点霜 + backdrop blur/saturate + 上下内阴影），
+   两处材质同源，改一处两处同步。白玻璃(合成后 ≈250) vs 侧栏底 #f6f7f9(246)
+   靠细边 #e2e8f0(226) 压出凹凸界限。材质与圆角在这里声明，尺寸/间距仍在 workspace.css。 */
+.assistant-sidebar .assistant-sidebar-new {
+  color: #243244;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background-color: rgba(233, 238, 244, .55);
+  background-image:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, .62) 0%,
+      rgba(255, 255, 255, .14) 34%,
+      rgba(255, 255, 255, .26) 100%),
+    var(--glass-noise-frost);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, .10),
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(15, 23, 42, .045);
+}
+.assistant-sidebar .assistant-sidebar-new:hover {
+  color: #091426;
+  border-color: #aebdcb;
+  box-shadow:
+    0 10px 26px rgba(15, 23, 42, .13),
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(15, 23, 42, .045);
+}
+.assistant-sidebar .assistant-sidebar-new:active {
+  background-color: rgba(226, 232, 240, .65);
+  box-shadow: inset 0 1px 3px rgba(15, 23, 42, .08);
+}
+.assistant-sidebar .assistant-sidebar-new > svg { color: #5b6472; }
+
+/* ===== 5. 卡片与承托板的关系 =============================================
+   卡片保持实色（凸）。本节只做一件事：把三级材质的落差钉住 ——
+     页面（实色底）→ 承托板（玻璃，合成后略暗偏冷，凹）→ 卡片（纯白，凸）
+     焦点玻璃（§4，每页唯一浮起层，浮）
+
+   ⚠️ 2026-09-12 走过一趟回头路，教训留在这里，别再试第二遍：
+   曾按"统一材质"的想法把各页内容卡也做成玻璃，配方直接沿用 4b 输入框那套
+   「比页底略暗」的填充。结果**层级反而没了**，两个原因：
+     ① 有承托板的页面：板是玻璃、卡也是玻璃，两片半透明互相渗透，合成后色差
+        只剩 2-3 个色阶，卡读不出"浮在板上"；
+     ② 首页没有承托板：卡（约 243）比页底（249）还暗 —— 那张"凹配方"把卡从
+        凸起变成了**凹坑**，整页看着就是平的。
+   用户原话：「不能使背景和卡片都用一个效果，那层级关系就没有了」。
+   结论：**玻璃表达层级，不表达"卡片材质"**。同屏的玻璃只能分两档 ——
+   承托板（凹）与焦点玻璃（浮）各一层；夹在中间的卡片必须实色，落差才读得出来。
+   （与 MEMORY.md 的「玻璃材质只分『层』不堆『卡』」是同一条。）
+
+   ⚠️ 首页（`/`）整体按 `stitch_prototype_design_system (18)` 参考图重做，
+   那套语言（结构化编排主义）把 glassmorphism 列为 anti-pattern，走的是「暖白底 + 白卡 +
+   1px 细边 + 极克制阴影」。**唯一例外**是左侧操作台 `.home-hero-main`（09-15 用户明确
+   要求垫玻璃托盘 + 右侧实景轮播），见 §5b 与 `home.css` 第二节 —— 除它之外别往首页加玻璃。
+
+   下面只登记「板上有卡、且卡片自己写死了底色」的几处；其余各页的卡片
+   （.settings-card、.metric-card、.chart-card、.history-card、
+   .spotlight-main、.admin-doc-card …）在各自 CSS 里本来就是实色，撤销玻璃化后
+   自动回到原值，不需要在这里重复声明。
+
+   ⚠️ 为什么这几条必须带页面前缀、不能裸写类名：
+   `pages.css` 里 `.task-card` / `.document-card` 是一条 (0,1,0) 的公共规则，
+   而 `tasks.css` 另有 `.tasks-page .task-card`（(0,2,0)）。要压回实色就得
+   **同特异性 + 本文件在 main.tsx 最后引入**，裸写会输给它（已实测）。 */
+.tasks-page .task-list > .task-card,
+.knowledge-page .document-list-panel > .document-card,
+.knowledge-page .document-list-panel > .knowledge-filter-panel,
+.news-page .news-feed .news-row {
+  background-color: #fff;
+}
+
+/* ===== 5b. 首页（工作台 /）—— 唯一一处显式例外（2026-09-15 二次改版）======
+   首页整体仍按参考图走「结构化编排主义」（暖白底 + 白卡 + 1px 细边），
+   但用户明确要求给**左侧操作台**垫玻璃托盘、右侧挂实景轮播（轮播本身不包玻璃）
+   → 玻璃只落在 `.home-hero-main` 一块上。
+
+   ⚠️ 配方没有写在这里，而在 `home.css` 第二节（逐字复用 §4b 那套
+   「比页底略暗的中性冷灰 rgba(233,238,244,.55)」—— 页底是平的暖白，
+   用托盘档的偏白配方会纯白叠纯白没材质，§4b 的老教训）。
+   **改配方两处同步。** 其余区块（事务卡 / 资讯 / 磁贴）仍是实色白卡，别跟着玻璃化。 */
+
+/* ===== 6. 弹窗玻璃（浮）==================================================
+   弹窗**不是"内容卡"**，它是浮在深色遮罩上的浮层 —— 属于 §4 的「浮」这一级，
+   所以玻璃在这里成立：底下有真实的深色遮罩可糊，也不会和页底/承托板混成一层。
+   ⚠️ 只做**模态容器**。弹窗内部的行 / 卡（`.history-item` / `.tc-*` …）继续实色，
+   否则弹窗里再叠一层玻璃，又回到"层层渗透"的老问题。
+
+   填充要比页面上的玻璃更白：遮罩是 rgba(9,20,38,.32)，用 .62 那档会整块发灰显脏。
+   实测 .84 + 28px 模糊 → 合成后约 240，正文仍是 13:1 对比度。
+   `.agent-matrix` 与 `.history-modal` 是同一套版式（同 width / radius / backdrop），一起登记。
+   ⚠️ 09-23：原先一起登记的 `.agent-matrix` 随多智能体选择弹窗下线，这里只剩两个。 */
+.history-modal,
+.task-create {
+  background-color: rgba(255, 255, 255, .84);
+  background-image: var(--glass-noise-frost);
+  backdrop-filter: blur(28px) saturate(150%);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+}
+/* ⚠️ `.task-create`（发起办事流程，09-13）内部只有**料带与发丝线**，没有大块实色底 ——
+   头部 / 标签行 / 底部条一律半透明（`rgba(255,255,255,.72)` 一档）或干脆透明，
+   这样弹窗玻璃才读得出来。往里加实色页眉会把玻璃整块盖死（弹窗内部只允许「行 / 卡」实色）。 */

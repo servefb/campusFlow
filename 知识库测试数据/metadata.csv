@@ -1,0 +1,17 @@
+﻿file,title,document_no,issuer_organization_id,issuer_name,category_id,category_code,visibility,validity,status,effective_from,published_at,summary,coverage
+01-national-scholarship-2026.md,国家奖学金评选实施细则,校学字〔2026〕18号,14,学生资助管理中心,7,scholarship,student,current,ready,2026-09-01,2026-08-20,明确国家奖学金申请条件、材料要求与评审流程。,与库内种子文档 29 同款；标题与正文双命中基准
+02-national-scholarship-2024.md,国家奖学金评选办法（2024版）,校学字〔2024〕16号,14,学生资助管理中心,7,scholarship,student,archive,archived,2024-09-01,2024-08-20,历史版本，仅供制度沿革查询。,同名不同版本；归档态过滤；与 01 构成新旧冲突
+03-undergraduate-status-2026.md,本科生学籍管理规定,校教字〔2026〕12号,12,教务处,6,academic,campus,current,ready,2026-09-01,2026-08-21,包含选课、学籍异动、休复学与毕业审核规定。,与库内种子文档 30 同款；含学生证补办条款
+04-undergraduate-status-2025-revision.md,本科生学籍管理规定（2025修订稿）,校教字〔2025〕31号,12,教务处,6,academic,campus,revised,draft,2026-03-01,2025-12-15,修订稿，尚未发布，不得作为办理依据。,同名近似；revised+draft 态；应被默认检索过滤
+05-comprehensive-evaluation-2026.md,综合素质测评实施办法,校学字〔2026〕21号,13,党委学生工作部,5,school-rules,student,current,ready,2026-09-01,2026-08-22,本科生综合素质测评指标、加分规则与公示要求。,与库内种子文档 31 同款；含与 09 相近的公示申诉条款
+06-course-selection-2026.md,本科生选课与退补选管理办法,校教字〔2026〕15号,12,教务处,6,academic,campus,current,ready,2026-09-02,2026-08-25,选课、退补选时间窗口与超期调整办理口径。,时间窗口类问答主依据；含附问格式
+07-exam-discipline-and-warning.md,考试违纪认定与学业预警处理办法,校教字〔2026〕19号,12,教务处,6,academic,teacher,current,ready,2026-09-01,2026-08-26,考试违纪分级认定与三级学业预警机制。,教师可见；学生身份检索应被过滤
+08-financial-hardship-recognition.md,家庭经济困难学生认定办法,校学字〔2026〕09号,14,学生资助管理中心,7,scholarship,student,current,ready,2026-09-01,2026-08-10,困难等级划分、认定程序与动态调整。,等级划分类问答；长条款与多层列表
+09-scholarship-publicity-appeal.md,奖学金评定公示与申诉办法,校学字〔2026〕22号,13,党委学生工作部,7,scholarship,campus,current,ready,2026-09-01,2026-08-23,获奖公示内容、公示期限与申诉复核流程。,与 05 第十二至十三条语义重叠；测重排与引用选择
+10-dormitory-management.md,学生宿舍管理办法,校后字〔2026〕07号,15,后勤保障部,9,campus-life,campus,current,ready,2026-09-01,2026-08-18,住宿资格、宿舍调整、退宿与住宿秩序管理。,宿舍类主依据；与 11 存在引用关系
+11-dormitory-electricity-safety.md,学生宿舍用电与消防安全细则,校后字〔2026〕08号,15,后勤保障部,9,campus-life,department,current,ready,2026-09-01,2026-08-19,违章电器清单、功率上限与消防设施管理。,部门可见；含表格与数字阈值
+12-campus-card-rule.md,校园卡使用与补办管理规定,校信字〔2026〕05号,17,信息化建设办公室,9,campus-life,public,current,ready,2026-09-01,2026-08-15,校园卡功能、充值与挂失补办流程。,公开可见；窗口类短文档；含表格
+13-job-recommendation-and-agreement.md,毕业生就业推荐表与三方协议办理指南,校就字〔2026〕03号,16,学生就业指导中心,8,career,public,current,ready,2026-09-01,2026-08-12,推荐表生成、三方协议申领与解约办理。,办事流程类；含一问一答式段落
+14-postgraduate-recommendation.md,推荐优秀应届本科毕业生免试攻读研究生实施办法,校教字〔2026〕21号,12,教务处,8,career,student,current,ready,2026-09-01,2026-08-28,推免资格条件、加分细则与工作程序。,升学类主依据；条件类问答多条件叠加
+15-campus-parking-draft.md,校园机动车停放管理办法（征求意见稿）,校后字〔2026〕99号,15,后勤保障部,5,school-rules,campus,current,draft,2027-01-01,2026-09-10,征求意见稿，条款可能调整，不作为收费依据。,draft 态；默认检索不应返回
+16-freshman-guide-2026.md,2026级本科生入学须知,,13,党委学生工作部,5,school-rules,campus,current,ready,2026-08-30,2026-08-30,新生报到时间、材料、缴费与入学教育安排。,无文号文档；通知类分节结构（一、二、三）

@@ -1,0 +1,538 @@
+.page-actions{display:flex;align-items:center;gap:10px}.soft-button{display:inline-flex;align-items:center;gap:7px;padding:10px 14px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--primary);font-size:13px}.soft-button:hover{background:#f1f5f9}.danger-text{color:#b42318}.status-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:999px;background:#f1f5f9;color:#475569;font-size:11px;white-space:nowrap}.status-badge.success{background:#dcfce7;color:#087443}.status-badge.warning{background:#fff3dc;color:#a15c00}.status-badge.danger{background:#ffe4e0;color:#b42318}.status-badge.info{background:#e5edff;color:#31599f}.search-field,.compact-search{height:42px;display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--border);border-radius:7px;padding:0 12px;color:var(--muted)}.search-field input,.compact-search input{border:0;outline:0;background:transparent;min-width:220px;color:var(--ink)}.segmented{display:flex;gap:4px;padding:4px;background:#f1f5f9;border-radius:8px;width:max-content;max-width:100%;overflow:auto}.segmented button{padding:8px 12px;border-radius:6px;color:var(--muted);font-size:12px;white-space:nowrap}.segmented button.active{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(15,23,42,.08);font-weight:600}.wide-page{max-width:1440px}.summary-chips{display:flex;gap:8px;margin:-12px 0 20px}.task-layout,.knowledge-layout,.history-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(360px,.8fr);gap:20px;margin-top:20px}.knowledge-layout{grid-template-columns:220px minmax(0,1fr) minmax(340px,.75fr)}.task-list,.document-list-panel,.history-list{display:flex;flex-direction:column;gap:14px}.task-card,.document-card,.history-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:20px;cursor:pointer;transition:.2s}.task-card:hover,.document-card:hover,.history-card:hover,.task-card.selected,.document-card.selected,.history-card.selected{border-color:#9ba7ba;box-shadow:0 4px 12px rgba(15,23,42,.06)}.task-card.selected,.document-card.selected,.history-card.selected{border-left:3px solid var(--coral)}.task-card-head,.doc-title-row,.history-meta,.detail-head,.review-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.task-card h2,.document-card h2,.history-card h2{font-size:17px;margin:0 0 7px;color:var(--ink)}.task-card small,.document-card small,.history-card small{color:var(--muted);font-size:12px}.task-card p,.document-card p,.history-card p{font-size:13px;color:#475569;line-height:1.65}.task-progress{display:flex;gap:6px;align-items:center;background:#f8fafc;padding:9px 10px;border-radius:6px;font-size:11px;color:var(--muted);margin-top:14px}.task-progress span{display:inline-flex;align-items:center;gap:4px;flex:1}.task-progress .done{color:#07834f}.task-progress .current{color:#b42318}.text-link{display:inline-flex;align-items:center;gap:4px;color:var(--primary);font-size:12px;margin-top:14px}.task-detail,.reading-panel,.history-detail{background:#fff;border:1px solid var(--border);border-radius:10px;padding:22px;align-self:start;position:sticky;top:calc(var(--topbar-h) + 20px)}.detail-head h2,.reading-head h2{font-size:21px;margin:10px 0 4px;color:var(--ink)}.detail-head p{color:var(--muted);font-size:13px;margin:0}.mono{font:12px ui-monospace;color:var(--muted)}.rule-box{display:flex;gap:12px;background:#f4f5f4;border-radius:7px;padding:15px;margin:22px 0}.rule-box svg{color:var(--green);flex:none}.rule-box strong{font-size:13px}.rule-box p{font-size:12px;color:#475569;line-height:1.6;margin:7px 0 0}.section-title{font-size:14px;margin:18px 0 10px}.requirement{display:flex;align-items:center;gap:10px;padding:13px;background:#f8fafc;border-radius:6px;margin:7px 0}.requirement svg{color:var(--green)}.requirement div{flex:1;display:flex;flex-direction:column;gap:3px}.requirement strong{font-size:13px}.requirement small,.requirement>span{font-size:11px;color:var(--muted)}.upload-panel{background:#fff5f3;border-radius:8px;padding:14px;margin-top:18px}.upload-title{display:flex;align-items:center;gap:7px;font-size:13px;color:#a6372f}.upload-title strong{flex:1}.upload-panel p{font-size:12px;line-height:1.5;color:#475569}.drop-zone{display:flex;flex-direction:column;align-items:center;gap:7px;background:#fff;border:1px dashed #f2aaa2;border-radius:7px;padding:26px 10px;cursor:pointer;color:#a6372f;text-align:center}.drop-zone input{display:none}.drop-zone strong{font-size:13px}.drop-zone small{font-size:11px;color:var(--muted)}.drop-zone.uploaded{border-color:var(--green);color:#087443}.detail-textarea{display:block;font-size:12px;color:#475569;margin-top:18px}.detail-textarea textarea{display:block;width:100%;height:76px;resize:vertical;border:1px solid var(--border);border-radius:6px;padding:10px;margin-top:7px;outline:0}.detail-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}.detail-actions>button:first-child{padding:10px 14px;border:1px solid var(--border);border-radius:6px;font-size:12px}.category-panel{background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;height:max-content}.category-panel h3{display:flex;justify-content:space-between;font-size:15px;margin:0 0 14px}.category-panel h3 span{font-size:11px;color:var(--muted);font-weight:400}.category-panel>button{display:flex;align-items:center;gap:10px;width:100%;padding:12px 10px;border-radius:6px;text-align:left;color:#475569;font-size:13px}.category-panel>button span{margin-left:auto;color:var(--muted);font-size:11px}.category-panel>button.active{background:#f1f5f9;color:var(--ink);font-weight:600;border-left:3px solid var(--coral)}.trust-card{background:#f8fafc;border-radius:7px;padding:16px;margin-top:22px}.trust-card svg{color:var(--green)}.trust-card h4{margin:8px 0;font-size:14px}.trust-card p{font-size:12px;line-height:1.6;color:#475569}.trust-card small{font-size:11px;color:#475569}.trust-card i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:5px}.filter-line{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:2px}.filter-line button{padding:8px 11px;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:12px}.filter-line button.active{background:var(--ink);color:#fff}.document-card{padding:18px}.document-card h2{font-size:16px;margin:10px 0}.document-card .doc-title-row>span{font-size:11px;color:var(--muted)}.document-actions{display:flex;gap:8px;margin-top:15px}.document-actions button{display:inline-flex;align-items:center;gap:5px;background:#f1f5f9;padding:7px 9px;border-radius:5px;color:#334155;font-size:11px}.document-actions button:last-child{margin-left:auto;background:none}.reading-head small{color:var(--coral);font-size:11px}.chapter-tabs{display:flex;gap:5px;flex-wrap:wrap;padding:12px;background:#f1f5f9;border-radius:7px;margin:18px 0}.chapter-tabs button{background:#fff;padding:7px 9px;border-radius:4px;font-size:11px}.chapter-tabs button.active{background:var(--ink);color:#fff}.policy-text{font-size:13px;line-height:1.8}.policy-text h3{font-size:17px;color:var(--ink)}.policy-text blockquote{margin:15px 0;padding:13px;border-left:3px solid var(--coral);background:#fff6f3;color:#334155}.reading-question{display:flex;gap:8px;margin-top:22px}.reading-question input{flex:1;min-width:0;border:1px solid var(--border);border-radius:6px;padding:10px;outline:0;font-size:12px}.reading-question .primary-button{padding:9px 12px;font-size:12px}.empty-results,.dashboard-empty{text-align:center;background:#fff;border:1px dashed var(--border);border-radius:10px;padding:60px 20px;color:var(--muted)}.empty-results svg,.dashboard-empty svg{color:#94a3b8}.empty-results h3,.dashboard-empty h2{color:var(--ink);font-size:17px;margin:12px 0 6px}.empty-results p,.dashboard-empty p{font-size:13px}.history-tools{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:20px}.history-layout{grid-template-columns:minmax(0,1.1fr) minmax(380px,.9fr)}.history-meta{align-items:center}.history-meta button{color:var(--muted)}.history-card h2{margin-top:14px}.history-tags{display:flex;gap:8px;align-items:center}.history-tags>span{display:inline-flex;align-items:center;gap:5px;background:#f1f5f9;border-radius:4px;padding:6px 8px;font-size:11px;color:#475569}.history-detail .detail-head h2{font-size:20px}.mini-message{padding:14px;border-radius:8px;margin:18px 0;font-size:13px;line-height:1.7}.mini-message.user{background:#f1f5f9}.mini-message.assistant{border:1px solid var(--border)}.mini-message.assistant strong{color:#087443}.check-line{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#dcfce7;color:#087443;margin-right:6px}.source-preview{background:#f8fafc;border-radius:7px;padding:14px}.source-preview>div{display:flex;align-items:center;gap:7px}.source-preview blockquote{font-size:12px;line-height:1.7;margin:12px 0}.source-preview button{color:var(--coral);font-size:12px}.linked-task{display:flex;align-items:center;gap:9px;background:#fff5f3;padding:13px;border-radius:7px;margin-top:14px}.linked-task div{flex:1;display:flex;flex-direction:column;gap:3px}.linked-task small{font-size:11px;color:var(--muted)}.linked-task button{font-size:11px;color:var(--primary)}
+.conversation-page{min-height:calc(100vh - var(--topbar-h));background:#f8fafc}.conversation-toolbar{height:66px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:13px;padding:0 28px}.conversation-toolbar div{display:flex;flex-direction:column;gap:3px}.conversation-toolbar small{font-size:11px;color:var(--muted)}.conversation-toolbar>span{flex:1}.conversation-toolbar>button{display:inline-flex;align-items:center;gap:6px;padding:9px 12px;background:#f1f5f9;border-radius:6px;font-size:12px}.conversation-layout{display:grid;grid-template-columns:minmax(0,1fr);max-width:1060px;margin:0 auto}.conversation-layout.drawer-open{grid-template-columns:minmax(0,1fr) 360px;max-width:1400px}.conversation-stream{padding:34px 28px 100px;max-width:920px;width:100%;margin:auto}.user-message{max-width:720px;margin:0 0 20px auto;text-align:right}.user-message p{display:inline-block;background:var(--ink);color:#fff;padding:14px 18px;border-radius:9px 9px 2px 9px;text-align:left;font-size:14px;line-height:1.6;margin:0}.user-message small{display:block;color:var(--muted);font-size:11px;margin-top:7px}.agent-strip{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--border);padding:12px 14px;border-radius:8px 8px 0 0}.agent-strip>span{font-size:12px;color:var(--muted)}.agent-strip button{margin-left:auto;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}.trace-row{display:flex;gap:8px;flex-wrap:wrap;background:#fff;border:1px solid var(--border);border-top:0;padding:10px 14px}.trace-row span{display:inline-flex;align-items:center;gap:5px;background:#f1f5f9;padding:6px 8px;border-radius:4px;font-size:11px;color:#475569}.trace-row svg{color:var(--green)}.answer-card{background:#fff;border:1px solid var(--border);border-radius:8px;margin-top:16px;padding:22px}.answer-label{color:var(--coral);font-size:11px;font-weight:700;margin-bottom:13px}.answer-card h2{display:flex;align-items:flex-start;gap:8px;font-size:18px;margin:0 0 12px;color:var(--ink)}.answer-card h2 svg{color:var(--green);flex:none}.answer-card p{font-size:14px;line-height:1.8;color:#334155}.notice-box{background:#f8fafc;padding:13px;border-radius:6px;font-size:12px;line-height:1.6;color:#475569}.criteria-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.criteria-grid>div{background:#f8fafc;padding:16px;border-radius:7px}.criteria-grid h3{font-size:14px;margin:0 0 9px}.criteria-grid ul{margin:0;padding-left:18px;color:#475569;font-size:12px;line-height:1.8}.citation-row{display:flex;align-items:center;gap:10px;width:100%;padding:13px 10px;border-bottom:1px solid #f1f5f9;text-align:left}.citation-row:last-child{border-bottom:0}.citation-row>span{display:flex;flex:1;flex-direction:column;gap:4px}.citation-row strong{font-size:13px}.citation-row small{font-size:11px;color:var(--muted)}.citation-row>svg{color:var(--muted)}.answer-actions,.feedback-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:16px}.answer-actions button,.answer-actions>a{display:inline-flex;align-items:center;gap:6px;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:12px;text-decoration:none}.feedback-row{color:var(--muted);font-size:12px}.feedback-row button{display:inline-flex;align-items:center;gap:4px;padding:6px 8px;color:var(--muted)}.conversation-prompt{margin-top:22px}.evidence-drawer{background:#fff;border-left:1px solid var(--border);min-height:calc(100vh - var(--topbar-h) - 66px);padding:20px;position:sticky;top:calc(var(--topbar-h) + 66px);align-self:start}.drawer-header{display:flex;justify-content:space-between;gap:10px}.drawer-kicker{color:var(--coral);font-size:11px;font-weight:700}.drawer-header h2{font-size:16px;line-height:1.4;margin:8px 0}.document-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f8fafc;padding:12px;border-radius:6px;font-size:11px;color:#475569}.valid-text{color:#07834f}.document-page{border:1px solid var(--border);border-radius:7px;padding:16px;margin-top:16px;font-size:13px;line-height:1.8}.document-page small{color:var(--muted)}.document-page h3{font-size:15px;margin:16px 0 8px}.document-page blockquote{margin:12px 0;padding:10px;border-left:3px solid var(--coral);background:#fff5f3;font-size:12px}.drawer-primary{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:11px;margin-top:14px;background:#f1f5f9;border-radius:6px;font-size:12px}
+.convo-page { display:flex; flex-direction:column; min-height:calc(100vh - var(--topbar-h)); background:#f8fafc; }
+.convo-toolbar { height:66px; flex:none; background:#fff; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; padding:0 24px; }
+.convo-back { display:grid; place-items:center; width:34px; height:34px; color:#667487; border-radius:6px; }
+.convo-back:hover { background:#f0f2f3; }
+.convo-title { display:flex; flex-direction:column; gap:2px; }
+.convo-title strong { color:#0b1524; font-size:14px; }
+.convo-title span { font-size:10px; color:#8a93a2; }
+.convo-toolbar-spacer { flex:1; }
+.convo-agent { display:inline-flex; align-items:center; gap:5px; color:#334155; font-size:12px; background:#f0f2f3; padding:6px 9px; border-radius:6px; }
+.convo-agent svg { color:#c0392b; }
+.convo-toolbar > button { display:inline-flex; align-items:center; gap:6px; padding:8px 11px; color:#334155; font-size:12px; background:#f0f2f3; border-radius:6px; }
+.convo-toolbar > button:hover { background:#e6eaed; }
+.convo-content { flex:1; overflow-y:auto; }
+.convo-scroll { padding:28px 28px 10px; max-width:920px; width:100%; margin:0 auto; }
+.convo-user { max-width:720px; margin:0 0 16px auto; text-align:right; }
+.convo-user p { display:inline-block; background:var(--ink); color:#fff; padding:13px 16px; border-radius:16px 16px 4px 16px; font-size:14px; line-height:1.6; margin:0; }
+.convo-user small { display:flex; align-items:center; justify-content:flex-end; gap:6px; color:#8a93a2; font-size:11px; margin-top:6px; opacity:0; transition:opacity 120ms ease; }
+.convo-user:hover small { opacity:1; }
+.convo-user-copy { display:grid; place-items:center; width:20px; height:20px; color:#8a93a2; border-radius:5px; }
+.convo-user-copy:hover { color:#0b1524; background:#e6e9ed; }
+/* 「执行中补充」横条（09-23 终稿，WorkBuddy 同款两卡叠压）：补充条是**独立的白色
+   圆角卡**（四角圆、自带边框和投影），悬在输入框上方。关键两点：
+   ① 左右各收窄 14px（margin 0 14px），输入框圆角压下来时白卡下角不会从两侧露出；
+   ② 底部内边距加厚到 22px，输入框上移 14px 压住的区域全是空白，不切内容。 */
+.convo-supplement-strips { display:flex; flex-direction:column; gap:6px; margin:0 14px -14px; padding:0; position:relative; z-index:0; }
+.convo-supplement-strip { display:flex; align-items:center; gap:12px; padding:10px 12px 22px 14px; background:#fff; border:1px solid #e7ebef; border-radius:16px; box-shadow:0 6px 18px rgba(15,23,42,.07); }
+.convo-supplement-strip.is-sending { opacity:.6; }
+.convo-supplement-strip .strip-grip { flex:none; color:#a8b1bd; cursor:grab; }
+.convo-supplement-strip .strip-content { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#1e2630; font-size:15px; }
+.convo-supplement-strip .strip-edit { flex:1; min-width:0; border:0; padding:0; font-size:15px; color:#1e2630; background:transparent; outline:none; }
+.convo-supplement-strip .strip-actions { flex:none; display:flex; align-items:center; gap:22px; }
+.convo-supplement-strip .strip-btn { display:grid; place-items:center; width:30px; height:30px; color:#9aa3b0; border-radius:8px; }
+.convo-supplement-strip .strip-btn:hover { color:#4b5563; background:rgba(15,23,42,.06); }
+.convo-supplement-strip .strip-btn.is-send:hover { color:#2f6fdd; background:#e3ecfb; }
+.convo-supplement-strip .strip-btn.is-del:hover { color:#c23b31; background:#f6e6e4; }
+.convo-supplement-strip .strip-btn:disabled { opacity:.5; cursor:default; }
+/* 有补充条时输入框卡上移压住其底边（+ 相邻选择器：没补充条时不影响常规间距） */
+.convo-supplement-strips + .convo-composer { position:relative; z-index:1; margin-top:-14px; }
+/* 补充送达 toast（09-23）：暂存不提示、送达才弹一下（2.6s 自灭）。固定在**页面顶部**
+   居中下拉（用户拍板），深色底 + 绿勾（与 news-toast 同族），淡入下沉。 */
+.convo-supplement-toast { position:fixed; left:50%; top:70px; z-index:120; display:flex; align-items:center; gap:7px; padding:10px 14px; color:#fff; font-size:12px; pointer-events:none; background:#172235; border-radius:8px; box-shadow:0 10px 26px rgba(15,23,42,.22); opacity:0; transform:translate(-50%,-10px); transition:opacity 160ms ease,transform 160ms ease; }
+.convo-supplement-toast.visible { opacity:1; transform:translate(-50%,0); }
+.convo-supplement-toast svg { color:#5fe0ad; }
+/* 用户气泡上的附件回显（09-19）：气泡上方一排小胶囊，右对齐。
+   服务端历史接口不下发附件，这份是发送时的本地记忆（刷新后为空，见 ConversationPage 的 ChatMessage.attachments）。 */
+.convo-user-files { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px; margin:0 2px 7px 0; }
+.convo-user-file { display:inline-flex; align-items:center; gap:5px; max-width:100%; padding:5px 9px; color:#334155; font-size:11px; background:#fff; border:1px solid #e2e8f0; border-radius:10px; }
+.convo-user-file svg { flex:none; color:#8a93a2; }
+.convo-user-file b { overflow:hidden; max-width:210px; font-weight:500; text-overflow:ellipsis; white-space:nowrap; }
+.convo-user-file small { flex:none; color:#94a3b8; font-size:10px; }
+/* 图片附件胶囊（10-07）：可点击进右侧边栏；悬停出缩略图（raw 本体，浮在胶囊上方右对齐）。
+   二改：竖图限高（max-height，宽自适应），贴近顶部的第一条消息翻到下方（.is-flip）——
+   固定向上弹会被滚动区裁掉，截图里就是「第一条展示不出来」。 */
+.convo-user-file.is-image { position:relative; cursor:pointer; font:inherit; }
+.convo-user-file.is-image:hover { background:#eef1f4; }
+.convo-user-thumb { position:absolute; bottom:calc(100% + 8px); right:0; z-index:40; max-width:min(260px, 60vw); max-height:320px; width:auto; height:auto; background:#fff; border:1px solid var(--border); border-radius:10px; box-shadow:0 14px 36px rgba(15,23,42,.18); pointer-events:none; }
+.convo-user-file.is-image.is-flip .convo-user-thumb { bottom:auto; top:calc(100% + 8px); }
+.convo-status { display:flex; align-items:center; gap:6px; flex-wrap:wrap; color:#6b7586; font-size:11px; margin:0 0 12px; }
+.convo-status-dot { width:8px; height:8px; border-radius:50%; background:#d9dde2; box-shadow:inset 0 0 0 1px #9aa4b1; }
+.convo-status b { color:#0b1524; }
+.convo-status-tag { display:inline-flex; align-items:center; gap:4px; color:#475569; background:#eef1f4; border:1px solid #e3e7ec; padding:4px 8px; border-radius:5px; font-size:10px; }
+.convo-status em { color:#9aa4b1; font-style:normal; }
+.convo-answer { background:#fff; border:1px solid var(--border); border-radius:10px; padding:20px 20px 14px; box-shadow:0 2px 14px rgba(15,23,42,.04); }
+.convo-section + .convo-section { margin-top:22px; }
+.convo-section h3 { display:flex; align-items:center; gap:8px; margin:0 0 10px; color:#0b1524; font-size:14px; }
+.convo-section-marker { width:4px; height:16px; background:var(--coral); border-radius:2px; }
+.convo-section p { margin:8px 0 0; color:#3f4b5c; font-size:13px; line-height:1.75; }
+.convo-stat-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:16px; }
+.convo-stat { background:#f7f9fb; border:1px solid #eceff2; border-radius:8px; padding:12px 14px; }
+.convo-stat h4 { margin:0; color:#6b7586; font-size:11px; font-weight:600; }
+.convo-stat strong { display:block; margin:6px 0 4px; color:#0b1524; font-size:22px; }
+.convo-stat p { margin:0; color:#6b7586; font-size:11px; line-height:1.5; }
+.convo-conclusion { padding:12px 14px; color:#7a2e26; font-size:13px; background:#fdf3f1; border:1px solid #f2d9d5; border-radius:8px; margin-bottom:10px; font-weight:600; }
+.convo-citations { display:flex; flex-direction:column; gap:8px; }
+.convo-citation { display:flex; align-items:center; gap:9px; padding:10px 12px; background:#fbfcfd; border:1px solid #eceff2; border-radius:7px; color:#334155; font-size:12px; }
+.convo-citation-icon { display:grid; flex:none; place-items:center; width:24px; height:24px; color:#5f6b7d; background:#eef1f4; border-radius:6px; }
+.convo-citation-arrow { margin-left:auto; color:#9aa4b1; }
+.convo-next { display:flex; flex-wrap:wrap; gap:8px; }
+.convo-next button { padding:8px 12px; color:#334155; font-size:12px; background:#f1f3f4; border-radius:6px; }
+.convo-next button.primary { color:#fff; background:#152238; }
+.convo-answer-actions { display:flex; align-items:center; justify-content:flex-end; gap:14px; margin-top:16px; padding-top:12px; border-top:1px solid #eceff2; color:#8a93a2; font-size:11px; }
+.convo-answer-actions span { display:inline-flex; align-items:center; gap:5px; }
+.convo-answer-actions .convo-like { gap:8px; }
+.convo-composer-wrap { flex:none; background:#fff; border-top:1px solid var(--border); }
+.convo-composer { max-width:920px; width:100%; margin:14px auto 6px; padding:12px 14px 10px; background:#fff; border:1px solid var(--border); border-radius:12px; }
+.convo-composer textarea { width:100%; color:#0b1524; font-size:14px; resize:none; border:0; outline:0; }
+.convo-composer textarea::placeholder { color:#a7b0bd; }
+.convo-composer-foot { display:flex; align-items:center; gap:10px; padding-top:8px; border-top:1px solid #eef1f4; }
+.convo-composer-scope { display:inline-flex; align-items:center; gap:5px; color:#334155; font-size:11px; background:#f1f3f4; padding:6px 9px; border-radius:6px; }
+.convo-composer-hint { margin-left:auto; color:#9aa4b1; font-size:11px; }
+.convo-send { display:grid; place-items:center; width:32px; height:32px; color:#fff; background:#152238; border-radius:7px; }
+.convo-footer-note { max-width:920px; margin:0 auto 18px; padding:0 28px; color:#9aa4b1; font-size:11px; text-align:center; }
+@media (max-width:700px) { .convo-toolbar { padding:0 14px; } .convo-scroll { padding:20px 14px 8px; } .convo-stat-grid { grid-template-columns:1fr; } .convo-footer-note { padding:0 14px; } }
+
+/* 对话页接口态样式 */
+.convo-loading { display:flex; flex-direction:column; gap:16px; }
+.convo-skeleton { display:block; overflow:hidden; background:#e8ecf1; border-radius:10px; animation:convo-pulse 1.4s ease-in-out infinite; }
+.convo-skeleton-user { width:min(520px,70%); height:56px; margin-left:auto; }
+.convo-skeleton-answer { width:100%; height:180px; }
+@keyframes convo-pulse { 50% { opacity:.55; } }
+.convo-banner { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; color:#8f2d24; font-size:13px; background:#fdf0ee; border:1px solid #f2c9c2; border-radius:10px; }
+.convo-banner button { display:inline-flex; align-items:center; gap:5px; flex:none; height:30px; padding:0 10px; color:#b23c31; font-size:12px; font-weight:600; background:#fff; border:1px solid #f2c9c2; border-radius:6px; }
+.convo-empty { display:flex; flex-direction:column; align-items:center; gap:8px; padding:64px 20px; color:#8a93a2; text-align:center; }
+.convo-empty svg { color:#c0392b; }
+.convo-empty h3 { margin:0; color:#0b1524; font-size:16px; }
+.convo-empty p { margin:0; font-size:13px; }
+.convo-msg-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+.convo-msg-head > span { display:inline-flex; align-items:center; gap:5px; color:#6b7586; font-size:11px; font-weight:600; }
+.convo-msg-head > span svg { color:#c0392b; }
+.convo-msg-head > em { color:#9aa4b1; font-size:11px; font-style:normal; }
+/* 生成中 Agent 名的高光扫描（Codex 式）：浅灰文字上一道深色高光从右往左扫过。
+   ⚠️ background-clip:text 会把整段文字（含子 SVG）变成透明，所以只能作用在纯文字节点上，
+   图标作为兄弟节点保持珊瑚色不受影响。 */
+.convo-agent-label { font-style:normal; }
+.convo-msg-head .convo-agent-label.is-shimmer {
+  /* 底色用浅灰（比静止态 #6b7586 略淡，表达「进行中」），高光比底色更暗 —— 浅色底上
+     用「暗带扫描」表达提亮（深色终端里 Codex 是亮带扫过，浅色主题取反）。 */
+  background-image:linear-gradient(90deg,#9aa4b1 0%,#9aa4b1 36%,#1d2734 50%,#9aa4b1 64%,#9aa4b1 100%);
+  background-size:220% 100%;
+  -webkit-background-clip:text; background-clip:text;
+  color:transparent; -webkit-text-fill-color:transparent;
+  animation:convo-shimmer 1.8s linear infinite;
+}
+@keyframes convo-shimmer { 0% { background-position:160% 0; } 100% { background-position:-60% 0; } }
+/* 09-15 起 assistant 消息走 MarkdownText（react-markdown）渲染，排版规则针对其子元素。 */
+/* ⚠️ 前言与回答正文**共用这一条**（用户 09-18 拍板「前言的字体样式和正文保持一致」）：
+   字号/行距/颜色/字重全同，任何一边改字都会同时改到另一边 —— 故意耦合，别拆开抄两份。 */
+.convo-msg-text, .convo-panel-note { margin:0; color:#243244; font-size:14px; line-height:1.8; word-break:break-word; }
+.convo-msg-text > :first-child { margin-top:0; }
+.convo-msg-text > :last-child { margin-bottom:0; }
+.convo-msg-text p { margin:0 0 10px; }
+.convo-msg-text ul, .convo-msg-text ol { margin:0 0 10px; padding-left:22px; }
+.convo-msg-text li { margin:3px 0; }
+.convo-msg-text li::marker { color:#7c8698; }
+.convo-msg-text h1, .convo-msg-text h2, .convo-msg-text h3, .convo-msg-text h4 { margin:14px 0 8px; font-size:15px; font-weight:700; line-height:1.5; }
+.convo-msg-text strong { font-weight:700; }
+.convo-msg-text code { font-family:ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12.5px; background:#f2f4f7; border:1px solid #e5e9ee; border-radius:4px; padding:1px 5px; }
+.convo-msg-text pre { margin:0 0 10px; padding:10px 12px; background:#f6f8fa; border:1px solid #e5e9ee; border-radius:8px; overflow-x:auto; }
+.convo-msg-text pre code { background:transparent; border:0; padding:0; font-size:12.5px; }
+.convo-msg-text blockquote { margin:0 0 10px; padding:2px 12px; border-left:3px solid #e2e8f0; color:#5b6675; }
+.convo-msg-text a { color:#c8442f; text-decoration:underline; text-underline-offset:2px; }
+.convo-msg-text table { margin:0 0 10px; border-collapse:collapse; font-size:13px; }
+.convo-msg-text th, .convo-msg-text td { border:1px solid #e2e8f0; padding:5px 10px; text-align:left; }
+.convo-msg-text th { background:#f6f8fa; font-weight:600; }
+.convo-msg-text hr { margin:14px 0; border:0; border-top:1px solid #e2e8f0; }
+.convo-msg.failed { border-color:#f2c9c2; }
+.convo-msg-failed { display:flex; align-items:center; justify-content:flex-start; gap:8px; flex-wrap:wrap; color:#8f2d24; font-size:13px; }
+.convo-msg-failed .convo-regen { display:grid; place-items:center; width:24px; height:24px; padding:0; color:#b23c31; background:#fdf0ee; border:1px solid #f2c9c2; border-radius:6px; }
+.convo-msg-failed .convo-regen:hover { background:#fae3df; }
+.convo-msg-failed .convo-regen:disabled { opacity:.5; cursor:not-allowed; }
+.convo-msg .convo-citations { margin-top:14px; }
+/* 已修改的文件（10-07）：回答末尾列出本轮 agent 真正改动过的用户文件。
+   视觉与引用块同一套语言（浅底白卡 + 1px 描边 + 灰图标），但排成胶囊行 —— 它是
+   「清单」不是「条目列表」，一行放得下就一行放过。
+   胶囊本体是 button（点击开右侧预览抽屉）：重置按钮默认形态，悬停略提底色示意可点。 */
+.convo-files { margin-top:14px; }
+.convo-files-title { display:flex; align-items:center; gap:5px; margin:0 0 8px; color:#6b7586; font-size:11px; font-weight:600; }
+.convo-files-title svg { color:#c0392b; }
+.convo-files-list { display:flex; flex-wrap:wrap; gap:8px; margin:0; padding:0; list-style:none; }
+.convo-file { display:inline-flex; align-items:center; gap:6px; max-width:100%; padding:7px 10px; color:#334155; font:inherit; font-size:12px; line-height:1.4; text-align:left; background:#fbfcfd; border:1px solid #eceff2; border-radius:7px; cursor:pointer; }
+.convo-file:hover { background:#f3f5f7; border-color:#e2e6ea; }
+.convo-file svg { flex:none; color:#5f6b7d; }
+.convo-file span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* 行数统计（Codex 式）：绿=新增行、红=删除行；删除的文件给灰色「已删除」徽标 */
+.convo-file-stats { display:inline-flex; flex:none; gap:5px; font-style:normal; font-size:11px; font-variant-numeric:tabular-nums; }
+.convo-file-stats .is-add { color:#1a7f37; font-weight:600; }
+.convo-file-stats .is-del { color:#cf222e; font-weight:600; }
+.convo-file-badge { flex:none; color:#8a93a2; font-style:normal; font-size:10px; background:#eef1f4; border-radius:4px; padding:2px 6px; }
+
+/* Codex 式 diff 视图（10-07 二阶）：行号列 + 增删行红绿底，等宽字体。
+   红绿行底色取 GitHub 浅色口径（绿 #e6ffec/字 #1a7f37 · 红 #ffebe9/字 #cf222e），
+   上下文行不设底色 —— 满屏红绿反而读不了。 */
+.convo-diff { font-family:ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; line-height:1.7; border:1px solid #eceff2; border-radius:8px; overflow:hidden; }
+.convo-diff-row { display:grid; grid-template-columns:34px 34px 16px minmax(0,1fr); align-items:start; }
+.convo-diff-row .convo-diff-no { flex:none; padding:0 6px; color:#a0a8b4; font-size:11px; text-align:right; user-select:none; font-variant-numeric:tabular-nums; }
+.convo-diff-row .convo-diff-sign { text-align:center; color:#8a93a2; user-select:none; }
+.convo-diff-row .convo-diff-text { white-space:pre-wrap; word-break:break-all; padding-right:10px; }
+.convo-diff-row.is-add { background:#e6ffec; color:#116329; }
+.convo-diff-row.is-add .convo-diff-sign { color:#1a7f37; font-weight:700; }
+.convo-diff-row.is-del { background:#ffebe9; color:#8c1d18; }
+.convo-diff-row.is-del .convo-diff-sign { color:#cf222e; font-weight:700; }
+.convo-diff-gap { padding:2px 10px; color:#a0a8b4; font-size:11px; text-align:center; background:#f7f9fb; border-block:1px solid #f0f2f4; user-select:none; }
+
+/* 「已修改的文件」右侧边栏（10-07 三改，用户拍板 Codex 式停靠面板）：
+   网格多出**第三列** —— 不盖遮罩、不脱文档流，聊天区照常可见可用；× 收起后列消失。
+   三段（页头/消息流/输入区）在 side栏形态本来就钉在第二列，这里只给面板圈出第三列。 */
+.convo-page.file-panel-open.sidebar-open { grid-template-columns:var(--sidebar-w) minmax(0,1fr) minmax(340px,44vw); }
+.convo-page.file-panel-open:not(.sidebar-open) { display:grid; grid-template-columns:minmax(0,1fr) minmax(340px,44vw); grid-template-rows:auto minmax(0,1fr) auto; }
+.convo-page.file-panel-open:not(.sidebar-open) > .convo-header { grid-area:1 / 1 / 2 / 2; }
+.convo-page.file-panel-open:not(.sidebar-open) > .convo-content { grid-area:2 / 1 / 3 / 2; }
+.convo-page.file-panel-open:not(.sidebar-open) > .convo-composer-wrap { grid-area:3 / 1 / 4 / 2; }
+.convo-page.file-panel-open.sidebar-open > .convo-file-panel { grid-area:1 / 3 / 4 / 4; }
+.convo-page.file-panel-open:not(.sidebar-open) > .convo-file-panel { grid-area:1 / 2 / 4 / 3; }
+/* 面板占住右缘后，右缘的对话大纲竖排短线会被压住 —— 干脆藏掉 */
+.convo-page.file-panel-open .convo-outline { display:none; }
+
+/* 面板本体：文件 tab（Codex 口径）+ 路径元信息行 + 滚动内容区。
+   底色跟对话页同一份 --base（用户 10-07 拍板：右侧别再是一整块白，和聊天区融为同一张底）。 */
+.convo-file-panel { display:flex; flex-direction:column; min-width:0; background:var(--base); border-left:1px solid var(--border); }
+.convo-file-panel-tabs { flex:none; display:flex; align-items:center; padding:10px 12px 6px; }
+.convo-file-panel-tab { display:inline-flex; align-items:center; gap:7px; max-width:100%; padding:6px 7px 6px 10px; color:#0b1524; font-size:12.5px; background:#eef1f4; border:1px solid #e2e6ea; border-radius:8px; }
+.convo-file-panel-tab svg { flex:none; color:#5f6b7d; }
+.convo-file-panel-tab b { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; }
+.convo-file-panel-close { display:grid; flex:none; place-items:center; width:20px; height:20px; padding:0; color:#667487; border-radius:5px; }
+.convo-file-panel-close:hover { background:#e0e4e8; color:#0b1524; }
+.convo-file-panel-meta { flex:none; display:flex; align-items:center; gap:8px; padding:0 14px 10px; border-bottom:1px solid #eceff2; }
+.convo-file-panel-path { overflow:hidden; min-width:0; color:#8a93a2; font-size:11px; text-overflow:ellipsis; white-space:nowrap; }
+.convo-file-panel-meta em { flex:none; margin-left:auto; color:#5f6b7d; font-size:11px; font-style:normal; font-variant-numeric:tabular-nums; }
+.convo-file-panel-body { flex:1; overflow:auto; padding:14px; }
+.convo-file-panel-note { margin:0 0 10px; padding:10px 12px; color:#5b6675; font-size:12.5px; line-height:1.7; background:#f7f9fb; border:1px solid #eceff2; border-radius:8px; }
+/* 全文行号视图（Codex 查看器口径）：行号列 + 原文，等宽字体 */
+.convo-code { font-family:ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; line-height:1.7; }
+.convo-code-row { display:grid; grid-template-columns:40px minmax(0,1fr); align-items:start; }
+.convo-code-no { padding:0 10px 0 0; color:#a0a8b4; font-size:11px; text-align:right; user-select:none; font-variant-numeric:tabular-nums; }
+.convo-code-text { white-space:pre-wrap; word-break:break-all; color:#243244; }
+.convo-code-gap { padding:2px 10px; color:#a0a8b4; font-size:11px; text-align:center; background:#f7f9fb; border-block:1px solid #f0f2f4; user-select:none; }
+/* 图片预览：本体直接渲染（objectURL），贴宽自适应、描边圆角与 note/代码块同一套 */
+.convo-file-panel-image { display:block; max-width:100%; border:1px solid #eceff2; border-radius:8px; }
+/* 窄屏退回覆盖式：网格放不下第三列，改回浮层（与左 sidebar 的窄屏策略同一思路） */
+@media (max-width:900px) {
+  .convo-page.file-panel-open > .convo-file-panel { position:fixed; top:var(--topbar-h); right:0; bottom:0; z-index:30; width:min(520px,100%); box-shadow:-16px 0 40px rgba(9,20,38,.15); }
+}
+/* 思考过程条（09-16）：思考中一行实时预览，完成后折叠成「已深度思考 · N 字」。 */
+.convo-think { margin:0 0 10px; }
+.convo-think-toggle { display:inline-flex; align-items:center; gap:5px; color:#8a93a2; font-size:12px; background:transparent; border-radius:6px; padding:2px 4px; }
+.convo-think-toggle:hover { color:#4b5563; background:#f0f2f3; }
+.convo-think.live .convo-think-toggle { color:#9aa4b1; }
+.convo-think-chev { transition:transform .15s ease; }
+.convo-think-chev.open { transform:rotate(180deg); }
+.convo-think-line { margin:5px 0 0; color:#9aa4b1; font-size:12px; line-height:1.5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.convo-think-full { margin-top:6px; padding:8px 12px; background:#f7f8fa; border-left:2px solid #e2e8f0; border-radius:0 6px 6px 0; color:#6b7586; font-size:12px; line-height:1.7; white-space:pre-wrap; word-break:break-word; max-height:280px; overflow-y:auto; }
+/* 工作过程条目（前言/工具调用/工具返回）——由 ProcessPanel 渲染，只来自 SSE 不落库 */
+/* 过程面板（09-18 三轮，对齐 Codex 真身）：
+   · 头 = 一行轻量文字（图标 + 「已运行 xxx」+ 小箭头），**无边框无卡片**；
+   · 正文 = Codex 那种浅灰大圆角「终端块」：左上类型标签 + 等宽输出 + 右下状态。
+   前两轮的「两块各成卡（细边框）」作废——用户给的 Codex 截图里，框只出现在输出块上。 */
+.convo-panel { margin:0 0 12px; display:flex; flex-direction:column; gap:8px; }
+.convo-panel-block { background:transparent; }
+/* 折叠头：与 .convo-think-toggle 同语言（12px 灰字、hover 浅灰底），不占整行宽度 */
+.convo-panel-toggle { display:inline-flex; align-items:center; gap:6px; padding:3px 6px; margin-left:-2px; color:#6b7586; font-size:12px; background:transparent; border-radius:6px; transition:background .12s ease, color .12s ease; }
+.convo-panel-toggle:hover { color:#2b3648; background:#eef1f4; }
+.convo-panel-block.live .convo-panel-toggle { color:#8a93a2; }
+.convo-panel-body { margin-top:7px; }
+/* 完成外壳（09-18 四轮）：一整轮跑完后，思考条 + 工具行收成**一行**
+   「已完成 · 用时 X」（用户拍板）。跑的过程中不套壳、两块照常实时铺开；
+   展开外壳后里面还是原样（内层思考块、每个工具组各自仍可折）。 */
+.convo-panel-done-head svg:first-child { color:#5cba8a; }
+.convo-panel-done-head:hover svg:first-child { color:#46a877; }
+/* 中断（失败）态：勾换成叉，颜色也得跟着换 —— 绿勾配「已中断」是自相矛盾的。 */
+.convo-panel-done-head.is-failed svg:first-child,
+.convo-panel-done-head.is-failed:hover svg:first-child { color:#c0564a; }
+/* 用时：等宽数字的浅色 chip，跟「已完成」区分开（前者是状态，后者是数据） */
+.convo-panel-done-time { margin-left:2px; padding:1px 6px; color:#8a93a2; font-size:11px; font-style:normal; font-variant-numeric:tabular-nums; background:#f2f4f6; border-radius:4px; }
+.convo-panel-done-head:hover .convo-panel-done-time { color:#5b6675; background:#e9edf1; }
+.convo-panel-done-body { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+.convo-panel-sec + .convo-panel-sec { margin-top:10px; padding-top:8px; border-top:1px dashed #e6eaef; }
+.convo-panel-label { margin:0 0 4px; color:#93a1b5; font-size:11px; font-weight:600; letter-spacing:.03em; }
+.convo-panel-body .convo-think-full { margin-top:0; padding:0; background:transparent; border-left:0; max-height:none; }
+/* 时间线（09-18 五轮）：前言与它引发的工具调用**交替**排开 —— 「一条前言，一条这条前言干了什么」。
+   前言的字号/行距/颜色**跟回答正文完全一致**（共用上面 `.convo-msg-text` 那条规则，用户 09-18 拍板），
+   所以这里只剩它独有的一条要求：纯文本里的换行要保留（回答是 markdown 渲染成 <p>，前言是裸文本）。
+   ⚠️ 间距一律交给父容器的 flex gap（.convo-panel / .convo-panel-done-body 都是 gap:8px），
+   所以段内元素必须 margin:0 —— 否则自己的边距会和 gap 叠成双倍。 */
+.convo-panel-note { white-space:pre-wrap; }
+.convo-panel > .convo-tool-group, .convo-panel-done-body > .convo-tool-group { margin:0; }
+/* 工具调用头：轻量一行（「已运行 Get-Location」式），整行可点开合它自己的输出块，不做框。
+   默认折叠；**右侧箭头默认隐身、悬停才浮现**（Codex 同款，两张对照图就是这个差别）。 */
+.convo-trace-tool { display:flex; align-items:center; gap:6px; width:fit-content; max-width:100%; margin:0 0 2px; padding:3px 6px; margin-left:-6px; color:#5b6675; font-size:12px; text-align:left; background:transparent; border-radius:6px; transition:background .12s ease, color .12s ease; }
+.convo-trace-tool:hover { color:#2b3648; background:#eef1f4; }
+.convo-trace-tool svg { flex:none; color:#8a93a2; }
+.convo-trace-tool:hover svg { color:#5b6675; }
+.convo-trace-tool-verb { color:#8a93a2; }
+.convo-trace-tool:hover .convo-trace-tool-verb { color:#5b6675; }
+.convo-trace-tool code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11.5px; font-weight:600; color:#3c4a5c; background:#eef1f4; border-radius:4px; padding:1px 6px; }
+/* 箭头紧跟在工具名后面，不推到行尾 —— 行尾那个是 hover 热区撑出来的整行宽假象。
+   占位恒在（opacity 切换），所以显隐不会引起文字位移。 */
+.convo-trace-tool-chev { flex:none; opacity:0; transition:opacity .12s ease, transform .15s ease; }
+.convo-trace-tool:hover .convo-trace-tool-chev, .convo-trace-tool-chev.open { opacity:1; }
+.convo-trace-tool-chev.open { transform:rotate(90deg); }
+/* 任务清单面板（write_todos → TodoPanel，10-09 二改）：**悬浮在输入框上方**的白卡
+   （Codex 式「当前进度」，不在时间线里）。材质与补充横条同语言：白底、细描边、
+   大圆角、轻投影；随 .convo-composer-anchor 同宽。头部可点收成一行，列表三态 ——
+   completed 划线绿勾、in_progress 转圈（同款 spin）、pending 空圈。 */
+.convo-todo-panel { margin:0 0 10px; padding:10px 14px 12px; background:#fff; border:1px solid #e7ebef; border-radius:16px; box-shadow:0 6px 18px rgba(15,23,42,.07); }
+.convo-todo-head { display:flex; align-items:center; gap:7px; width:100%; padding:0; margin:0; color:#5b6675; font-size:12.5px; font-weight:600; text-align:left; background:transparent; border:0; cursor:pointer; }
+.convo-todo-head:hover { color:#2b3648; }
+.convo-todo-head svg { flex:none; color:#8a93a2; }
+.convo-todo-head em { font-style:normal; color:#8a93a2; font-weight:500; }
+.convo-todo-chev { margin-left:auto; opacity:.6; transition:transform .15s ease; }
+.convo-todo-chev.open { transform:rotate(180deg); }
+.convo-todo-list { list-style:none; margin:8px 0 0; padding:0; display:flex; flex-direction:column; gap:6px; }
+.convo-todo-list li { display:flex; align-items:flex-start; gap:8px; color:#3c4a5c; font-size:13px; line-height:1.5; }
+.convo-todo-list li svg { flex:none; margin-top:2.5px; }
+.convo-todo-list li.is-completed { color:#8a93a2; text-decoration:line-through; }
+.convo-todo-list li.is-completed svg { color:#2f9e63; }
+.convo-todo-list li.is-in_progress svg { color:#3b74e8; }
+.convo-todo-list li.is-pending svg { color:#b6bec9; }
+/* 工具输出块（Codex 的终端卡片）：浅灰大圆角 + 等宽正文 + 右下状态 */
+.convo-trace-term { position:relative; margin:0 0 12px; padding:10px 12px 26px; background:#f6f7f8; border:1px solid #eceff2; border-radius:12px; }
+.convo-trace-term-kind { display:inline-block; margin-bottom:7px; color:#8a93a2; font-size:11px; font-weight:600; letter-spacing:.02em; }
+.convo-trace-term-body { margin:0; padding:0; background:transparent; border:0; color:#3c4a5c; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:11.5px; line-height:1.7; white-space:pre-wrap; word-break:break-word; max-height:220px; overflow:auto; }
+.convo-trace-term-status { position:absolute; right:12px; bottom:8px; display:inline-flex; align-items:center; gap:4px; color:#5cba8a; font-size:11px; }
+.convo-trace-term-status:not(.done) { color:#a8b1bd; }
+/* 工具调用成组：头那行 + 展开展开的输出块。折叠时只有头，所以头自身的下边距要小（2px）；
+   展开时由输出块的 margin-top 补足间距（7px），观感一致。 */
+.convo-tool-group { margin:0 0 10px; }
+.convo-tool-group:last-child { margin-bottom:0; }
+.convo-tool-group .convo-trace-term { margin-top:7px; }
+.convo-tool-group .convo-trace-term:last-child { margin-bottom:0; }
+/* 时间线上的「深度思考」条目（09-19 十七改）：与工具行同语言的轻量折叠头，
+   展开后沿用 .convo-think-full 的灰底思考块；间距交给父容器 flex gap，段内不自带 margin。 */
+.convo-think-group { margin:0; }
+.convo-think-group .convo-think-full { margin-top:2px; }
+/* ask_user 追问面板（SSE question）。形态取自主流 agent 的提问面板（纵向选项行 + 键盘操作），
+   停靠在输入框上方；底板用中性灰、圆角加大，保持简洁 —— 底部不再放操作条，
+   翻页/提交收进头部右侧（< 2/2 >，末页 › 变提交）。强调色仍是全站的珊瑚。 */
+/* 09-23 改：追问/权限卡 = 「完全压在输入框上」的浮层卡。
+   材质（玻璃填充/描边/圆角/投影）**不在这里** —— 用户拍板与输入框同一材质，
+   由 glass.css §4b 的材质组统一声明（.convo-ask 与 .assistant-prompt 共用同一段），这里只管版式。 */
+.convo-ask { margin:0; padding:14px 16px 13px; outline:none; animation:convo-ask-in .18s ease; }
+@keyframes convo-ask-in { from { opacity:0; transform:translateY(10px); } }
+.convo-ask-head { display:flex; align-items:center; gap:9px; margin-bottom:10px; }
+.convo-ask-eyebrow { margin:0; color:var(--coral); font-size:11px; font-weight:700; letter-spacing:.12em; }
+.convo-ask-agent { display:inline-flex; align-items:center; gap:5px; color:#5b6675; font-size:12px; }
+.convo-ask-agent i { width:6px; height:6px; border-radius:50%; background:var(--coral); }
+.convo-ask-pager { display:inline-flex; align-items:center; gap:6px; margin-left:auto; }
+.convo-ask-pager em { color:#8a93a2; font-size:11px; font-style:normal; font-variant-numeric:tabular-nums; }
+.convo-ask-step { display:grid; place-items:center; width:24px; height:24px; color:#5b6675; background:#f6f7f9; border:1px solid #e3e8ee; border-radius:7px; }
+.convo-ask-step:hover:not(:disabled) { color:var(--ink); border-color:#cfd8e2; }
+.convo-ask-step:disabled { opacity:.4; cursor:not-allowed; }
+.convo-ask-q { margin:0; }
+.convo-ask-title { display:flex; align-items:baseline; gap:7px; margin:0 0 8px; color:#1f2c3d; font-size:14px; font-weight:600; line-height:1.55; }
+.convo-ask-title small { flex:none; padding:1px 6px; color:#9aa4b1; font-size:10px; font-weight:400; background:#f1f3f5; border-radius:4px; }
+.convo-ask-options { margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:3px; }
+.convo-ask-option { display:flex; align-items:center; gap:9px; width:100%; padding:8px 10px; color:#3c4a5c; font-size:13px; line-height:1.5; text-align:left; background:transparent; border:1px solid transparent; border-radius:10px; transition:background .12s ease, border-color .12s ease; }
+.convo-ask-option:hover:not(:disabled), .convo-ask-option.cursor:not(:disabled) { background:#eef1f4; }
+.convo-ask-option.on { color:var(--ink); font-weight:600; background:#fbf1ee; border-color:#f2cfc9; }
+.convo-ask-option:disabled { opacity:.55; cursor:not-allowed; }
+.convo-ask-mark { flex:none; display:grid; place-items:center; width:14px; height:14px; color:var(--coral); }
+.convo-ask-mark i { width:11px; height:11px; border:1.5px solid #b8c1cc; border-radius:50%; }
+.convo-ask-option.on .convo-ask-mark i { border-color:var(--coral); background:var(--coral); box-shadow:inset 0 0 0 2px #fff; }
+/* 单选行的左侧序号圈（参考图式）：20px 圆，选中变珊瑚实心白字 */
+.convo-ask-mark.num { width:20px; height:20px; }
+.convo-ask-num { display:grid; place-items:center; width:20px; height:20px; color:#5b6675; font-size:11px; font-weight:600; font-variant-numeric:tabular-nums; background:#f1f3f5; border-radius:50%; }
+.convo-ask-option.on .convo-ask-num { color:#fff; background:var(--coral); }
+/* 「其他补充」行的铅笔徽标（灰，不用珊瑚 —— 它不是可勾选项） */
+.convo-ask-mark.other { color:#8a93a2; }
+/* 行尾箭头：悬停 / 键盘光标 / 选中时亮出（AskUserCard 专用；序号已挪到左圈） */
+.convo-ask-go { flex:none; display:grid; place-items:center; width:18px; height:18px; color:var(--coral); opacity:0; transform:translateX(-3px); transition:opacity .12s ease, transform .12s ease; }
+.convo-ask-option:hover:not(:disabled) .convo-ask-go, .convo-ask-option.cursor:not(:disabled) .convo-ask-go, .convo-ask-option.on .convo-ask-go { opacity:1; transform:none; }
+.convo-ask-option-label { flex:1; min-width:0; overflow-wrap:anywhere; }
+.convo-ask-key { flex:none; min-width:12px; color:#bcc5cf; font-size:11px; font-variant-numeric:tabular-nums; text-align:center; }
+.convo-ask-option.on .convo-ask-key { color:var(--coral); }
+.convo-ask-input { width:100%; margin-top:5px; padding:7px 11px; color:#243244; font-size:13px; background:#fff; border:1px solid #e3e8ee; border-radius:9px; }
+.convo-ask-input:focus { outline:none; border-color:#c3ced9; }
+.convo-ask-submit { display:inline-flex; align-items:center; gap:5px; height:24px; padding:0 10px; color:#fff; font-size:12px; font-weight:600; background:var(--ink); border-radius:7px; }
+.convo-ask-submit:hover:not(:disabled) { background:#1c2b3a; }
+.convo-ask-submit.step { width:24px; padding:0; justify-content:center; }
+.convo-ask-submit:disabled { opacity:.4; cursor:not-allowed; }
+.convo-ask.busy { opacity:.75; }
+/* 提交键脚行：钉在卡片右下角（09-23 用户拍板）。页头只留翻页器，发送/下一题都从这里出。 */
+.convo-ask-foot { display:flex; justify-content:flex-end; margin-top:10px; }
+.convo-ask-foot .assistant-send { flex:none; }
+.convo-ask-foot .convo-ask-submit.step { margin-top:3px; }
+/* 浮层停靠位：absolute 在 .convo-composer-anchor 里，宽度随锚点（= 输入框宽），
+   贴输入框底边、向上生长 —— 卡片再高也是往上顶，不把输入框往下挤。 */
+.convo-ask-dock { position:absolute; left:0; right:0; bottom:0; z-index:30; }
+/* 权限确认卡（09-18 轻量版）：标题=动作本身（"允许联网搜索？"）、其下一句目的、
+   再下浅灰小块放搜索词/路径。被拦的不只是改文件（interrupt_on 也会拦联网工具），
+   所以按动作名走。
+   ⚠️ 页头（"需要你确认" + 珊瑚点 + 署名）09-18 十四改起**与问询卡共用** `.convo-ask-eyebrow`
+   与 `.convo-ask-agent`，本卡不再有自己的署名样式（原 `.convo-perm-agent` 已删）。
+   仍然保留的区分：标题用**工具自己的图标**（.convo-perm-title svg），不是盾牌/警示色。 */
+.convo-perm-title { display:flex; align-items:center; gap:7px; margin:0 0 9px; color:#1f2c3d; font-size:14px; font-weight:600; line-height:1.5; }
+.convo-perm-title svg { flex:none; color:#5b6675; }
+.convo-perm-list { margin:0 0 4px; padding:0; list-style:none; display:flex; flex-direction:column; gap:8px; }
+.convo-perm-item { display:flex; flex-direction:column; gap:5px; }
+.convo-perm-tool { color:#3c4a5c; font-size:12px; font-weight:600; }
+/* 目的句：卡片上最该被读的一行，用正常正文色 */
+.convo-perm-purpose { margin:0; color:#3c4a5c; font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
+/* 搜索词 / 目标路径 / 完整命令：辅助信息，浅灰底小块，不再是嵌套白卡片。
+   .scroll 用于很长的宿主机命令：**仍然全文渲染**，只是给个滚动区别撑爆卡片。 */
+.convo-perm-meta { align-self:flex-start; max-width:100%; padding:3px 8px; color:#5b6675; font-size:12px; line-height:1.45; background:#e9edf1; border-radius:6px; overflow-wrap:anywhere; }
+.convo-perm-meta.mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+.convo-perm-meta.scroll { max-height:180px; overflow-y:auto; white-space:pre-wrap; }
+/* 访问范围声明（info 级）：路径都在文件夹内 / 无法静态确认 —— 灰字，不是告警 */
+.convo-perm-note { align-self:flex-start; max-width:100%; color:#6b7686; font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+/* 越界提示（宿主机命令会用到工作文件夹之外）：不拦，但要在批准前说清楚 */
+.convo-perm-warn { align-self:flex-start; max-width:100%; color:#854f0b; font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+/* 工具侧必然拒绝的命令（删根目录、格式化等）：提前说明，允许项同时置灰 */
+.convo-perm-blocked { align-self:flex-start; max-width:100%; color:#a32d2d; font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+.convo-perm-choices { margin-top:7px; }
+/* 流式生成中只留三个呼吸点，不放「正在生成」文字（09-15 用户拍板）。
+   09-17 改版：独立白色圆形气泡，钉在输入框上方、仅上翻阅读时显示（贴底看最新内容时隐藏，对齐参考App行为）。 */
+.convo-typing-dock { display:flex; justify-content:center; margin:0 0 10px; }
+.convo-typing {
+  display:inline-flex; align-items:center; justify-content:center; gap:4px;
+  width:38px; height:38px; background:#fff; border:1px solid #eef1f4; border-radius:50%;
+  box-shadow:0 6px 18px rgba(15,23,42,.10);
+}
+.convo-typing i { width:5px; height:5px; background:#5c6470; border-radius:50%; animation:convo-blink 1.2s infinite; }
+.convo-typing i:nth-child(2) { animation-delay:.2s; }
+.convo-typing i:nth-child(3) { animation-delay:.4s; }
+@keyframes convo-blink { 0%,80%,100% { opacity:.25; } 40% { opacity:1; } }
+.convo-answer-actions { display:flex; align-items:center; justify-content:flex-start; gap:2px; margin-top:10px; padding-top:8px; border-top:1px solid #eef1f4; }
+.convo-answer-actions > button { display:inline-flex; align-items:center; gap:4px; color:#6b7586; font-size:12px; background:transparent; border-radius:6px; padding:4px; }
+.convo-answer-actions > button:hover { color:#0b1524; background:#f0f2f3; }
+.convo-answer-actions .convo-regen { display:grid; place-items:center; width:26px; height:26px; padding:0; color:#6b7586; border-radius:6px; }
+.convo-answer-actions .convo-regen:hover { color:#0b1524; background:#f0f2f3; }
+.convo-answer-actions .convo-regen:disabled { opacity:.5; cursor:not-allowed; }
+.convo-action-text { display:inline-block; max-width:0; overflow:hidden; opacity:0; white-space:nowrap; transition:max-width 140ms ease, opacity 140ms ease; }
+.convo-answer-actions > button:hover .convo-action-text { max-width:60px; opacity:1; }
+.convo-action-time { margin-left:8px; color:#9aa4b1; font-size:11px; font-style:normal; }
+.convo-like { display:inline-flex; align-items:center; gap:2px; }
+.convo-like button { display:grid; place-items:center; width:28px; height:28px; color:#6b7586; border-radius:6px; }
+.convo-like button:hover { color:#0b1524; background:#f0f2f3; }
+.convo-like .active-up, .convo-like button.active-down { color:#c0392b; background:#fdf0ee; }
+.convo-notice { margin:0 0 8px; color:#475569; font-size:12px; text-align:center; }
+.convo-spin { animation:convo-rotate .8s linear infinite; }
+@keyframes convo-rotate { to { transform:rotate(360deg); } }
+
+/* 对话页使用欢迎页的会话导航，主体只保留消息流与底部输入区。 */
+.app-shell:has(.convo-page) .mobile-nav { display:none; }
+.app-shell:has(.convo-page) .nav-rail { display:flex !important; position:sticky; top:var(--topbar-h); height:calc(100vh - var(--topbar-h)); align-self:flex-start; }
+.app-shell:has(.convo-page) .shell-body { min-height:calc(100vh - var(--topbar-h)); height:auto; align-items:stretch; }
+.app-shell:has(.convo-page) .main-canvas { width:100%; min-width:0; }
+.main-canvas:has(.convo-page) { min-height:calc(100vh - var(--topbar-h)); background:var(--base); }
+.convo-page { min-height:calc(100vh - var(--topbar-h)); height:calc(100vh - var(--topbar-h)); overflow:hidden; background:var(--base); }
+.app-shell:has(.convo-page) .convo-header { position:static !important; top:auto !important; flex:none; height:64px; padding:0 28px; background:transparent; border-bottom:0; }
+.convo-header .assistant-session-actions { max-width:none; }
+.convo-header .assistant-session-name { max-width:min(360px,38vw); overflow:hidden; text-overflow:ellipsis; }
+.convo-content { min-height:0; background:var(--base); }
+.convo-scroll { min-height:100%; padding:36px 28px 28px; }
+.convo-composer-wrap { padding:14px 28px 0; border-top:0; background:var(--base); }
+/* 输入框已与问助手欢迎页统一（PromptComposer + .assistant-prompt 基样式），
+   这里只保留「与消息列同宽」的对齐：920px 消息列左右各 28px 内边距，可见内容宽 864px */
+.app-shell:has(.convo-page) .convo-composer { width:100%; max-width:864px; margin:0 auto 6px; }
+/* 09-23 改：输入框外面套一层锚点（.convo-composer-anchor），追问/权限浮层 absolute 在它里面
+   贴输入框底边、向上生长 —— 「完全压在输入框上」。锚点接管宽度与居中，输入框自身约束归零。
+   ⚠️ 写到 (0,4,0)：压过上面 `.app-shell:has(.convo-page) .convo-composer` 的 (0,3,0)。 */
+.app-shell:has(.convo-page) .convo-composer-anchor { position:relative; width:100%; max-width:864px; margin:0 auto 6px; }
+.app-shell:has(.convo-page) .convo-composer-anchor .convo-composer { width:100%; max-width:none; margin:0; }
+.app-shell:has(.convo-page) .convo-answer { background:transparent; border:0; box-shadow:none; }
+.app-shell:has(.convo-page) .convo-user p { color:#243244; background:#eef0f3; border:1px solid #e0e3e8; }
+.convo-composer textarea { min-height:44px; padding:6px 2px 4px; font-size:15px; }
+.app-shell:has(.convo-page) .convo-composer textarea { background:transparent; }
+.convo-footer-note { margin-bottom:12px; }
+
+/* 对话大纲（ChatGPT 式）：右缘竖排短横线，悬停展开问题标签 + 预览卡，点击跳转。 */
+.convo-page { position:relative; }
+.convo-outline { position:absolute; right:10px; top:50%; transform:translateY(-50%); z-index:30; display:flex; align-items:center; gap:14px; }
+.convo-outline-rail { display:flex; flex-direction:column; gap:16px; padding:12px 10px; }
+.convo-outline-item { display:flex; align-items:center; justify-content:flex-end; gap:9px; background:none; cursor:pointer; }
+.convo-outline-label { max-width:0; overflow:hidden; opacity:0; white-space:nowrap; text-overflow:ellipsis; color:#5f6b7d; font-size:11px; transition:max-width 180ms ease, opacity 180ms ease; }
+.convo-outline-dash { display:block; flex:none; width:16px; height:2px; border-radius:1px; background:#cfd4da; transition:background 140ms ease, width 140ms ease; }
+.convo-outline:hover .convo-outline-label { max-width:230px; opacity:1; }
+.convo-outline-item.is-active .convo-outline-dash { background:#5f6b7d; width:20px; }
+.convo-outline-item.is-active .convo-outline-label { color:#0b1524; font-weight:600; }
+.convo-outline-item:hover .convo-outline-dash { background:#1b2838; width:22px; }
+.convo-outline-preview { width:320px; padding:12px 14px; background:#fff; border:1px solid #e5e8ec; border-radius:12px; box-shadow:0 14px 36px rgba(15,23,42,.16); }
+.convo-outline-preview h4 { margin:0 0 6px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; color:#0b1524; font-size:13px; line-height:1.55; word-break:break-word; }
+.convo-outline-preview p { margin:0; overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; color:#5f6b7d; font-size:12px; line-height:1.65; word-break:break-word; }
+/* 大纲跳转后的短暂高亮 */
+.convo-flash { animation:convo-flash-ring 1.2s ease; border-radius:12px; }
+/* 用户消息：高亮环必须贴合气泡本身，不能圈住整行。
+   ⚠️ `.convo-user` 是 max-width:720px、气泡靠右的整行容器，环加在它身上会圈出一大片空白；
+   所以把动画下移到气泡（inline-block 的 p）上，环随文字宽度自适应（09-17 用户反馈）。 */
+.convo-user.convo-flash { animation:none; border-radius:0; }
+.convo-user.convo-flash > p { animation:convo-flash-ring 1.2s ease; border-radius:16px 16px 4px 16px; }
+@keyframes convo-flash-ring { 0%,45% { box-shadow:0 0 0 3px rgba(227,110,63,.35); } 100% { box-shadow:0 0 0 3px rgba(227,110,63,0); } }
+
+/* ===== 侧边栏形态（09-18 七改：把问助手页的侧边栏同步到会话页）=================
+   会话页原本是「顶栏 / 消息流 / 输入区」三段纵向 flex（高度钉死 100vh − 顶栏高、overflow:hidden）。
+   挂侧栏时改成网格：左列 = `--sidebar-w`（令牌在 workspace.css 的 `:root`，与问助手页同一份），
+   三段各占右列的一行。
+   为什么用网格而不是给三段各加一条左外边距：三段共用同一列边界，改宽度只改一处；
+   而且固定高的容器里，网格的行分配（auto / 1fr / auto）比 flex 的收缩更可控。
+   ⚠️ `.convo-content` 自带 min-height:0，作为网格行才收缩得出来、滚动条才落在它身上。 */
+.convo-page.sidebar-open { display:grid; grid-template-columns:var(--sidebar-w) minmax(0,1fr); grid-template-rows:auto minmax(0,1fr) auto; }
+.convo-page.sidebar-open > .convo-header { grid-area:1 / 2 / 2 / 3; }
+.convo-page.sidebar-open > .convo-content { grid-area:2 / 2 / 3 / 3; }
+.convo-page.sidebar-open > .convo-composer-wrap { grid-area:3 / 2 / 4 / 3; }
+.convo-page.sidebar-open > .assistant-sidebar { grid-area:1 / 1 / 4 / 2; }
+
+/* 会话列宽（09-18 八改，用户：「输入框太宽了，收窄一点；对话内容的宽度要和输入框一致」）。
+   起因：输入框顶满右列（864/920），而消息列 920 减去 28×2 内边距、再减回答块遗留的 20×2 内边距，
+   正文只剩 800 出头 —— 观感上「输入框比对话内容宽一截」，右侧还出现三条不同的边缘线。
+   现在把宽度收成一份 `--convo-col`，四件事一起对齐：
+     ① 输入框 = 内容列宽；
+     ② 消息列外层多留 56px（滚动条呼吸），可见内容正好等于输入框；
+     ③ 回答块在会话页是透明壳，旧白卡的 20px 内边距归零 → 助手正文/过程区/操作条与输入框左右齐平；
+     ④ 输入框锚点（.convo-composer-anchor，追问/权限浮层的定位基准）与页脚说明同宽。
+   ⚠️ 只挂在 .sidebar-open 上 —— 顶栏形态（无侧栏）维持原值，用户明确要求只改侧栏形态。
+   ⚠️ 想再调宽窄：只改下面这一个 800px，四处一起动。 */
+.convo-page.sidebar-open { --convo-col:800px; }
+/* 09-19 十九改（用户：「对话显示区要页面居中」）—— 内容列在右列里**居中**，
+   十八改那版「贴分隔线左对齐（左 40 / 右 28）」被这条推翻，回到左右对称的 28px 滚动呼吸。
+   可见内容宽度仍是 --convo-col，「输入框宽 = 正文宽」的口径不变。
+   ⚠️ 输入框锚点/页脚基样式本来就是 `margin:… auto`（居中），这里**只压 max-width、
+   不再归零 margin** —— 归零是十八改给左对齐配的，居中后必须撤掉，否则又贴回左边。 */
+.app-shell:has(.convo-page) .convo-page.sidebar-open .convo-composer { max-width:var(--convo-col); }
+.convo-page.sidebar-open .convo-scroll { max-width:calc(var(--convo-col) + 56px); padding-left:28px; padding-right:28px; }
+.convo-page.sidebar-open .convo-answer { padding-left:0; padding-right:0; }
+/* 09-23 改：追问/权限浮层挪进锚点后，侧栏形态下收窄的是**锚点**（浮层 absolute 随锚点同宽）。
+   ⚠️ 带 .app-shell:has(...) 前缀凑到 (0,5,0)：必须压过锚点基样式的 (0,4,0)。 */
+.app-shell:has(.convo-page) .convo-page.sidebar-open .convo-composer-anchor { max-width:var(--convo-col); }
+.convo-page.sidebar-open .convo-footer-note { max-width:calc(var(--convo-col) + 56px); padding-left:28px; padding-right:28px; }
+
+/* 窄屏（≤900px）与问助手页同一套：网格退回单列、侧栏改成覆盖式抽屉（220px）。
+   此时顶栏只剩「会话名」那一颗胶囊，本来就贴着左沿 —— 不让开抽屉宽度就整条被压住看不见。 */
+@media (max-width:900px) {
+  .convo-page.sidebar-open { display:flex; }
+  .convo-page.sidebar-open > .assistant-sidebar { position:fixed; top:var(--topbar-h); left:0; bottom:0; z-index:25; width:220px; box-shadow:24px 0 60px rgba(9,20,38,.18); }
+  .convo-page.sidebar-open > .convo-header { padding-left:236px; }
+}
+
+
+@media (max-width:700px) {
+  .convo-header { height:auto; min-height:64px; padding:12px 14px; flex-wrap:wrap; gap:10px; }
+  .convo-header .assistant-session-actions { order:0; max-width:100%; flex:1; }
+  .convo-header .assistant-session-actions button { padding:7px 8px; }
+  .convo-header .assistant-session-name { max-width:35vw; }
+  .convo-header .assistant-header-status { margin-left:auto; gap:6px; }
+  .convo-header .assistant-header-status span { display:none; }
+  .convo-scroll { padding:22px 14px 18px; }
+  .convo-composer-wrap { padding:10px 14px 0; }
+  .convo-composer { padding:11px 12px 9px; }
+  .convo-composer-hint { display:none; }
+  .convo-footer-note { padding:0; margin-bottom:10px; line-height:1.5; }
+  .convo-outline { right:4px; }
+  .convo-outline-preview { width:min(320px, calc(100vw - 60px)); }
+}
+
+/* 「停止生成」（09-19）：半截回答定格后的标记行 + 发送键变停止键的样式 */
+.convo-msg-stopped { display:inline-flex; align-items:center; gap:6px; margin-top:10px; padding:4px 10px; color:#8a5a13; font-size:12px; background:#fdf5e4; border:1px solid #f0dcb2; border-radius:6px; }
+.convo-msg-stopped::before { content:''; width:6px; height:6px; flex:none; background:#d99b26; border-radius:2px; }

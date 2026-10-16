@@ -1,0 +1,829 @@
+/* ============================================================================
+   首页 / 工作台（/ · HomePage）
+   ----------------------------------------------------------------------------
+   2026-09-15 第四版：**按 `stitch_prototype_design_system (18)` 参考图重做**。
+   前三版（衬线宣言 / 全站基线白卡 / 深色接线台）全被否 —— 这一版照参考图整页落地。
+
+   参考图的设计语言（DESIGN.md「结构化编排主义」）：
+     · 暖白页底 `#f9f9f8` + 白卡 `#fff` + **1px `#e2e8f0` 细边**；
+     · 阴影极克制（Level1 `0 1px 3px rgba(15,23,42,.04)`），**明确禁止彩色辉光**；
+     · 圆角 6 / 8 / 12px，胶囊（9999px）**只留给问题 chips 与状态胶囊**；
+     · 珊瑚 `#e0564c` 是「当前在动 / 需你处理」的语义色，不是装饰色；
+     · 标题字号**上限 30px**（唯一例外：首屏 h1 参照参考图的 40px 档取 34px）。
+
+   ⚠️ **本页不用玻璃**。参考图把 blurry glassmorphism 列为 anti-pattern，
+     而 `glass.css` 全站玻璃体系是给别的页用的 —— 所以本文件不引用任何 `--glass-*`。
+
+   ⚠️ 顶部导航与侧边栏属 `app/AppShell.tsx`，本版**一行未动**（用户明确要求）。
+
+   与其它文件的色值口径：`.home-cat-*`（分类标签）与 `news.css` 的
+   `.news-row-meta b[data-category]` **同一套色值**，改一处要同步另一处。
+   ============================================================================ */
+
+/* 供 `<label className="sr-only">` 用（全局没有这条，别删） */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+/* ⚠️ 问候带 v4.2 起改为**玻璃圆角面板**（用户明确要求），不再做通栏 ——
+   曾经历三版：负边距通栏（塞进顶栏底下，问候语整条不可见）→ 100vw 视口拉通 +
+   画布层 clip（能贴边但机制重：.main-canvas:has 裁剪 + 内衬对齐，全为通栏服务）。
+   现在整套装不上 —— 面板就落在页面内容流里，随 `.page` 对齐，零技巧。
+   顶距给 24px 让圆角面板与顶栏之间有呼吸（页面 padding-top 由 0 恢复）。
+   ⚠️ 宽度跟全站主流页面走 `wide-page`（max 1440，类名加在 JSX 根上）——
+   这里**不要再写 max-width:1280**，会以同类名后序压过 `.wide-page`，
+   宽屏下两边留白就和任务/知识库等页不一致（09-15 用户实测指出）。 */
+.home-page { padding-top: 24px; }
+
+/* ============================================================================
+   一、情境问候带（玻璃圆角面板）
+   ----------------------------------------------------------------------------
+   配方与左操作台 `.home-hero-main` 同族（glass.css §4b：中性冷灰 + 三段白高光 +
+   frost 噪点 + blur20），**改配方两处一起改**。圆角 24px 与全站「页头承托板」档一致。
+   ============================================================================ */
+.home-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 0 0 30px;
+  padding: 12px 20px;
+  border: 1px solid var(--glass-board-line);
+  border-radius: 24px;
+  background-color: rgba(233, 238, 244, .55);
+  background-image:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, .62) 0%,
+      rgba(255, 255, 255, .14) 34%,
+      rgba(255, 255, 255, .26) 100%),
+    var(--glass-noise-frost);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow:
+    0 18px 44px rgba(15, 23, 42, .07),
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(15, 23, 42, .045);
+  font-size: 12.5px;
+}
+.home-context-left { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; min-width: 0; color: #475569; }
+.home-context-dot { flex: none; width: 7px; height: 7px; background: var(--green); border-radius: 50%; }
+.home-context-term { font-weight: 500; }
+.home-context-divider { color: #cbd5e1; }
+.home-context-hello { color: #1e293b; font-weight: 600; }
+.home-context-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.home-context-stat { display: inline-flex; align-items: center; gap: 6px; color: #475569; font-weight: 500; }
+.home-context-stat svg { color: #94a3b8; }
+.home-context-stat b { color: var(--ink); font-weight: 700; font-variant-numeric: tabular-nums; }
+/* 「N 项待补充材料」= 本页唯一需要立刻注意的事 → 让它成为这条带上唯一的暖色块 */
+.home-context-alert { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; color: #9a3412; font-weight: 700; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 6px; }
+.home-context-alert svg { color: #ea580c; }
+.home-context-done { display: inline-flex; align-items: center; gap: 6px; color: #047857; font-weight: 500; }
+.home-context-done svg { color: var(--green); }
+
+/* ============================================================================
+   二、首屏核心操作台
+   ----------------------------------------------------------------------------
+   2026-09-15 二次改版：**只给左侧操作台**垫玻璃托盘（用户明确「只给左侧加上」），
+   右侧是**独立的场景图片卡**（3 张校园实景，6 秒一轮），不包玻璃。
+
+   ⚠️ 这是全站玻璃纪律的一处**显式例外**，动手前先读这段：
+   首页页底是平的暖白 #f9f9f8，纯白叠纯白等于没材质（§4b 的教训）——
+   所以玻璃底色必须走 glass.css §4b 那套**比页底略暗的中性冷灰**
+   `rgba(233,238,244,.55)`，而不是托盘档的 `.58` 偏白配方。
+   配方直接复用 glass.css §4b（逐字对齐），**改一处要同步另一处**。
+   ============================================================================ */
+.home-hero { margin-bottom: 46px; }
+
+/* 左操作 / 右轮播 两栏。窄屏（980px）折成上下，轮播排到下面去。
+   ⚠️ 轮播列上限 380px、列间距 16px（v4.3 用户两轮反馈「图片太大 / 间距要缩小」——
+   508 → 430 → 380，别放大回去）。列宽用 minmax(0,380px)，窄屏自动收缩。 */
+.home-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 380px);
+  gap: 16px;
+  align-items: center;
+}
+
+/* 左侧操作台 = 玻璃托盘（§4b 配方，见节头注） */
+.home-hero-main {
+  min-width: 0;
+  padding: 26px 28px 24px;
+  border: 1px solid var(--glass-board-line);
+  border-radius: 24px;
+  background-color: rgba(233, 238, 244, .55);
+  background-image:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, .62) 0%,
+      rgba(255, 255, 255, .14) 34%,
+      rgba(255, 255, 255, .26) 100%),
+    var(--glass-noise-frost);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow:
+    0 18px 44px rgba(15, 23, 42, .07),
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(15, 23, 42, .045);
+}
+
+/* 眉标胶囊：暖底 + 珊瑚字，与全站 `.eyebrow` 的语义一致但形态按参考图 */
+.home-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  margin-bottom: 14px;
+  color: #9a3412;
+  font-size: 11px;
+  font-weight: 700;
+  background: #fff7ed;
+  border: 1px solid rgba(254, 215, 170, .8);
+  border-radius: 999px;
+}
+.home-hero-badge svg { color: #f97316; }
+
+/* ⚠️ 全页**唯一**一处超 30px 的标题（参考图 h1 是 40px 档）。
+   不要再在本文件里开第二处 —— 其余标题一律 ≤30px。
+
+   特异性必须写到 `.home-page .home-hero-title`（0,2,0）：
+   `global.css` 的 `.page h1 { font-size:30px }` 同样是 (0,2,0) 且无法改动，
+   只写 `.home-hero-title`（0,1,0）会被它压回 30px（实测过）。 */
+.home-page .home-hero-title {
+  margin: 0 0 10px;
+  color: var(--ink);
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -.025em;
+}
+.home-hero-sub { margin: 0 0 22px; max-width: 640px; color: #64748b; font-size: 15px; line-height: 1.65; }
+
+/* --- 输入舱（参考图的「悬浮式轻量质感输入舱」） -------------------------------
+   两件事要一起做：① 外圈那层柔光（hover 才亮）；② 内层白玻璃舱。
+   柔光用伪元素做，pointer-events:none，否则会盖住输入框与按钮。 */
+.home-dock { position: relative; max-width: 880px; }
+.home-dock::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  background: linear-gradient(90deg, rgba(254, 215, 170, .5) 0%, rgba(226, 232, 240, .4) 50%, rgba(224, 231, 255, .5) 100%);
+  border-radius: 16px;
+  filter: blur(4px);
+  opacity: .5;
+  transition: opacity .3s ease;
+  pointer-events: none;
+}
+.home-dock:focus-within::before,
+.home-dock:hover::before { opacity: 1; }
+
+.home-dock-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, .9);
+  border-radius: 14px;
+  box-shadow: 0 20px 48px -16px rgba(15, 23, 42, .07), 0 1px 2px rgba(15, 23, 42, .02);
+  transition: border-color .16s ease;
+}
+.home-dock-field:focus-within { border-color: #94a3b8; }
+.home-dock-icon { display: flex; align-items: center; gap: 6px; flex: none; padding: 0 4px 0 8px; color: #475569; }
+/* 输入前的珊瑚呼吸条：暗示「这里可以开始说话」，聚焦后停 */
+.home-dock-icon::after { content: ""; width: 3px; height: 14px; background: rgba(249, 115, 22, .8); border-radius: 999px; animation: home-breathe 1.8s ease-in-out infinite; }
+.home-dock-field:focus-within .home-dock-icon::after { animation: none; opacity: .35; }
+
+/* textarea 的 UA 默认底色必须清掉，否则会在白卡上再盖一层白。
+   ⚠️ min-height 必须容得下**两行**（46px ≈ 14.5px × 1.5 × 2 + 余量）：
+   输入舱在玻璃托盘里宽度有限，长 placeholder 会折行 —— 1 行高会把第二行裁成半截（实测）。
+   （v4.3 整体收小一档：字段 72→60px 高，别再放大。） */
+.home-dock-field textarea {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  min-height: 46px;
+  max-height: 160px;
+  padding: 7px 4px;
+  color: var(--ink);
+  font-size: 14.5px;
+  line-height: 1.5;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  resize: none;
+}
+.home-dock-field textarea::placeholder { color: #94a3b8; }
+
+.home-dock-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: none;
+  height: 38px;
+  padding: 0 16px;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  background: var(--ink);
+  border-radius: 9px;
+  transition: background .14s ease;
+}
+.home-dock-submit:hover { background: #0f172a; }
+.home-dock-submit:active { background: #000; }
+.home-dock-submit svg { flex: none; color: #fb923c; }
+
+/* --- 右侧场景轮播 -------------------------------------------------------------
+   三张校园实景图 6 秒一轮。**不依赖任何动效库**：三张图叠在同一格里，
+   靠 `.is-active` 切 `opacity`，叠化出片。
+   ⚠️ 淡出时长必须 ≥ 淡入，否则切换瞬间会出现「底色空档」闪一下白。 */
+.home-hero-stage {
+  position: relative;
+  min-width: 0;
+  width: 100%;
+}
+
+.home-scene {
+  position: relative;
+  aspect-ratio: 16 / 11;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #e8e2d9;
+  box-shadow: 0 20px 44px -18px rgba(15, 23, 42, .28), 0 1px 2px rgba(15, 23, 42, .06);
+  isolation: isolate;
+}
+.home-scene-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: scale(1.03);
+  transition: opacity 1s ease, transform 6.5s linear;
+}
+.home-scene-slide.is-active { opacity: 1; transform: scale(1); }
+.home-scene-slide img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* 底部压暗：场景说明文字要落在图片上，没有这层渐变会读不清 */
+.home-scene-slide::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 58%;
+  background: linear-gradient(180deg, rgba(9, 20, 38, 0) 0%, rgba(9, 20, 38, .72) 100%);
+}
+
+/* 场景说明条：压在图片下沿。等宽英文微标签 + 中文一行 + 右下「实时」胶囊 */
+.home-scene-caption {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+}
+.home-scene-caption-text { min-width: 0; }
+.home-scene-kicker {
+  display: block;
+  margin-bottom: 5px;
+  color: rgba(255, 255, 255, .72);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.home-scene-title {
+  display: block;
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: .01em;
+  text-shadow: 0 1px 8px rgba(9, 20, 38, .5);
+}
+/* 「实时」胶囊：与参考图一致 —— 半透明白底 + 一枚呼吸的点 */
+.home-scene-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  padding: 4px 9px;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, .18);
+  border: 1px solid rgba(255, 255, 255, .34);
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.home-scene-live::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  background: #4ade80;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, .28);
+  animation: home-pulse-soft 2.4s ease-in-out infinite;
+}
+
+/* 轮播指示点：图片下方居中，可点。当前项拉长成短横 —— 比变色更好认。 */
+.home-scene-dots { display: flex; justify-content: center; gap: 7px; margin-top: 12px; }
+.home-scene-dot {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  background: #cbd5e1;
+  border: 0;
+  border-radius: 999px;
+  transition: width .3s ease, background .3s ease;
+}
+.home-scene-dot.is-active { width: 22px; background: var(--ink); }
+.home-scene-dot:hover:not(.is-active) { background: #94a3b8; }
+
+/* --- 高频直达胶囊 -------------------------------------------------------------
+   圆点/图标是「这条入口的语义色」，hover 才浮起 —— 参考图里只有第一枚是珊瑚点。 */
+.home-quick { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+.home-quick-label { display: inline-flex; align-items: center; gap: 5px; flex: none; margin-right: 2px; color: #94a3b8; font-size: 12px; font-weight: 500; }
+.home-quick button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 33px;
+  padding: 0 13px;
+  color: #334155;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, .9);
+  border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .03);
+  transition: color .14s ease, background .14s ease, border-color .14s ease, transform .14s ease;
+}
+.home-quick button::before { content: ""; flex: none; width: 6px; height: 6px; background: #94a3b8; border-radius: 50%; }
+.home-quick button:first-of-type::before { background: #f97316; }
+.home-quick button:hover { color: #7c2d12; background: #fff7ed; border-color: #fed7aa; transform: translateY(-1px); }
+.home-quick-empty { color: #94a3b8; font-size: 12.5px; }
+
+/* --- 「…+N」弹出气泡（2026-09-15 用户：默认 4 条，其余「弹出」展示，别在行内撑开） ---
+   悬停「…+N」即开、移出即收（点击可钉住）。气泡浮在下方内容之上（z-index 30），
+   位置锚在 chips 行尾；::before 是悬停桥，跨过 chip 与气泡之间 10px 空隙不丢 hover。 */
+.home-quick-more-wrap { position: relative; display: inline-flex; }
+.home-quick-more { color: #64748b; border-style: dashed; }
+.home-quick-pop {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 30;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: max-content;
+  max-width: 340px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, .9);
+  border-radius: 14px;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, .14), 0 2px 6px rgba(15, 23, 42, .05);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity .16s ease, transform .16s ease, visibility 0s linear .16s;
+}
+.home-quick-more-wrap.is-open .home-quick-pop,
+.home-quick-more-wrap:hover .home-quick-pop {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity .16s ease, transform .16s ease;
+}
+.home-quick-pop::before { content: ""; position: absolute; top: -12px; left: 0; right: 0; height: 12px; }
+/* 气泡里的按钮沿用 `.home-quick button` 的胶囊样式（后代选择器天然继承）；
+   这里只收一下 hover 的位移，弹层里跳动显得乱。 */
+.home-quick-pop button:hover { transform: none; }
+
+/* ============================================================================
+   三、段落通用：标题栏 + 分隔线
+   ----------------------------------------------------------------------------
+   参考图每一段的页头都是「左标题（+ 统计胶囊 / + 副说明）· 右动作」压一条底边线。
+   这是整页的节奏骨架，不要给单段开特例。
+   ============================================================================ */
+.home-section { margin-bottom: 52px; }
+.home-section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(226, 232, 240, .7);
+}
+.home-section-title { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; min-width: 0; }
+.home-section-title h2 { margin: 0; color: var(--ink); font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
+
+/* 统计胶囊：中性（进行中）/ 珊瑚（待补充 —— 只有「需要你动手」才用暖色） */
+.home-pill { flex: none; padding: 3px 9px; font-size: 11.5px; font-weight: 700; border-radius: 999px; border: 1px solid transparent; }
+.home-pill-mute { color: #475569; background: #f1f5f9; border-color: rgba(226, 232, 240, .8); }
+.home-pill-coral { color: #9a3412; background: #fff7ed; border-color: #fed7aa; }
+
+/* 副说明只在大标题右侧紧贴（参考图「校园资讯与公文直达」那行小灰字） */
+.home-section-note { color: #94a3b8; font-size: 12px; }
+
+.home-section-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  color: #334155;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color .14s ease;
+}
+.home-section-more:hover { color: #ea580c; }
+.home-section-more svg { flex: none; color: #ea580c; transition: transform .14s ease; }
+.home-section-more:hover svg { transform: translateX(2px); }
+
+/* 分类切换标签（参考图「全部动态 / 教务教学 / …」） */
+.home-section-tabs { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.home-section-tabs a { padding: 6px 12px; color: #475569; font-size: 12.5px; font-weight: 600; text-decoration: none; border-radius: 9px; transition: color .14s ease, background .14s ease; }
+.home-section-tabs a:hover { color: var(--ink); background: rgba(226, 232, 240, .6); }
+.home-section-tabs a.is-active { color: #fff; background: var(--ink); box-shadow: 0 1px 2px rgba(15, 23, 42, .06); }
+
+.home-empty { padding: 30px 0; margin: 0; color: #94a3b8; font-size: 13.5px; text-align: center; }
+
+/* ============================================================================
+   四、我的事务（不对称阶梯）
+   ----------------------------------------------------------------------------
+   参考图 `grid-cols-3` 等宽三列，但**焦点卡自带珊瑚描边 + 顶部色带 + 待办警示条**，
+   靠这些把它的视觉权重抬到另外两张之上（不靠跨列，避免窄屏塌成一长条）。
+   ============================================================================ */
+.home-task-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: stretch; }
+
+/* --- 焦点卡（需你处理 / 最紧急的那件） --------------------------------------- */
+.home-focus-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 22px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, .9);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .04), 0 1px 2px rgba(15, 23, 42, .02);
+  transition: box-shadow .18s ease, border-color .18s ease;
+}
+.home-focus-card:hover { border-color: #cbd5e1; box-shadow: 0 4px 12px -2px rgba(15, 23, 42, .06), 0 2px 4px -1px rgba(15, 23, 42, .03); }
+/* 只有「需要你动手」的那张才上珊瑚，且描边 + 顶带 + 柔光三件套一起用 ——
+   单一处珊瑚容易被读成装饰，三处同现才读成「这件事在等你」。 */
+.home-focus-card.is-alert {
+  border-color: rgba(254, 215, 170, .9);
+  box-shadow: 0 16px 36px -12px rgba(234, 88, 12, .12), 0 0 0 1px rgba(254, 215, 170, .8);
+}
+.home-focus-strip { position: absolute; top: 0; left: 0; right: 0; height: 4px; background: #e2e8f0; }
+.home-focus-card.is-alert .home-focus-strip { background: linear-gradient(90deg, #ea580c 0%, #f97316 55%, #fbbf24 100%); }
+
+.home-focus-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.home-task-no { color: #94a3b8; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; }
+
+/* 状态胶囊：暖色版用于「需你处理」，中性版用于其余状态 */
+.home-badge-coral,
+.home-badge-mute {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+.home-badge-coral { color: #9a3412; background: #fff7ed; border-color: #fed7aa; }
+.home-badge-mute { color: #475569; background: #f1f5f9; border-color: rgba(226, 232, 240, .8); }
+.home-badge-dot { flex: none; width: 6px; height: 6px; background: #ea580c; border-radius: 50%; animation: home-pulse-soft 2s ease-in-out infinite; }
+
+.home-focus-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.home-focus-title-text { min-width: 0; }
+.home-focus-title-text h3 { margin: 0; font-size: 17px; font-weight: 800; line-height: 1.38; letter-spacing: -.01em; }
+.home-focus-title-text h3 a { color: var(--ink); text-decoration: none; transition: color .14s ease; }
+.home-focus-title-text h3 a:hover { color: #ea580c; }
+.home-focus-hint { margin: 4px 0 0; color: #94a3b8; font-size: 11.5px; }
+
+/* 类型图标片：色调跟随任务状态（与全站 status tone 同口径） */
+.home-focus-icon { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border: 1px solid transparent; border-radius: 12px; }
+.home-focus-icon.tone-neutral { color: #475569; background: #f1f5f9; border-color: rgba(226, 232, 240, .9); }
+.home-focus-icon.tone-progress { color: #b23c31; background: #fff1ef; border-color: #f6cfc9; }
+.home-focus-icon.tone-warning { color: #9a3412; background: #fff7ed; border-color: #fed7aa; }
+.home-focus-icon.tone-info { color: #31599f; background: #eff6ff; border-color: #dbeafe; }
+.home-focus-icon.tone-success { color: #047857; background: #ecfdf5; border-color: #d1fae5; }
+
+/* 信息盒：浅底 + 细边，把「经办单位 / 进度 / 当前环节」从卡面里分出来 */
+.home-focus-box { display: flex; flex-direction: column; gap: 11px; padding: 13px; background: #fafafa; border: 1px solid rgba(226, 232, 240, .8); border-radius: 12px; }
+.home-focus-box-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; }
+.home-focus-box-label { flex: none; color: #94a3b8; }
+.home-focus-box-value { min-width: 0; color: #1e293b; font-weight: 500; text-align: right; }
+.home-focus-progress { display: flex; flex-direction: column; gap: 6px; }
+.home-focus-progress-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11.5px; }
+.home-focus-progress-top b { color: var(--ink); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12.5px; font-weight: 700; }
+.home-focus-bar { height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+.home-focus-bar > span { display: block; height: 100%; background: var(--ink); border-radius: 999px; transition: width .3s ease; }
+.home-focus-bar.is-done > span { background: var(--green); }
+.home-focus-reject { display: flex; align-items: flex-start; gap: 6px; margin: 0; padding-top: 9px; color: #b91c1c; font-size: 11.5px; line-height: 1.5; border-top: 1px solid rgba(226, 232, 240, .8); }
+.home-focus-reject svg { flex: none; margin-top: 1px; }
+
+/* 待办警示条：只在「需你处理」时出现（参考图那条琥珀条） */
+.home-focus-warn { display: flex; align-items: flex-start; gap: 7px; padding: 10px 11px; background: rgba(255, 247, 237, .75); border: 1px solid rgba(254, 215, 170, .8); border-radius: 12px; }
+.home-focus-warn svg { flex: none; margin-top: 1px; color: #ea580c; }
+.home-focus-warn p { margin: 0; color: #475569; font-size: 11.5px; line-height: 1.6; }
+
+/* 卡底栏：左机构/时间，右动作按钮 */
+.home-focus-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: auto; padding-top: 12px; border-top: 1px solid #f1f5f9; }
+.home-focus-org { min-width: 0; color: #94a3b8; font-size: 11px; }
+
+/* 卡内小按钮三态：珊瑚实心（主）/ 中性实心 / 描边 */
+.home-btn-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex: none;
+  height: 32px;
+  padding: 0 13px;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  transition: background .14s ease, border-color .14s ease, color .14s ease;
+}
+.home-btn-sm svg { flex: none; }
+.home-btn-sm.is-coral { color: #fff; background: #ea580c; box-shadow: 0 1px 2px rgba(234, 88, 12, .25); }
+.home-btn-sm.is-coral:hover { background: #c2410c; }
+.home-btn-sm.is-mute { color: #1e293b; background: #f1f5f9; }
+.home-btn-sm.is-mute:hover { background: #e2e8f0; }
+.home-btn-sm.is-plain { color: #334155; background: #fff; border-color: #e2e8f0; box-shadow: 0 1px 2px rgba(15, 23, 42, .03); }
+.home-btn-sm.is-plain:hover { color: var(--ink); background: #f8fafc; border-color: #cbd5e1; }
+
+/* --- 平铺卡（其余两条） ------------------------------------------------------- */
+.home-side-card {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 22px;
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, .9);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .04), 0 1px 2px rgba(15, 23, 42, .02);
+  transition: box-shadow .18s ease, border-color .18s ease;
+}
+.home-side-card:hover { border-color: #cbd5e1; box-shadow: 0 4px 12px -2px rgba(15, 23, 42, .06), 0 2px 4px -1px rgba(15, 23, 42, .03); }
+.home-side-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.home-side-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.home-side-title-text { min-width: 0; }
+.home-side-title-text h3 { margin: 0; font-size: 16px; font-weight: 800; line-height: 1.4; letter-spacing: -.01em; }
+.home-side-title-text h3 a { color: var(--ink); text-decoration: none; transition: color .14s ease; }
+.home-side-title-text h3 a:hover { color: #ea580c; }
+.home-side-hint { margin: 4px 0 0; color: #94a3b8; font-size: 11.5px; }
+.home-side-box { display: flex; flex-direction: column; gap: 10px; padding: 13px; background: rgba(248, 250, 252, .9); border: 1px solid #f1f5f9; border-radius: 12px; }
+.home-side-note { display: flex; align-items: center; gap: 6px; padding-top: 9px; color: #64748b; font-size: 11px; border-top: 1px solid rgba(226, 232, 240, .8); }
+.home-side-note svg { flex: none; color: var(--green); }
+.home-side-note span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ============================================================================
+   五、校园资讯与公文直达（开放式编辑排版）
+   ============================================================================ */
+.home-news-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 22px; align-items: stretch; }
+
+/* --- 左：大头条 --------------------------------------------------------------- */
+.home-spotlight {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 26px;
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, .9);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .04), 0 1px 2px rgba(15, 23, 42, .02);
+  transition: border-color .18s ease;
+}
+.home-spotlight:hover { border-color: #cbd5e1; }
+.home-spotlight-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.home-spotlight-tags { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.home-stamp { color: #94a3b8; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11.5px; }
+.home-spotlight-title { margin: 0; font-size: 24px; font-weight: 800; line-height: 1.32; letter-spacing: -.02em; }
+.home-spotlight-title a { color: var(--ink); text-decoration: none; transition: color .14s ease; }
+.home-spotlight-title a:hover { color: #ea580c; }
+/* 摘要用浅底块托住 —— 参考图这条长文是整张卡里最占面积的部分 */
+.home-spotlight-body { margin: 0; padding: 15px; color: #475569; font-size: 13.5px; line-height: 1.75; text-align: justify; background: rgba(248, 250, 252, .7); border: 1px solid #f1f5f9; border-radius: 12px; }
+/* 后端连 content 都没下发时的兜底提示：虚线框 + muted 字，明示「没数据」而不是像坏了 */
+.home-spotlight-body-empty { color: #94a3b8; background: transparent; border: 1px dashed #e2e8f0; }
+.home-points { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; font-size: 11.5px; }
+.home-points-label { color: #94a3b8; font-weight: 500; }
+.home-point { padding: 4px 9px; color: #334155; font-weight: 500; background: #f1f5f9; border: 1px solid rgba(226, 232, 240, .8); border-radius: 7px; }
+.home-spotlight-foot { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: auto; padding-top: 15px; border-top: 1px solid #f1f5f9; }
+.home-spotlight-org { display: inline-flex; align-items: center; gap: 7px; color: #64748b; font-size: 11.5px; font-weight: 500; }
+.home-spotlight-org svg { flex: none; color: #ea580c; }
+.home-spotlight-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.home-btn-coral {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  color: #9a3412;
+  font-size: 12px;
+  font-weight: 600;
+  background: #fff7ed;
+  border: 1px solid rgba(254, 215, 170, .8);
+  border-radius: 9px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .03);
+  transition: background .14s ease, border-color .14s ease;
+}
+.home-btn-coral:hover { background: #ffedd5; border-color: #fdba74; }
+.home-btn-coral svg { flex: none; color: #f97316; }
+
+.home-btn-ink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 13px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  background: var(--ink);
+  border-radius: 9px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .1);
+  transition: background .14s ease;
+}
+.home-btn-ink:hover { background: #0f172a; }
+.home-btn-ink svg { flex: none; color: #fb923c; }
+
+/* --- 右：流式列表 ------------------------------------------------------------- */
+.home-feed-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 22px;
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, .9);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .04), 0 1px 2px rgba(15, 23, 42, .02);
+}
+.home-feed-list { display: flex; flex-direction: column; }
+.home-feed-item + .home-feed-item { border-top: 1px solid #f1f5f9; }
+.home-feed-item > a { display: block; padding: 13px 0; text-decoration: none; }
+.home-feed-item:first-child > a { padding-top: 0; }
+.home-feed-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 5px; }
+.home-feed-meta-left { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; min-width: 0; }
+/* 部门块：分类配色（与 news.css 同口径） */
+.home-cat { padding: 3px 7px; font-size: 11px; font-weight: 600; border: 1px solid transparent; border-radius: 5px; }
+.home-cat-default { color: #29415e; background: #dfebfa; border-color: #cbdcf4; }
+.home-cat-life { color: #087451; background: #d8f8e8; border-color: #b8ecd0; }
+.home-cat-award { color: #9b302b; background: #ffe3df; border-color: #f8cdc7; }
+.home-cat-career { color: #4d5968; background: #e9ecee; border-color: #dde1e5; }
+.home-cat-academic { color: #31599f; background: #e5edff; border-color: #cbdcf4; }
+.home-feed-cat { color: #94a3b8; font-size: 11px; }
+.home-feed-title { margin: 0; color: #0f172a; font-size: 14px; font-weight: 700; line-height: 1.45; transition: color .14s ease; }
+.home-feed-item > a:hover .home-feed-title { color: #ea580c; }
+.home-feed-sum { display: -webkit-box; margin: 4px 0 0; overflow: hidden; color: #64748b; font-size: 12px; line-height: 1.55; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
+.home-feed-due { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; padding: 2px 7px; font-size: 11px; border-radius: 5px; background: #eef1f4; color: #4a5768; }
+.home-feed-due.tone-soon { color: #8a5300; background: #fff0d4; }
+.home-feed-due.tone-urgent { color: #a92e28; background: #ffe1dd; }
+.home-feed-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding-top: 13px; border-top: 1px solid #f1f5f9; }
+.home-feed-sync { color: #94a3b8; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; }
+
+/* ============================================================================
+   六、高频服务极速直达（六列磁贴）
+   ============================================================================ */
+.home-tiles { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 13px; }
+.home-tile {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px;
+  text-align: left;
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, .9);
+  border-radius: 13px;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+.home-tile:hover { border-color: #cbd5e1; box-shadow: 0 4px 12px -2px rgba(15, 23, 42, .06), 0 2px 4px -1px rgba(15, 23, 42, .03); }
+/* 「全部服务」是索引项而非具体服务 → 虚线边 + 灰底，读成「这里还有更多」 */
+.home-tile.is-dashed { background: #f4f4f2; border-style: dashed; border-color: #cbd5e1; }
+.home-tile.is-dashed:hover { background: #fff; }
+
+.home-tile-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; transition: background .16s ease, color .16s ease; }
+.home-tile:hover .home-tile-icon { color: #fff; background: var(--ink); }
+.home-tile-icon.tone-sky { color: #0369a1; background: #e0f2fe; }
+.home-tile-icon.tone-amber { color: #b45309; background: #fef3c7; }
+.home-tile-icon.tone-indigo { color: #4338ca; background: #e0e7ff; }
+.home-tile-icon.tone-emerald { color: #047857; background: #d1fae5; }
+.home-tile-icon.tone-coral { color: #c2410c; background: #ffedd5; }
+.home-tile-icon.tone-muted { color: #334155; background: rgba(226, 232, 240, .8); }
+
+.home-tile-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.home-tile-text strong { color: #0f172a; font-size: 12.5px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color .16s ease; }
+.home-tile:hover .home-tile-text strong { color: #ea580c; }
+.home-tile-text small { color: #94a3b8; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ============================================================================
+   七、动画
+   ============================================================================ */
+@keyframes home-breathe { 0%, 100% { opacity: 1; transform: scaleY(1); } 50% { opacity: .35; transform: scaleY(.72); } }
+@keyframes home-pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+@media (prefers-reduced-motion: reduce) {
+  .home-dock-icon::after, .home-badge-dot { animation: none; }
+  .home-quick button:hover, .home-tile:hover { transform: none; }
+  /* 轮播的叠化与 Ken Burns 缓推一并停掉：直接切帧，不推近 */
+  .home-scene-slide { transition: none; transform: none; }
+  .home-scene-live::before { animation: none; }
+}
+
+/* ============================================================================
+   八、响应式
+   ----------------------------------------------------------------------------
+   四档，各管一件事（别串成「越小越收紧」的一根滑杆）：
+     1180px ─ 事务三列 → 两列（焦点卡跨两列独占一行）；磁贴 6 → 3 列；
+              玻璃操作台内衬收一档（两列开始挤）。
+      980px ─ 资讯区 7:5 两栏 → 上下堆叠；操作台两列 → 上下堆叠（轮播落到下面）。
+      900px ─ 事务两列 → 单列；页边距按全站 `global.css` 的 `.page` 收窄，
+              但首页的问候带是负边距贯通的，必须同步收（见下）。
+      700px ─ 磁贴 3 → 2 列；输入舱改上下排（横排会把 textarea 压成一条缝）。
+      520px ─ 页边距再收一档 + 磁贴 2 列不变但内衬减一档。
+   ============================================================================ */
+@media (max-width: 1180px) {
+  .home-task-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-focus-card { grid-column: span 2; }
+  .home-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  /* 玻璃托盘（左列）开始变挤 → 内衬先收一档 */
+  .home-hero-main { padding: 22px 22px 20px; }
+  .home-hero-grid { gap: 20px; }
+}
+@media (max-width: 980px) {
+  .home-news-grid { grid-template-columns: minmax(0, 1fr); }
+  .home-spotlight-title { font-size: 21px; }
+  /* 操作台两列 → 上下堆叠：轮播排到输入舱下面，限宽居中（全宽的 16/9 会高到 670px） */
+  .home-hero-grid { grid-template-columns: minmax(0, 1fr); }
+  .home-hero-stage { max-width: 500px; width: 100%; margin: 0 auto; }
+  .home-scene { aspect-ratio: 16 / 9; }
+}
+@media (max-width: 900px) {
+  /* ⚠️ 与 global.css 的 `.page{padding:32px 20px 100px}` 同特异性 (0,1,0)，
+     靠本文件在 main.tsx 里**后于 global.css** 引入取胜 —— 别去调引入顺序。 */
+  .home-page { padding-left: 20px; padding-right: 20px; padding-top: 20px; }
+  .home-context { padding: 10px 18px; }
+  .home-task-grid { grid-template-columns: minmax(0, 1fr); }
+  .home-focus-card { grid-column: auto; }
+  .home-page .home-hero-title { font-size: 28px; }
+  .home-section-title h2 { font-size: 20px; }
+  .home-section { margin-bottom: 42px; }
+}
+@media (max-width: 700px) {
+  .home-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* 窄屏输入改上下排：横排会把输入区压得只剩一点 */
+  .home-dock-field { flex-direction: column; align-items: stretch; gap: 10px; padding: 12px; }
+  .home-dock-icon { padding: 0; }
+  .home-dock-icon::after { display: none; }
+  .home-dock-field textarea { min-height: 56px; padding: 0; }
+  .home-dock-submit { width: 100%; height: 40px; }
+  .home-spotlight, .home-feed-panel { padding: 18px; }
+  .home-spotlight-foot { align-items: flex-start; flex-direction: column; }
+  .home-spotlight-actions { width: 100%; }
+  .home-btn-coral, .home-btn-ink { flex: 1; justify-content: center; }
+}
+@media (max-width: 520px) {
+  .home-page { padding-left: 16px; padding-right: 16px; }
+  .home-context { padding: 10px 16px; }
+  .home-page .home-hero-title { font-size: 24px; }
+  .home-hero-sub { font-size: 14px; }
+  /* 玻璃托盘内衬在手机上再收一档，轮播说明字也缩一号 */
+  .home-hero-main { padding: 18px 16px 16px; }
+  .home-scene-caption { padding: 12px 14px; }
+  .home-scene-title { font-size: 12.5px; }
+  .home-focus-card, .home-side-card { padding: 17px; }
+  .home-focus-title-text h3 { font-size: 15.5px; }
+  .home-focus-foot { align-items: flex-start; flex-direction: column; }
+  .home-btn-sm { width: 100%; }
+  .home-spotlight-title { font-size: 19px; }
+  .home-spotlight-body { padding: 12px; font-size: 13px; }
+  .home-feed-title { font-size: 13.5px; }
+  .home-context-right { gap: 9px; }
+}
+
+/* ============================================================================
+   九、输入舱占位字垂直居中（2026-09-15 用户：「这个字得居中啊」）
+   ----------------------------------------------------------------------------
+   textarea 的文字天然顶对齐，空框时占位字浮在 60px 字段的上半截。
+   `field-sizing: content`（Chrome 123+）让空 textarea 收成一行高，
+   交给字段的 flex `align-items:center` 居中；输入多行时框自动长高（max-height 仍兜底）。
+   不支持的浏览器回退到 min-height 46 两行高、文字顶对齐（原状，不算坏）。
+   ⚠️ 放在文件末尾以稳赢 700px 断点里的 min-height（同特异性靠后序）。 */
+@supports (field-sizing: content) {
+  .home-dock-field textarea { field-sizing: content; min-height: 24px; }
+}

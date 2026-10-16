@@ -1,0 +1,571 @@
+/* ============================================================================
+   workspace.css —— 只剩助手页 /workspace 与对话页 /conversations/:id 的样式。
+   ----------------------------------------------------------------------------
+   2026-09-12：删掉了本文件开头约 243 行的两版「废弃首页」样式
+   （.workspace-page / .workspace-home / .command-console / .task-grid ... 整族），
+   它们在 TSX 里已 0 引用，且与当时的首页类名高度相似，留着只会让人抄错值。
+   2026-09-15：首页已按新版参考图重做（`pages/HomePage.tsx` + `styles/home.css`），
+   走「结构化编排主义」（暖白底 + 白卡 + 1px 细边），**不用玻璃** —— 别把本文件或
+   glass.css 的材质往首页搬。
+   备份：.workbuddy/preview/_workspace.css.bak
+   ============================================================================ */
+
+.assistant-modern { min-height:calc(100vh - var(--topbar-h)); color:#16243a; background:#f9f9f8; }
+.assistant-modern-header { position:sticky; top:var(--topbar-h); z-index:10; display:flex; align-items:center; justify-content:space-between; gap:20px; height:64px; padding:0 28px; background:#f9f9f8; border-bottom:0; }
+.assistant-brand { display:flex; align-items:center; gap:10px; color:#091426; font-size:18px; line-height:1.05; text-decoration:none; }.assistant-brand-mark { display:grid; place-items:center; width:34px; height:34px; padding:3px; background:#091426; border-radius:7px; }.assistant-brand-mark img { width:100%; height:100%; object-fit:contain; }.assistant-session-actions { display:flex; align-items:center; gap:8px; min-width:0; max-width:900px; margin-right:auto; margin-left:0; overflow:hidden; transition:opacity 180ms ease, max-width 220ms ease, margin 220ms ease; }.assistant-session-actions button,.assistant-header-status button { display:inline-flex; align-items:center; gap:5px; padding:7px 9px; color:#45474c; font-size:11px; background:#f3f4f3; border:1px solid #e2e8f0; border-radius:4px; }.assistant-session-actions button:hover { color:#091426; background:#e8e8e7; }.assistant-session-actions kbd { color:#75777d; font:10px ui-monospace,monospace; }.assistant-session-name { display:inline-flex; align-items:center; gap:7px; margin-left:2px; color:#091426; font-size:12px; font-weight:600; white-space:nowrap; }.assistant-session-name i { width:7px; height:7px; background:#00a472; border-radius:50%; }.assistant-session-name b { padding:5px 8px; color:#75777d; font-size:10px; font-weight:400; background:#eeeeed; border-radius:3px; }.assistant-header-status { display:flex; align-items:center; gap:14px; color:#45474c; font-size:11px; }.assistant-header-status > span { display:inline-flex; align-items:center; gap:5px; padding:7px 11px; border:1px solid #e2e8f0; border-radius:999px; white-space:nowrap; }.assistant-header-status > span:first-child { color:#091426; border-color:#fe6c61; background:#fff5f3; }.assistant-header-status span:first-child svg { color:#ad312b; }.assistant-header-status > span:last-of-type svg { color:#00a472; }.assistant-header-status b { color:#6b7583; padding:2px 5px; background:rgba(9,20,38,.06); border-radius:999px; font-size:9px; }/* 09-18：原 `.tools-collapsed`（把顶栏左侧那组按钮淡出）已下线 —— 它当时只是在「隐藏按钮组」，
+   不是真的开一条侧边栏；/workspace 现在换成 `.assistant-sidebar-toggle` 切视图（见文件末尾）。
+   ⚠️ 09-18 七改：会话页顶栏也换成同一套 `assistant-sidebar-toggle`，
+   `.assistant-panel-toggle`（会话页那颗圆钮「返回问助手」）从此全仓无引用，连同样式一起删了。 */
+.assistant-modern-main { display:flex; align-items:center; flex-direction:column; width:100%; max-width:1280px; min-height:calc(100vh - var(--topbar-h) - 64px); padding:108px 48px 84px; margin:0 auto; }.assistant-welcome { max-width:720px; text-align:center; }.assistant-welcome-icon { display:grid; place-items:center; width:48px; height:48px; margin:0 auto 14px; color:#ad312b; background:transparent; border-radius:12px; overflow:hidden; }.assistant-welcome-icon img { width:100%; height:100%; object-fit:contain; display:block; }.assistant-welcome h1 { margin:0 0 6px; color:#091426; font-size:34px; font-weight:600; }.assistant-welcome p { margin:0; color:#64748b; font-size:14px; line-height:1.65; }.assistant-domains { display:flex; align-items:center; flex-wrap:wrap; justify-content:center; gap:9px; margin:43px 0 26px; color:#64748b; font-size:11px; }.assistant-domains span:first-child { display:inline-flex; align-items:center; gap:5px; color:#ad312b; }.assistant-domains b { color:#091426; font-size:12px; }.assistant-domains small { color:#94a3b8; }.assistant-domains i { color:#c5c6cd; font-style:normal; }.assistant-domain-nav { width:auto; max-width:900px; display:flex; align-items:center; flex-wrap:wrap; justify-content:center; gap:0; margin:34px 0 22px; }.assistant-domain-nav-label { display:inline-flex; align-items:center; gap:6px; color:#091426; font-size:13px; font-weight:400; white-space:nowrap; }.assistant-domain-nav-label svg { color:#ad312b; }.assistant-domain-nav-label::after { content:'/'; margin:0 8px; color:#c8cbd1; font-weight:400; }.assistant-domain-nav-items { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0; }.assistant-domain-nav-items button + button::before { content:'/'; margin:0 8px; color:#c8cbd1; font-weight:400; }.assistant-domain-nav-items button { display:inline-flex; align-items:center; gap:5px; padding:3px 5px; color:#45474c; background:transparent; border-radius:6px; white-space:nowrap; }.assistant-domain-nav-items button b { color:#1f2937; font-size:14px; font-weight:400; }.assistant-domain-nav-items button small { color:#9aa2af; font-size:11px; }.assistant-domain-nav-items button:hover,.assistant-domain-nav-items button.active { background:#f6f6f5; }.assistant-domain-nav-items button.active b { color:#ad312b; }.assistant-domain-all { display:inline-flex; align-items:center; gap:5px; margin-left:0; }.assistant-domain-all svg { color:#8b93a1; }.assistant-domain-all span { color:#45474c; font-size:12px; }.assistant-domain-all.active span { color:#ad312b; }.assistant-prompt { width:100%; max-width:864px; margin:0 auto; padding:10px 12px; background:#fff; border:1px solid #e2e8f0; border-radius:16px; box-shadow:0 8px 24px rgba(15,23,42,.08); }.assistant-prompt:focus-within { border-color:#aebdcb; box-shadow:0 10px 26px rgba(15,23,42,.13); }
+.assistant-header-status .ask-mode-switch.compact { gap:6px; padding:0; background:none; border:0; }
+.assistant-header-status .ask-mode-switch.compact .ask-mode-item { display:inline-grid; place-items:center; width:34px; height:34px; padding:0; color:#64748b; background:#fff; border:1px solid #e5e9ee; border-radius:50%; font-size:11px; }
+/* 收起时弹出动画：整排淡入 + 从右侧轻微滑入，两颗按钮错开 50ms */
+/* 弹出更明显：0.32s、滑入 18px、带回弹缓动，两颗按钮错开 70ms */
+.assistant-header-status .ask-mode-switch.compact { animation:ask-mode-fade .26s ease-out; }
+.assistant-header-status .ask-mode-switch.compact .ask-mode-item { animation:ask-mode-in .32s cubic-bezier(.34,1.56,.64,1) backwards; }
+.assistant-header-status .ask-mode-switch.compact .ask-mode-item:nth-child(2) { animation-delay:70ms; }
+@keyframes ask-mode-in { from { opacity:0; transform:translateX(18px) scale(.72); } to { opacity:1; transform:translateX(0) scale(1); } }
+@keyframes ask-mode-fade { from { opacity:0; } to { opacity:1; } }
+@media (prefers-reduced-motion: reduce) { .assistant-header-status .ask-mode-switch.compact, .assistant-header-status .ask-mode-switch.compact .ask-mode-item { animation:none; } }
+.assistant-header-status .ask-mode-switch.compact .ask-mode-item:hover { color:#091426; background:#f0f3f6; }
+.assistant-header-status .ask-mode-switch.compact .ask-mode-item.active { color:#fff; background:var(--ink); border-color:var(--ink); }
+/* 圆钮「返回问助手」已随 09-18 七改下线（会话页顶栏改成与问助手页同一套
+   `assistant-sidebar-toggle`）——原 `.assistant-panel-toggle` 的三条样式一并删除，
+   回问助手的入口回到全局导航，不在这一页留第二个含义相近的圆钮。 */
+.assistant-header-status button.assistant-history-btn { display:inline-flex; align-items:center; gap:5px; padding:7px 13px; color:#45474c; font-size:11px; background:#f3f4f3; border:1px solid #e2e8f0; border-radius:999px; }
+.assistant-history-btn:hover { color:#091426; background:#e8e8e7; }
+/* 提问模式切换(09-16)：取代页头「工作台数据来自接口」胶囊，Chat / Agent 两档 */
+.ask-mode-switch { display:inline-flex; align-items:center; gap:2px; padding:3px; background:#f1f3f5; border:1px solid #e4e8ed; border-radius:999px; }
+.ask-mode-switch .ask-mode-item , .assistant-session-actions .ask-mode-switch .ask-mode-item { display:inline-flex; align-items:center; gap:5px; height:24px; padding:0 11px; color:#6b7280; font-size:11px; font-weight:500; background:transparent; border:0; border-radius:999px; transition:background .14s ease, color .14s ease; }
+.ask-mode-switch .ask-mode-item:hover , .assistant-session-actions .ask-mode-switch .ask-mode-item:hover { color:var(--ink); }
+.ask-mode-switch .ask-mode-item.active , .assistant-session-actions .ask-mode-switch .ask-mode-item.active { color:#fff; background:var(--ink); }
+.ask-mode-switch .ask-mode-item.active svg , .assistant-session-actions .ask-mode-switch .ask-mode-item.active svg { color:#fff; }
+/* 展开（不收起）时胶囊的入场动画：key 随 toolsOpen 变化强制重挂载，每次切换都会播 */
+.assistant-session-actions .ask-mode-switch { animation:ask-mode-pop .3s cubic-bezier(.34,1.56,.64,1); }
+@keyframes ask-mode-pop { from { opacity:0; transform:translateX(-12px) scale(.85); } to { opacity:1; transform:translateX(0) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .assistant-session-actions .ask-mode-switch { animation:none; } }
+/* 09-23 二改：输入框页头那行「当前调度：…」整体撤掉（用户拍板）—— 全站只有一个主智能体，
+   没有可切换的对象，写出来只是噪音。`.assistant-prompt-head` 与 `.dispatch-*` 样式随之全删。 */
+.assistant-prompt textarea { display:block; width:100%; min-height:56px; padding:9px 2px 5px; color:#091426; font-size:15px; resize:none; border:0; outline:0; }.assistant-prompt textarea::placeholder { color:#94a3b8; }.assistant-prompt-foot { display:flex; align-items:center; gap:8px; padding-top:6px; border-top:1px solid #eef2f6; }.assistant-prompt-foot > div { display:flex; gap:5px; }.assistant-prompt-foot > div > svg { align-self:center; color:#64748b; }.assistant-prompt-foot button:not(.assistant-send) { display:inline-flex; align-items:center; gap:4px; padding:6px 8px; color:#64748b; font-size:10px; background:#f8fafc; border-radius:3px; }.assistant-send { display:grid; place-items:center; width:30px; height:30px; color:#fff; background:#091426; border-radius:50%; }.assistant-send:disabled { color:#94a3b8; background:#e2e8f0; }/* 试着问问（09-16 首版：整排随内容收缩并居中、纯文字；09-17 已在下方覆盖为浅描边小按钮。
+   .assistant-popular 目前只有 /workspace 欢迎页在用，基样式保留在此做布局兜底） */
+.assistant-popular { display:flex; flex-wrap:nowrap; align-items:center; gap:24px; width:fit-content; max-width:100%; margin:24px auto 0; padding:0; background:none; }
+.assistant-popular > span { flex:none; margin:0; color:#98a1ac; font-size:11px; font-weight:500; letter-spacing:.02em; }
+.assistant-popular > div { display:flex; flex-wrap:nowrap; align-items:center; gap:24px; }
+.assistant-popular button { display:inline-flex; align-items:center; gap:5px; padding:0; color:#6b7280; font-size:14px; white-space:nowrap; background:none; border:0; border-radius:0; box-shadow:none; transition:color .14s ease; }
+.assistant-popular button svg { color:#a8b0ba; transition:color .14s ease, transform .14s ease; }
+.assistant-popular button:hover { color:var(--coral); }
+.assistant-popular button:hover svg { color:var(--coral); transform:translate(2px, -2px); }
+@media (max-width:760px) { .assistant-popular { flex-wrap:wrap; flex-direction:column; gap:14px; } .assistant-popular > div { flex-wrap:wrap; gap:16px 20px; justify-content:center; } }.assistant-popular-empty { margin:0; color:#94a3b8; font-size:12px; }.assistant-note { max-width:760px; margin:auto auto 0; padding-top:48px; color:#b0b8c2; font-size:10.5px; line-height:1.7; text-align:center; }.assistant-submitted { margin-top:14px; color:#00a472; font-size:11px; }.assistant-back-home { position:fixed; right:24px; bottom:24px; z-index:20; display:inline-flex; align-items:center; gap:0; padding:8px; color:#64748b; background:transparent; border:0; border-radius:8px; text-decoration:none; overflow:hidden; white-space:nowrap; transition:gap .18s ease, padding .18s ease, color .18s ease; }.assistant-back-home span { max-width:0; opacity:0; overflow:hidden; font-size:12px; transition:max-width .18s ease, opacity .18s ease; }.assistant-back-home:hover { gap:6px; padding:8px 12px; color:#ad312b; }.assistant-back-home:hover span { max-width:64px; opacity:1; }
+@media (max-width:700px) { .assistant-modern-header { top:var(--topbar-h); height:auto; min-height:64px; padding:12px 14px; flex-wrap:wrap; }.assistant-session-actions { order:3; width:100%; max-width:100%; margin:0; }.assistant-session-name { margin-left:auto; }.assistant-header-status { margin-left:auto; }.assistant-header-status > span { display:none; }.assistant-modern-main { min-height:calc(100vh - var(--topbar-h) - 64px); padding:44px 14px 70px; }.assistant-welcome h1 { font-size:27px; }.assistant-domains { margin:28px 0 20px; }.assistant-prompt-foot > div button { font-size:0; }.assistant-prompt-foot > div button svg { width:16px; height:16px; }.assistant-popular button { font-size:10px; } }
+@media (max-width:700px) { .assistant-domain-nav { margin:26px 0 20px; }.assistant-domain-nav-items { justify-content:center; } .assistant-domain-nav-label::after { margin:0 10px; } .assistant-domain-nav-items button + button::before { margin:0 10px; } }
+.assistant-hot > span { display:block; margin:26px 0 10px; }
+.assistant-hot > div button { gap:8px; padding:10px 16px; color:#3f4348; font-size:13px; background:#f2f3f5; border:0; border-radius:8px; box-shadow:none; }
+.assistant-hot > div button svg { flex:none; color:#ad312b; }
+.assistant-hot > div button:hover { color:#ad312b; background:#e9eaec; }
+.assistant-prompt { border-radius:24px; }
+.assistant-prompt textarea { min-height:44px; padding:6px 2px 4px; }
+.assistant-prompt textarea::placeholder { font-size:13px; }
+
+/* ===== 欢迎页比例与层级（09-17 用户拍板）=====================================
+   只动 /workspace 欢迎页，全部带 .assistant-modern 前缀（页面级覆盖纪律），
+   不碰会话页共用的 .assistant-prompt / .assistant-popular 基样式：
+   - 整组下移约 50px：main padding-top 58→108（非垂直居中布局，加多少移多少）
+   - 标题 34px/600，副标题走 .assistant-welcome p；标题组到输入框 30px 间距
+   - 输入框 max-width 960px、textarea 加高（总高约 156px）
+   - 「自定义参数」按钮 09-19 三改后落在**页脚**、贴发送键（原页头位已撤）；
+     固定只显示图标（用户拍板「悬停不弹字」），深度思考档走滑杆 —— 细节见下方大注释块
+   - 推荐问题改浅描边小按钮、距输入框 20px（旧纯文字样式见上方 09-16 段，此处覆盖） */
+.assistant-modern .assistant-prompt { max-width:820px; margin:30px auto 0; }
+.assistant-modern .assistant-prompt textarea { min-height:54px; }
+.assistant-popular { gap:14px; margin:20px auto 0; }
+.assistant-popular > div { gap:12px; }
+.assistant-popular > span { font-size:12px; }
+.assistant-popular button { gap:5px; padding:7px 14px; color:#4b5563; font-size:13px; background:#fff; border:1px solid #e2e8f0; border-radius:999px; transition:color .14s ease, border-color .14s ease, background .14s ease; }
+.assistant-popular button:hover { border-color:#f2c7c3; background:#fff5f3; }
+.assistant-popular button:hover svg { transform:translate(2px, -2px); }
+
+/* 会话操作按钮（历史对话/新建）：胶囊圆角，文字默认收起、悬停展开 */
+.assistant-session-actions button { gap:0; padding:7px; border-radius:999px; transition:gap .18s ease, padding .18s ease; }
+.assistant-session-actions button:hover { gap:5px; padding:7px 13px; }
+.assistant-session-actions button .assistant-session-label { display:inline-block; max-width:0; opacity:0; overflow:hidden; white-space:nowrap; transition:max-width .18s ease, opacity .18s ease; }
+.assistant-session-actions button:hover .assistant-session-label { max-width:72px; opacity:1; }
+
+
+/* 09-23：调度选择器（dispatch-select / trigger / menu / dialog）与「智能体管理」弹窗
+   （agent-matrix*）的样式全部删除 —— 全站只剩一个主智能体，那两套 UI 都没了。
+   09-23 二改：输入框页头那行静态「当前调度」也撤了，`.dispatch-label` / `.dispatch-current`
+   随之成为死类一并删除（含已归档 DispatchSelect 留下的 `.dispatch-menu`）。 */
+/* 页脚工具：只留图标，去掉文字与底色（09-16 用户拍板），含义走 title 提示 */
+.assistant-prompt-foot button.assistant-foot-tool { padding:5px; color:#7b8794; background:transparent; border-radius:7px; }
+.assistant-prompt-foot button.assistant-foot-tool:hover { color:var(--ink); background:#f0f3f6; }
+/* 工作区选择（09-17）：选中的文件夹名直接跟在文件夹图标旁边，不做独立回显条；
+   × 平时隐藏，悬停名字上才出现（避免常驻噪音） */
+.assistant-prompt-foot .assistant-workspace-inline { display:inline-flex; align-items:center; gap:0; max-width:260px; padding:4px 6px 4px 9px; color:#243244; font-size:11px; background:#f1f3f5; border-radius:999px; }
+/* 回显条是可编辑输入框（09-17）：选择器只能拿到文件夹名，用户在此补全绝对路径 */
+.assistant-prompt-foot .assistant-workspace-inline .ws-path-edit { min-width:8ch; max-width:100%; padding:0; border:0; outline:0; background:transparent; color:inherit; font:inherit; }
+.assistant-prompt-foot .assistant-workspace-inline .ws-path-edit:focus { color:#0f1b2d; }
+.assistant-prompt-foot .assistant-workspace-inline b { overflow:hidden; font-weight:400; text-overflow:ellipsis; white-space:nowrap; }
+.assistant-prompt-foot .assistant-workspace-inline .ws-clear { display:grid; place-items:center; flex:none; width:13px; height:13px; margin-top:2px; padding:0; opacity:0; overflow:hidden; color:#fff; background:var(--coral); border-radius:50%; transition:width .15s ease, opacity .15s ease; }
+.assistant-prompt-foot .assistant-workspace-inline:hover .ws-clear { width:13px; opacity:1; }
+.assistant-prompt-foot .assistant-workspace-inline .ws-clear:hover { background:#e05a50; }
+/* 权限控制弹层（09-17）：参照 ChatGPT 批准方式选择器，向上弹出。
+   页脚的 `.assistant-prompt-foot button:not(.assistant-send)` 是 (0,2,1)，
+   弹层里的选项样式全部带 `.assistant-prompt-foot` 前缀提权，否则底色/字号会被它压掉。 */
+.assistant-prompt-foot .assistant-perm-select { position:relative; }
+/* 入口按钮带出当前档位文字，选择后不用打开弹层也能确认 */
+.assistant-prompt-foot .assistant-perm-select .perm-label { color:#5b6675; font-size:11px; font-weight:500; }
+.assistant-prompt-foot button.assistant-foot-tool.perm-full { color:#b23c31; }
+.assistant-prompt-foot button.assistant-foot-tool.perm-full .perm-label { color:#b23c31; }
+.assistant-prompt-foot button.assistant-foot-tool.perm-full:hover .perm-label { color:#8f2c25; }
+/* chat 纯对话模式下两个工具按钮禁用置灰（仅 Agent 模式可点） */
+.assistant-prompt-foot button.assistant-foot-tool:disabled { opacity:.4; cursor:not-allowed; background:transparent; }
+.assistant-prompt-foot button.assistant-foot-tool:disabled:hover { color:#7b8794; background:transparent; }
+.assistant-prompt-foot button.assistant-foot-tool.perm-full:disabled:hover .perm-label { color:#b23c31; }
+.assistant-prompt-foot button.assistant-foot-tool.perm-full:hover { color:#8f2c25; background:#fdeeec; }
+.assistant-prompt-foot .assistant-perm-menu { position:absolute; bottom:calc(100% + 10px); left:0; z-index:45; width:308px; max-width:calc(100vw - 48px); padding:12px 8px 8px; background:#fff; border:1px solid #e7ebf0; border-radius:14px; box-shadow:0 16px 44px rgba(15,23,42,.18); text-align:left; animation:perm-in .14s ease-out; }
+@keyframes perm-in { from { opacity:0; transform:translateY(4px); } }
+.assistant-prompt-foot .assistant-perm-menu header { display:flex; align-items:baseline; justify-content:space-between; gap:10px; padding:0 8px 10px; }
+.assistant-prompt-foot .assistant-perm-menu header span:first-child { color:#243244; font-size:12.5px; font-weight:600; }
+.assistant-prompt-foot .assistant-perm-menu .perm-more { color:#8a93a2; font-size:11px; text-decoration:underline; cursor:pointer; }
+.assistant-prompt-foot .assistant-perm-menu .perm-option { display:flex; align-items:flex-start; gap:10px; width:100%; margin:0; padding:9px 8px; font-size:12.5px; background:transparent; border:0; border-radius:9px; text-align:left; transition:background .12s ease; }
+.assistant-prompt-foot .assistant-perm-menu .perm-option:hover { background:#f4f6f9; }
+.assistant-prompt-foot .assistant-perm-menu .perm-icon { display:grid; flex:none; place-items:center; width:26px; height:26px; margin-top:1px; color:#5b6675; background:#f1f3f5; border-radius:50%; }
+.assistant-prompt-foot .assistant-perm-menu .perm-text { flex:1; min-width:0; }
+.assistant-prompt-foot .assistant-perm-menu .perm-text b { display:block; color:#243244; font-size:12.5px; font-weight:600; }
+.assistant-prompt-foot .assistant-perm-menu .perm-text small { display:block; margin-top:2px; color:#7b8794; font-size:11px; line-height:1.5; }
+.assistant-prompt-foot .assistant-perm-menu .perm-check { flex:none; margin-top:6px; color:#243244; }
+.assistant-prompt-foot .assistant-perm-menu .perm-option.warn .perm-icon { color:#b23c31; background:#fdeeec; }
+.assistant-prompt-foot .assistant-perm-menu .perm-option.warn .perm-text b,
+.assistant-prompt-foot .assistant-perm-menu .perm-option.warn .perm-text small { color:#b23c31; }
+.assistant-prompt-foot .assistant-perm-menu .perm-option.warn .perm-check { color:#b23c31; }
+/* 自定义参数（09-19 三改）：按钮从页头挪到页脚、贴着发送键（原「Enter 发送」文字删除）。
+   真按钮 —— 点开弹层设回答偏好（选项列表）与深度思考（Faster↔Smarter 滑杆，4 档吸附，
+   关闭=最左档，往右思考越深、越慢）。按钮固定只显示图标（悬停不弹字、无动效），
+   选了非默认档位时按钮上带出档位文字（.custom-params-value，点击选择的状态回显、非悬停效果）。
+   选择器带足前缀压过 `.assistant-prompt-foot button:not(.assistant-send)`（0,2,1）。 */
+.assistant-prompt-foot .assistant-custom-params-select { position:relative; margin-left:auto; }
+/* 09-19 删配套规则：`.assistant-custom-params-select ~ span { margin-left:8px }` 原本只为摆
+   发送键左侧那行「回答生成中…」；随该文字一起删掉，参数块与发送键之间留 foot 自身的 gap(8px)。 */
+.assistant-prompt-foot button.assistant-custom-params { display:inline-flex; align-items:center; gap:4px; padding:6px 7px; color:#ad312b; font-size:11px; background:transparent; border:0; border-radius:8px; cursor:pointer; }
+.assistant-prompt-foot button.assistant-custom-params .custom-params-value { flex:none; color:#5b6675; font-size:10px; font-weight:600; }
+.assistant-prompt-foot button.assistant-custom-params .custom-params-label { display:none; }
+/* 弹层从页脚**向上**弹（按钮贴着输入框底缘，向下会压出 composer 外面） */
+.assistant-prompt-foot .assistant-params-menu { position:absolute; bottom:calc(100% + 10px); right:0; z-index:45; width:264px; max-width:calc(100vw - 48px); padding:10px 8px 10px; background:#fff; border:1px solid #e7ebf0; border-radius:14px; box-shadow:0 16px 44px rgba(15,23,42,.18); text-align:left; animation:params-in .14s ease-out; }
+@keyframes params-in { from { opacity:0; transform:translateY(4px); } }
+.assistant-prompt-foot .assistant-params-menu .params-group-label { display:block; padding:2px 8px 6px; color:#8a93a2; font-size:10.5px; font-weight:600; letter-spacing:.04em; }
+.assistant-prompt-foot .assistant-params-menu .params-option { display:flex; align-items:flex-start; gap:10px; width:100%; margin:0; padding:8px; color:#243244; font-size:12.5px; background:transparent; border:0; border-radius:9px; text-align:left; transition:background .12s ease; }
+.assistant-prompt-foot .assistant-params-menu .params-option:hover { background:#f4f6f9; }
+.assistant-prompt-foot .assistant-params-menu .params-icon { display:grid; flex:none; place-items:center; width:26px; height:26px; margin-top:1px; color:#5b6675; background:#f1f3f5; border-radius:50%; }
+.assistant-prompt-foot .assistant-params-menu .params-text { flex:1; min-width:0; }
+.assistant-prompt-foot .assistant-params-menu .params-text b { display:block; color:#243244; font-size:12.5px; font-weight:600; }
+.assistant-prompt-foot .assistant-params-menu .params-text small { display:block; margin-top:2px; color:#7b8794; font-size:11px; line-height:1.5; }
+.assistant-prompt-foot .assistant-params-menu .params-check { flex:none; margin-top:6px; color:#243244; }
+/* 深度思考滑杆（参照 Effort 滑杆：左「更快」右「更强」，4 档吸附，白圆钮 + 档位刻度点） */
+.assistant-prompt-foot .assistant-params-menu .params-slider-head { display:flex; align-items:baseline; justify-content:space-between; margin-top:6px; padding:10px 8px 0; border-top:1px solid #f0f3f6; }
+.assistant-prompt-foot .assistant-params-menu .params-slider-head .params-group-label { padding:0; }
+.assistant-prompt-foot .assistant-params-menu .params-slider-value { color:#243244; font-size:12px; font-weight:600; }
+.assistant-prompt-foot .assistant-params-menu .params-slider-wrap { position:relative; margin:14px 10px 2px; }
+.assistant-prompt-foot .assistant-params-menu .params-slider-ticks { position:absolute; inset:0; z-index:1; pointer-events:none; }
+.assistant-prompt-foot .assistant-params-menu .params-slider-ticks i { position:absolute; top:50%; width:3px; height:3px; background:#c6ced8; border-radius:50%; transform:translate(-50%, -50%); }
+.assistant-prompt-foot .assistant-params-menu .params-slider-ticks i.on { background:#fff; }
+.assistant-prompt-foot .assistant-params-menu .params-slider-ticks i:first-child { left:0; }
+.assistant-prompt-foot .assistant-params-menu .params-slider-ticks i:nth-child(2) { left:33.33%; }
+.assistant-prompt-foot .assistant-params-menu .params-slider-ticks i:nth-child(3) { left:66.66%; }
+.assistant-prompt-foot .assistant-params-menu .params-slider-ticks i:last-child { left:100%; }
+.assistant-prompt-foot .assistant-params-menu .params-slider { -webkit-appearance:none; appearance:none; display:block; width:100%; height:8px; margin:0; background:linear-gradient(to right, #eda284 0%, #f4bd9f var(--pct, 0%), #e9edf2 var(--pct, 0%)); border-radius:999px; outline:none; cursor:pointer; }
+/* 陨石滑块（09-19 十三改二稿）：手搓 clip-path/border-radius 形状全撤（球→狗啃都被否），
+   改用 Font Awesome 现成 "meteor" 实心图标（CC BY 4.0，内联在 PromptComposer.tsx）。
+   原生 thumb 隐身但保留尺寸/命中区（拖拽手感不变）；图标绝对定位跟随滑块行程，
+   left 由 JSX 内联 calc((100% - 24px) * 档位占比 + 12px) 算出 —— 与原生 thumb 圆心重合。 */
+.assistant-prompt-foot .assistant-params-menu .params-slider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:24px; height:24px; background:transparent; border:0; }
+.assistant-prompt-foot .assistant-params-menu .params-slider::-moz-range-thumb { width:24px; height:24px; background:transparent; border:0; }
+.assistant-prompt-foot .assistant-params-menu .params-slider-meteor { position:absolute; top:50%; z-index:2; width:20px; height:20px; transform:translate(-50%, -50%) rotate(-135deg); color:#ff8a63; pointer-events:none; filter:drop-shadow(0 1px 2px rgba(15,23,42,.28)); transition:color .15s ease, filter .15s ease; }
+.assistant-prompt-foot .assistant-params-menu .params-slider-meteor svg { display:block; width:100%; height:100%; }
+.assistant-prompt-foot .assistant-params-menu .params-slider-wrap.is-max .params-slider-meteor { color:#fff; filter:drop-shadow(0 1px 2px rgba(120,32,20,.35)) drop-shadow(0 0 6px rgba(255,150,110,.9)); }
+.assistant-prompt-foot .assistant-params-menu .params-slider-ends { display:flex; justify-content:space-between; padding:7px 2px 0; color:#9aa4b1; font-size:10px; letter-spacing:.02em; }
+/* 档位温度递进（09-19 二十改，用户：「调到 low 和 high 都做出点不同的样式」）。
+   语言 = **同一颗陨石，越往上越烫** —— 四档共用一条温度轴，不做四套互不相干的花样：
+   Off 平轨柔和珊瑚（基础规则）→ Low 起温（填充转暖 + 陨石细光晕 + 滑块端小热晕 + 身后一道短尾焰）
+   → High 升温（填充压深成橙红 + 光晕加强 + 热晕变大 + 尾焰变长并开始呼吸）
+   → Max 全热（整条珊瑚渐变 + 白热陨石 + 长尾焰带副焰 + 14 颗余烬，见下方各段）。
+   热晕半径 50 → 74 → 120px、尾焰 18 → 26 → 34px、光晕 3 → 6 → 白热，三档可数地递增。
+   ⚠️ 只改颜色/光晕/尾焰，**不动轨道高度、不改滑块位置** —— 切档不许跳版。
+   ⚠️ Low/High 的填充必须保留 `var(--pct)` 分段（只有 Max 是恒定 100%，才能整条写死渐变）；
+   ⚠️ 热晕的圆心也跟着 `var(--pct)` 走，锚在陨石当前位置而不是轨道末端。 */
+.assistant-prompt-foot .assistant-params-menu .params-slider-wrap.is-low .params-slider { background-image:radial-gradient(50px 16px at var(--pct, 100%) 50%, rgba(255,255,255,.32), rgba(255,214,190,0) 78%), linear-gradient(to right, #e58862 0%, #ffbb98 var(--pct, 100%), #e9edf2 var(--pct, 100%)); background-repeat:no-repeat; }
+.assistant-prompt-foot .assistant-params-menu .params-slider-wrap.is-high .params-slider { background-image:radial-gradient(74px 18px at var(--pct, 100%) 50%, rgba(255,255,255,.45), rgba(255,214,190,0) 78%), linear-gradient(to right, #d96a45 0%, #ffa276 var(--pct, 100%), #e9edf2 var(--pct, 100%)); background-repeat:no-repeat; }
+.assistant-prompt-foot .assistant-params-menu .params-slider-wrap.is-low .params-slider-meteor { color:#ff7c4f; filter:drop-shadow(0 1px 2px rgba(15,23,42,.28)) drop-shadow(0 0 3px rgba(255,130,85,.55)); }
+.assistant-prompt-foot .assistant-params-menu .params-slider-wrap.is-high .params-slider-meteor { color:#ff6a3c; filter:drop-shadow(0 1px 2px rgba(15,23,42,.28)) drop-shadow(0 0 6px rgba(255,110,70,.8)); }
+/* Max 档 = 陨石烧灼尾迹（09-19 十五改）。上一版「通电」（白色斜纹右移）被用户否掉
+   （「那通电算怎么回事啊」）—— 轨道不是通电的导条，是**被陨石烧过的一条痕**：
+   温度梯度 · 右端陨石处白热、向左逐渐冷却成暗红岩渣（背景第三层）；
+   陨石端的热晕（第二层，radial 只在终点附近亮）；
+   龟裂灼痕（第一层，重复细斜纹、静止 —— 是烧出来的裂，不是流动的条纹；
+   用 background-size:58% 只铺左侧冷却段，白热端不挂裂，否则显脏）。
+   Max 档必定是第 4 档（--pct=100%），整条都是填充段，不会跑出未填充灰段。
+   动态只剩外发光呼吸（params-glow），不再有横向位移。 */
+.assistant-prompt-foot .assistant-params-menu .params-slider-wrap.is-max .params-slider { background-image:radial-gradient(120px 22px at 100% 50%, rgba(255,255,255,.55), rgba(255,214,190,0) 76%), linear-gradient(90deg, #c94a36 0%, #dd5a3e 32%, #ee7048 58%, #ff9068 80%, #ffb994 100%); background-size:100% 100%, 100% 100%; background-repeat:no-repeat; animation:params-glow 2.4s ease-in-out infinite alternate; }
+@keyframes params-glow { from { box-shadow:0 0 8px rgba(232,96,68,.35), inset 0 0 2px rgba(255,255,255,.25); } to { box-shadow:0 0 16px rgba(255,120,80,.7), inset 0 0 5px rgba(255,255,255,.5); } }
+@media (prefers-reduced-motion: reduce) { .assistant-prompt-foot .assistant-params-menu .params-slider-wrap.is-max .params-slider { animation:none; box-shadow:0 0 12px rgba(232,96,68,.5), inset 0 0 3px rgba(255,255,255,.35); } }
+/* 陨石尾焰（09-19 十五改，二十改扩到三档）：Low / High / Max 滑块身后都拖一道火焰，
+   档位越高越长越亮（18 / 26 / 34px）；锚在滑块当前位置（--pct 提升到 wrap，
+   与轨道填充共用进度变量），朝 Faster 方向；滑块本体（input）z-index 抬到尾焰之上，
+   焰从石头「身后」冒出来。定位等通用属性抽成一条，三档只覆盖尺寸与亮度。
+   副焰（::after，第二层长拖尾）**只在 Max** 保留 —— 那是「已经开始甩余烬」的标志。 */
+.assistant-prompt-foot .assistant-params-menu .params-slider { position:relative; z-index:1; }
+.assistant-prompt-foot .assistant-params-menu .params-slider-wrap .params-slider-tail { position:absolute; top:50%; left:var(--pct, 100%); z-index:0; transform:translate(-100%, -50%); border-radius:999px; filter:blur(1px); pointer-events:none; }
+.assistant-prompt-foot .assistant-params-menu .params-slider-wrap.is-low .params-slider-tail { width:18px; height:10px; opacity:.72; background:linear-gradient(to left, rgba(255,248,242,.9), rgba(255,214,188,.45) 45%, rgba(255,158,116,0)); }
+.assistant-prompt-foot .assistant-params-menu .params-slider-wrap.is-high .params-slider-tail { width:26px; height:12px; background:linear-gradient(to left, rgba(255,250,245,.95), rgba(255,214,188,.62) 40%, rgba(255,158,116,0)); animation:params-tail 2.2s ease-in-out infinite alternate; }
+.assistant-prompt-foot .assistant-params-menu .params-slider-wrap.is-max .params-slider-tail { width:34px; height:14px; background:linear-gradient(to left, rgba(255,255,255,.98), rgba(255,214,188,.75) 38%, rgba(255,158,116,.28) 70%, rgba(255,158,116,0)); animation:params-tail 1.6s ease-in-out infinite alternate; }
+.assistant-prompt-foot .assistant-params-menu .params-slider-wrap.is-max .params-slider-tail::after { content:''; position:absolute; top:50%; right:2px; width:60px; height:6px; transform:translateY(-50%); border-radius:999px; background:linear-gradient(to left, rgba(255,236,224,.9), rgba(255,199,164,.35) 55%, rgba(255,199,164,0)); }
+@keyframes params-tail { from { opacity:.72; } to { opacity:1; } }
+@media (prefers-reduced-motion: reduce) { .assistant-prompt-foot .assistant-params-menu .params-slider-wrap .params-slider-tail { animation:none; } }
+.assistant-prompt-foot .assistant-params-menu .params-slider-wrap.is-max .params-slider-ticks i { background:rgba(255,255,255,.5); }
+.assistant-prompt-foot .assistant-params-menu .params-slider-wrap.is-max .params-slider-ticks i.on { background:#fff; box-shadow:0 0 5px rgba(255,255,255,.9); }
+/* 尾迹上的粒子（09-19 十七改）。历史：常驻光点+星闪（五改）→ 余烬向左飘（十五改，
+   但光点仍常驻）→ 用户拍板「不要常驻粒子效果，要**被甩出的余烬向左后方飘散**，稍微少甩点」。
+   现在 14 颗**统一为单程余烬**：在陨石身后被甩出，4s 内向左后方飘 56px、抬升 8px，
+   边飘边冷却消失（opacity 0→1→0.84→0 的单程循环；delay 铺满 0~3.64s 错峰 → 源源不断的尾迹流）。
+   .star 只改形状（四角星闪的炽热碎块），动画与圆点完全一致，**没有常驻闪烁**。
+   ⚠️ 采样可见颗数时务必等满一个周期 + 最大 delay，否则会误判「粒子几乎看不见」。 */
+.assistant-prompt-foot .assistant-params-menu .params-slider-particles { position:absolute; inset:-6px 0; z-index:2; pointer-events:none; }
+/* 余烬形态（09-19 十八改）：用户「好像人起小包了」。根因是**在画球体**——
+   circle at 34% 34% 的偏心白高光 = 球的光斑，再叠 2px spread、.95 不透明的 box-shadow = 一圈清晰实体轮廓，
+   于是每颗余烬都成了一颗鼓起的小疙瘩。改法是把「球」拆掉：
+   ① 高光改**同心**（closest-side 从中心均匀衰减）→ 没有受光面，不读成立体；
+   ② 渐变自己收到边缘全透明（rgba 0 @100%）→ 硬轮廓消失；
+   ③ box-shadow 去 spread、压到 .5 → 只剩一圈弥散热雾，不再描边；
+   ④ 椭圆形态只由**盒子尺寸**给（横向略长，TSX 里 width = size + 2），读作「带速度的小火星」；
+   ⑤ 色标只留**两段**（中心暖白 → 一个中间色标 → 边缘全透明）：四段色标在 3x 特写下会读出一圈「环」，
+   圆点反成甜甜圈；两段单调查值才是均匀的光雾。
+   ⑥ 位移**只给水平分量**：余烬顺着轨道向后滑，不上下飘。早先 translate 带 -8px 纵向分量、
+   且 y 散布在 -8%~94%（一半在轨道外），实机读成「一堆点上下乱跑」——用户拍板「粒子往后跑啊，
+   往下跑什么」（十九改）；配套把 y 全部收进 38~62 的轨道带（见 PromptComposer SLIDER_PARTICLES）。
+   🔴 **绝不要用 rotate / scale 独立属性来做拉长或转向**（十九改实测踩坑，本段一度就是 `rotate:-90deg`）：
+   CSS 独立变换属性的合成顺序是 translate → rotate → scale → transform，也就是它们
+   **在 keyframes 的 transform 之后**才作用 —— keyframes 里的 translate(-58px, 0) 会被一起转走，
+   rotate:-90deg 正好把「向后水平滑」转成 (0, +58px)「垂直往下掉」，这就是用户看到的「往下跑」。
+   修法 = 形态交给盒子尺寸，粒子全程不带任何 transform 类属性。
+   ⚠️ 肉眼校验收尾看 `.workbuddy/preview/_ember-style-zoom.png`（等满 4.6s 再拍；
+   该脚本带两条硬断言：粒子垂直偏移 ≤5px、computed transform 的 translate-y 恒为 0）。 */
+.assistant-prompt-foot .assistant-params-menu .params-slider-particles i { position:absolute; border-radius:50%; background:radial-gradient(closest-side, rgba(255,249,244,.96), rgba(255,182,132,.66) 58%, rgba(255,150,98,0) 100%); box-shadow:0 0 7px 0 rgba(255,146,96,.5); opacity:0; animation:params-ember 4s linear infinite; }
+/* 星形碎块：同样去掉纯白硬填充与高不透明度投影，改成暖白→橙的柔光填充，
+   drop-shadow 淡化（原来是 1.0 不透明的实白描边，同样有鼓包感）；保持方形不随运动拉伸。 */
+.assistant-prompt-foot .assistant-params-menu .params-slider-particles i.star { background:radial-gradient(closest-side, rgba(255,252,248,.95), rgba(255,194,148,.62) 60%, rgba(255,166,116,0) 100%); border-radius:0; box-shadow:none; clip-path:polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); filter:drop-shadow(0 0 4px rgba(255,196,158,.75)); }
+/* 匀速（linear）：位移速率恒定 —— 任何时刻都在向后滑，且插值可预测；
+   保持段拉到 62%（opacity .84），保证同时可见的余烬够多（约 8~10 颗 / 14）。
+   早先 ease-out 版本在 55% 后就迅速淡到看不见，实机只剩 2~4 颗，太冷清。 */
+@keyframes params-ember { 0% { opacity:0; transform:translate(10px, 0) scale(1.15); } 12% { opacity:1; } 62% { opacity:.84; } 100% { opacity:0; transform:translate(-58px, 0) scale(.35); } }
+@media (prefers-reduced-motion: reduce) { .assistant-prompt-foot .assistant-params-menu .params-slider-particles i { animation:none; opacity:.3; } }
+/* 工作区文件夹选择器（09-17）：后端导航式浏览 —— 浏览器拿不到本机绝对路径，
+   改由后端逐层返回目录，前端只提交 `<rootKey>:<相对路径>`。 */
+.ws-picker-layer { position:fixed; inset:0; z-index:95; display:flex; justify-content:center; align-items:flex-start; padding:56px 16px 24px; }
+.ws-picker-backdrop { position:absolute; inset:0; background:rgba(9,20,38,.32); backdrop-filter:blur(2px); }
+.ws-picker { position:relative; z-index:1; width:min(520px,100%); max-height:calc(100vh - 80px); display:flex; flex-direction:column; background:#fbfbfb; border:1px solid #e7e9ec; border-radius:14px; box-shadow:0 24px 70px rgba(15,23,42,.22); overflow:hidden; animation:ws-picker-in 180ms ease-out; }
+@keyframes ws-picker-in { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+.ws-picker-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:16px 16px 10px; }
+.ws-picker-title { display:flex; align-items:flex-start; gap:12px; }
+.ws-picker-icon { display:grid; flex:none; place-items:center; width:34px; height:34px; color:var(--coral); background:#fff0ed; border-radius:8px; }
+.ws-picker-title h2 { margin:0; color:#0b1524; font-size:15px; }
+.ws-picker-title p { margin:4px 0 0; color:#8a93a2; font-size:11px; }
+.ws-picker-close { display:grid; place-items:center; width:26px; height:26px; color:#5f6b7d; background:transparent; border:0; border-radius:6px; cursor:pointer; }
+.ws-picker-close:hover { color:#243244; background:#eef1f4; }
+.ws-picker-roots { display:flex; gap:6px; padding:0 16px 10px; }
+.ws-picker-root { padding:5px 12px; color:#5f6b7d; font-size:12px; background:#f1f3f5; border:1px solid transparent; border-radius:999px; cursor:pointer; }
+.ws-picker-root.active { color:#fff; background:var(--coral); }
+.ws-picker-crumbs { display:flex; align-items:center; gap:2px; margin:0 16px 8px; padding:6px 8px; font-size:11px; background:#f6f7f9; border-radius:8px; overflow-x:auto; }
+.ws-crumb-up { display:grid; place-items:center; flex:none; width:20px; height:20px; color:#5f6b7d; background:transparent; border:0; border-radius:5px; cursor:pointer; }
+.ws-crumb-up:disabled { opacity:.35; cursor:default; }
+.ws-crumb-up:not(:disabled):hover { background:#e7eaee; }
+.ws-crumb { padding:2px 5px; color:#243244; font-size:11px; background:transparent; border:0; border-radius:5px; cursor:pointer; white-space:nowrap; }
+.ws-crumb:hover { background:#e7eaee; }
+.ws-crumb-seg { display:inline-flex; align-items:center; gap:2px; color:#b3bac5; }
+.ws-picker-list { flex:1; min-height:120px; padding:0 8px 8px; overflow-y:auto; }
+.ws-picker-state { display:flex; align-items:center; gap:6px; padding:24px 8px; color:#8a93a2; font-size:12px; }
+.ws-picker-state.error { color:#c0392b; }
+.ws-picker-item { display:flex; align-items:center; gap:8px; width:100%; padding:7px 10px; color:#243244; font-size:12.5px; text-align:left; background:transparent; border:0; border-radius:7px; cursor:pointer; }
+.ws-picker-item:hover { background:#eef1f4; }
+.ws-picker-item.file { color:#8a93a2; cursor:default; }
+.ws-picker-item.file:hover { background:transparent; }
+.ws-picker-item-icon { flex:none; color:var(--coral); }
+.ws-picker-item.file .ws-picker-item-icon { color:#b3bac5; }
+.ws-picker-item-name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ws-picker-item small { flex:none; color:#b3bac5; font-size:10.5px; }
+.ws-picker-arrow { flex:none; color:#c3cad4; }
+.ws-picker-foot { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 16px 14px; border-top:1px solid #eef1f4; }
+.ws-picker-picked { flex:1; overflow:hidden; color:#8a93a2; font-size:11px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; text-overflow:ellipsis; white-space:nowrap; }
+.ws-picker-actions { display:flex; flex:none; align-items:center; gap:8px; }
+.ws-picker-cancel { padding:7px 14px; color:#5f6b7d; font-size:12px; background:#f1f3f5; border:0; border-radius:8px; cursor:pointer; }
+.ws-picker-cancel:hover { background:#e7eaee; }
+.ws-picker-confirm { display:inline-flex; align-items:center; gap:5px; padding:7px 14px; color:#fff; font-size:12px; background:var(--coral); border:0; border-radius:8px; cursor:pointer; }
+
+/* 侧栏列宽（09-18 十二改：232 → 248；09-19 十八改：248 → 300；同日十九改：300 → 280，
+   用户实机后反馈「侧边栏太宽了」—— 十八改清单里「288–312px」的口径被这条推翻；
+   二十三改再收一档 280 → 270，用户：「侧边再窄一点点」）。
+   ⚠️ 这一个数**同时决定三处**，所以只留一个令牌，三处都取它：
+     ① 侧栏自己的 `width`（本文件 `.assistant-sidebar`）；
+     ② 问助手页的网格左列（本文件 `.assistant-modern.sidebar-open`）；
+     ③ 会话页的网格左列（`pages.css` 的 `.convo-page.sidebar-open`）。
+   写死三遍的话，改一处就会「侧栏比它所在的列宽」，右列被挤出去、页面横向溢出。
+   ⚠️ 窄屏抽屉（≤900px 那两条）**刻意不跟这个令牌**：它盖在内容上，越窄越不挡视野，220px 已够放标题。 */
+:root { --sidebar-w:270px; }
+
+/* ===== 问助手页「侧边栏视图」（09-18 新增）=========================================
+   同一批功能的两种摆法，不是两套功能：
+   · 顶栏形态（默认，根节点上没有 `sidebar-open`）= 现在的样子，开关钉在顶栏最左端；
+   · 侧边栏形态（`.sidebar-open`）= 左侧一列（宽度见上方 `--sidebar-w`），顶栏那组按钮搬进来，
+     顶栏只剩「新会话」状态 —— 它俩的位置正好对调（开关进侧边栏顶行，用双向箭头）。
+   这个开关**独立于全局顶栏那个方块按钮**（那个切的是全站导航形态），两者互不相干。
+
+   为什么用网格而不是 fixed：`.main-canvas` 在顶部导航形态下自身是居中且封顶宽的
+   （shell.css 的 `.nav-mode-top .main-canvas`），fixed 的 left 会对不上 page 的左边界；
+   网格内布局天然跟着 section 走，两种导航形态下都贴齐。
+   --------------------------------------------------------------------------- */
+.assistant-modern.sidebar-open { display:grid; grid-template-columns:var(--sidebar-w) minmax(0,1fr); align-content:start; }
+.assistant-modern.sidebar-open > .assistant-modern-header { grid-area:1 / 2 / 2 / 3; }
+.assistant-modern.sidebar-open > .assistant-modern-main { grid-area:2 / 2 / 3 / 3; min-width:0; }
+.assistant-modern.sidebar-open > .assistant-sidebar { grid-area:1 / 1 / 3 / 2; }
+
+/* 视图开关（双向箭头）在两种形态下分别落在两处：收起态 = 顶栏最左端这个圆钮，
+   展开态 = 侧边栏顶行右侧（`.assistant-sidebar-fold`）。这里的顶栏版**必须留着**，
+   否则侧边栏一收起就再没有打开它的入口。 */
+.assistant-modern-header > .assistant-sidebar-toggle { flex:none; display:grid; place-items:center; width:34px; height:34px; color:#64748b; background:#fff; border:1px solid #e5e9ee; border-radius:50%; cursor:pointer; transition:color .14s ease, background .14s ease; }
+.assistant-modern-header > .assistant-sidebar-toggle:hover { color:#091426; background:#f0f3f6; }
+/* 展开时顶栏只剩「新会话」状态（原来视图开关的位置）—— 做成和右边那些胶囊同款的白底细边，
+   免得孤零零一行字浮在左上角。收起态里它是动作组里的第三个元素，不带 is-standalone，样式不变。 */
+.assistant-modern-header > .assistant-session-name.is-standalone { padding:7px 13px; background:#fff; border:1px solid #e5e9ee; border-radius:999px; font-size:11px; }
+
+/* 侧边栏本体：sticky 钉在全局顶栏下沿。
+   高度取一屏（100vh-72）而不是撑满网格区域 —— 撑满就没有滚动余量、sticky 也就失效了；
+   main 自带 min-height:calc(100vh - var(--topbar-h) - 64px)，所以网格区域不会比它矮，不会溢出。
+   底色**不用纯白**（09-18 用户拍板「背景不要纯白」）：按玻璃系统的分层语言，侧边栏是「承托板」，
+   内容元素（主操作按钮、选中的模式、悬停行）抬成白色浮在上面。
+   09-18 三改：原 #eef1f4 是偏冷的蓝灰，压在暖白页(#f9f9f8)旁边显脏 —— 换成暖调中性灰 #eef0ef
+   （同明度、去掉蓝），与页面同一色谱、只低一档亮度。换底色只需改这三个变量：
+   --sidebar-bg / --sidebar-hover（同时是悬停底色与悬停时刻的遮罩色）/ --sidebar-line。
+
+   ⚠️ 09-18 十三改（用户 20:53 给了整套色板「可以先试这一套」）：**底色转回冷调** ——
+   上一轮去掉的那点蓝，这次是有意加回来的（呼应全站深蓝文字 #243244 / #091426），
+   于是这一族色从「暖中性」整体换成「冷中性」：
+     侧栏底  #f1f3f7   ← 很轻的蓝调
+     分隔线  #e3e7ee   ← 细淡，压在蓝底上刚好读得出来（#eef2f6 那种白线在蓝底上会消失）
+     悬停底  #e7ecf3   ← 比底暗一档（「按下去」的语感，与玻璃的「浮起来」相反）
+   两个抬升面（这次**不再是同一块面**，各自一个令牌）：
+     选中会话行  #ffffff 纯白 + 珊瑚竖条（用户：「白底，保留左侧珊瑚红细线」）
+     智能体管理卡  --sidebar-card 接近纯白 + 浅红图标底
+   ⚠️ 这等于把「十一改」的两处都改了回来，是有意的：
+   ① 十一改把选中行从纯白改成和入口卡同一块暖面（当时用户嫌「纯白太亮」）——
+      底色换成冷蓝之后纯白不再显脏，用户这次明确要白底，于是回纯白；
+      **选中语义改由珊瑚竖条独家承担**（竖条从十一改起就一直在，白底上反而更清楚）。
+   ② 入口卡从暖渐变退回近纯白实色。
+   感知亮度：选中行 255 > 玻璃气泡 ~254 > 入口卡 252 > 侧栏底 244 > 悬停 239。
+   ⚠️ 底一抬到 244，抬升面只剩 8~11 阶可用（原来底 239 时有 13~16 阶）——
+   三个抬升面彼此只差 1~3 阶，**人眼分不出来也别再往下压差**：
+   它们的区分靠材质（气泡的玻璃边+投影）、竖条（选中）、细边+微投影（卡片）。
+
+   09-19 二十一改：底 #f1f3f7(244 冷蓝) → **#f6f7f9(246 中性浅灰)** —— 用户「侧边栏的背景
+   还要调整」，且「新建会话」同时去墨底（二十一改），整屏往轻里走，底色跟着抬一档。
+   悬停/分隔线同步 +1 档；选中行珊瑚浅底不动（色相本身就够辨识，不靠亮度）。 */
+.assistant-sidebar { --sidebar-bg:#f6f7f9; --sidebar-hover:#eceff3; --sidebar-line:#e5e9ee;
+  /* 选中会话行（09-19 十八改）：**浅珊瑚底 + 3px 品牌色侧边线**（用户改版清单：
+     「选中项只有一条红线和白底，红色没有在其他地方形成一致的状态语言」）——
+     旧口径「选中=纯白」是 09-18 十三改定的，这次用户明确要换成浅色底，
+     09-19 二十三改后用户改口：珊瑚浅底观感发红、不好看，选中底换**浅灰**
+     （#e6ebf1，比悬停 #eceff3 深半档，不靠色相靠深浅区分）。 veil 必须跟底同值
+     （它是选中行里悬停时刻的遮罩色，不同值会糊出一条色带，见下面 time 那条）。 */
+  --sidebar-selected:#e6ebf1;
+  --sidebar-selected-veil:#e6ebf1;
+  position:sticky; top:var(--topbar-h); align-self:start; display:flex; flex-direction:column; width:var(--sidebar-w); height:calc(100vh - var(--topbar-h)); padding:14px 14px 12px; background:var(--sidebar-bg); border-right:1px solid var(--sidebar-line); overflow:hidden; }
+
+/* 顶行（09-19 二十三改；09-23 简化）：两层结构 ——
+   外层 `.assistant-sidebar-head` 只做排布（背景组贴左、收起键挤最右）；
+   内层 `.assistant-sidebar-head-group` 是**两个等宽槽位的滑动面**（Chat / Agent）。
+   09-23：最左那格原本是「智能体管理」入口（悬停滑过去的第 0 格），全站只剩一个
+   主智能体后入口与那格一起撤掉，三槽位收成两槽位。收起键在凹槽外面最右。 */
+.assistant-sidebar-head { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
+/* 背景凹槽：比侧栏底暗 ≥5 阶（#f6f7f9 底上 #e9edf3 ≈ 10 阶），padding:3px、胶囊 999px。
+   ⚠️ 两列 grid **gap:0** —— 滑块宽度 = (100%-6px)/2 = 恰好一列，translateX(n*100%)
+   步进正好一格；有 gap 的话每滑一格就差 2px，越滑越歪。
+   拖动手感（用户：「再加上一个拖动效果」）：整块滑动面是拖把 —— cursor:grab 明示可拖、
+   拖动中 grabbing；touch-action:none + user-select:none 防触摸滚动/选中文字抢事件。
+   pointerdown 接管在组件里做（位移 >4px 才算拖，纯点击放行给按钮）。 */
+.assistant-sidebar-head-group { position:relative; display:grid; grid-template-columns:1fr 1fr; align-items:stretch; flex:1; min-width:0; padding:3px; background:#e9edf3; border-radius:999px; cursor:grab; touch-action:none; user-select:none; }
+.assistant-sidebar-head-group:active { cursor:grabbing; }
+/* 液态滑块：挂在**组**上（不在分段控件里），宽度恒为一格；位置由组件内联
+   translateX(n*100%) 控制，这里只管外观与过渡。
+   ⚠️ 动效口径（用户「滑动是滑动，不是点动」）：.42s 低过冲长滑行 ——
+   别改回短时长/强过冲（.32s+1.4 会冲头回弹，肉眼看是「点两下」）。 */
+/* 滑块：二十四改同日二次调整（用户看图圈选 Chat 段：「这个也改成玻璃材质」）——
+   白色实心滑块换**液态玻璃**（与「新建会话」按钮同一套配方，见 glass.css §4c）：
+   半透明白 + 顶部高光渐变 + backdrop blur，滑在 #e9edf3 凹槽上透出底色、凸感更轻。
+   transform 过渡保持原样（液态滑动手感不动物理）。 */
+.assistant-sidebar-head-thumb { position:absolute; top:3px; left:3px; width:calc((100% - 6px)/2); height:calc(100% - 6px); background-color:rgba(255,255,255,.62); background-image:linear-gradient(180deg, rgba(255,255,255,.85) 0%, rgba(255,255,255,.25) 45%, rgba(255,255,255,.45) 100%); backdrop-filter:blur(14px) saturate(140%); -webkit-backdrop-filter:blur(14px) saturate(140%); border-radius:999px; box-shadow:0 2px 8px rgba(9,20,38,.10), inset 0 1px 0 rgba(255,255,255,1), inset 0 -1px 0 rgba(15,23,42,.04); transition:transform .42s cubic-bezier(.3,1.1,.36,1); }
+@media (prefers-reduced-motion: reduce) { .assistant-sidebar-head-thumb { transition:none; } }
+/* 收起侧边栏：09-18 三改去掉白底白框（用户拍板「这个箭头不要背景」），
+   换成标准的侧栏折叠图标（PanelLeftClose）+ title 提示；悬停只给一层极淡的同色底，
+   不再整颗变成白色方块。 */
+.assistant-sidebar-fold { flex:none; display:grid; place-items:center; width:26px; height:26px; color:#8a93a2; background:transparent; border:0; border-radius:7px; cursor:pointer; transition:color .14s ease, background .14s ease; }
+.assistant-sidebar-fold:hover { color:#091426; background:rgba(9,20,38,.06); }
+/* 轻量分段控件（只作用于侧栏这一处，顶栏那颗不动）：两槽位全占（grid-column:1/3），
+   内部 1fr 1fr —— 与组的槽距完全一致。
+   段自身无底色（底色归滑块管），悬停只压深文字。 */
+.assistant-sidebar .ask-mode-switch { position:relative; z-index:1; display:grid; grid-template-columns:1fr 1fr; grid-column:1/3; min-width:0; gap:0; padding:0; background:transparent; border:0; }
+.assistant-sidebar .ask-mode-switch .ask-mode-item { justify-content:center; height:26px; padding:0 10px; color:#7c8595; border-radius:999px; }
+.assistant-sidebar .ask-mode-switch .ask-mode-item:hover { color:#091426; }
+.assistant-sidebar .ask-mode-switch .ask-mode-item.active { color:#091426; background:transparent; box-shadow:none; }
+/* ⚠️ 共用规则的「选中段图标 = 白」(.ask-mode-item.active svg{color:#fff}) 是给墨底选中段配的；
+   这里的选中段是**白滑块上的深墨字**，不覆盖回来的话 Workflow 图标就白图标落白底 ——
+   用户图 2：「这个图标就被白色边框覆盖了」。 */
+.assistant-sidebar .ask-mode-switch .ask-mode-item.active svg { color:#091426; }
+
+/* 主操作「新建会话」：整行 + 完整文案（09-18 三改用户拍板）。
+   09-19 二十一改：白底细边轻量按钮（材质在 glass.css §4c）。
+   09-19 二十四改（用户看图说话）：高度 42px（初版 50px 用户：「高度太高了」）、
+   图标-文字间距 12px、15px/700 文案（18px「字号有点大」→ 16px「再小一点」）、
+   上 10px 下 24px 留白 ——
+   左右外边距去掉（用户：「外边距去了」）：按钮与列表行同宽，内缩 = 侧栏自身
+   padding 14px；宽度自适应由 flex 列的 align-items:stretch 兜底。
+   下面的分隔线由 `.assistant-sidebar-list` 的 border-top 承担（margin-top 归零，
+   分隔线正好落在按钮下方 24px 处，与「工作区」拉开层次）。 */
+.assistant-sidebar-new { display:flex; align-items:center; gap:12px; height:42px; margin:10px 0 24px; padding:0 16px; font-size:15px; font-weight:700; text-align:left; cursor:pointer; transition:background-color .14s ease, border-color .14s ease, box-shadow .14s ease; }
+.assistant-sidebar-new > svg { flex:none; }
+
+/* 09-23：原来这里挂着「智能体管理」顶行迷你入口（.assistant-sidebar-agents-mini）的样式。
+   全站只剩一个主智能体后入口撤掉，样式一并删除 —— 别留着，留着会让人以为那个入口还在。 */
+
+/* 中间：会话列表 —— 只做「快速跳回」，检索与完整增删改仍在历史档案库（/history）。
+   所以顶栏形态下的「历史对话」弹窗入口在侧边栏形态里就不再出现，避免两个入口指同一份数据。
+   09-19 二十改（Codex 风格）：两段路标「项目 / 最近」——
+   「项目」= 全部工作区文件夹平铺（不再只挑全局选定的那个），「最近」= 无工作区会话平铺。 */
+.assistant-sidebar-list { display:flex; flex:1; flex-direction:column; gap:1px; min-height:0; margin-top:0; padding-top:10px; overflow-y:auto; border-top:1px solid var(--sidebar-line); scrollbar-width:thin; scrollbar-color:#cdd5df transparent; }
+/* 二十一改：列表滚动条从浏览器默认（又粗又黑，截图里很扎眼）调成 6px 浅灰细条 */
+.assistant-sidebar-list::-webkit-scrollbar { width:6px; }
+.assistant-sidebar-list::-webkit-scrollbar-track { background:transparent; }
+.assistant-sidebar-list::-webkit-scrollbar-thumb { background:#cdd5df; border-radius:999px; }
+.assistant-sidebar-list::-webkit-scrollbar-thumb:hover { background:#b6c0cc; }
+/* 段标题（工作区 / 最近会话）：轻灰字但比夹头只小半档 —— 09-19 用户要求字号加大一点 */
+.assistant-sidebar-label { margin:4px 0 4px; padding:0 9px; color:#8f98a4; font-size:12.5px; font-weight:500; letter-spacing:.02em; }
+/* 段与段之间留一档空 */
+.assistant-sidebar-group + .assistant-sidebar-group { margin-top:12px; }
+
+/* 可折叠文件夹头（09-19 十九改起）。
+   09-19 二十改（Codex 风格）：夹头从「10.5px 灰色小标签」升级为**正常文字级**的文件夹行 ——
+   Folder 图标 + 工作区名（只显示名，不再带「当前工作区 ·」前缀），色深近似会话行、
+   字号大一号；折叠箭头是我们自己的设计补充（Codex 靠图标开合形态暗示，我们留一个明确的点子）。
+   折叠态 body 直接条件渲染卸掉（不挂 DOM），展开态 body 缩进 15px 表达从属 ——
+   缩进比底色干净（窄栏里底色一多，选中行就浮不出来了）。 */
+.assistant-sidebar-folder { display:flex; align-items:center; gap:6px; width:100%; margin:6px 0 2px; padding:5px 9px; color:#39434f; font-size:12.5px; font-weight:600; text-align:left; background:transparent; border:0; border-radius:7px; cursor:pointer; transition:color .14s ease, background .14s ease; }
+.assistant-sidebar-folder:hover { color:#091426; background:rgba(9,20,38,.04); }
+.assistant-sidebar-folder > svg { flex:none; color:#7c8595; }
+.assistant-sidebar-folder > span { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.assistant-sidebar-folder .assistant-sidebar-folder-chev { flex:none; color:#b6bec9; transition:transform .16s ease; }
+.assistant-sidebar-folder.is-open .assistant-sidebar-folder-chev { transform:rotate(90deg); }
+.assistant-sidebar-fold-body { margin-left:15px; }
+/* 「展开显示」（Codex 同款）：与会话行左对齐、比行浅两档；点开后变「收起」。
+   这个状态不落 localStorage（Codex 也不记）—— 刷新回到预览态。 */
+.assistant-sidebar-expand { margin:0 0 2px; padding:6px 9px; color:#98a1ac; font-size:11.5px; text-align:left; background:transparent; border:0; border-radius:7px; cursor:pointer; transition:color .14s ease, background .14s ease; }
+.assistant-sidebar-expand:hover { color:#091426; background:rgba(9,20,38,.04); }
+
+/* 段容器（项目 / 最近 两段共用）；行与行只留 1px。 */
+.assistant-sidebar-group { display:flex; flex-direction:column; gap:1px; }
+
+.assistant-sidebar-convo { position:relative; display:flex; align-items:center; min-height:40px; border-radius:7px; transition:background .14s ease; }
+/* 悬停 = 压深一档（「按下去」的观感）；选中 = 浅灰底 + 3px 品牌色侧边线
+   （底色 09-19 由浅珊瑚改浅灰 —— 用户改口「红色底色不好」；珊瑚侧边线保留，
+   与全局导航 .nav-item.active 同源）。
+   底色令牌 --sidebar-selected 在 .assistant-sidebar 上。
+   与全局左侧导航的选中语言同源：.nav-item.active 也是 3px 珊瑚竖条）。
+   ⚠️ 侧边线用 **inset box-shadow** 而不是 border：border 会让行高 +2px，
+   点哪一行哪一行往下跳 2px（旧规）。
+   ⚠️ 别写 `.is-active:hover` 改底色 —— 选中行悬停保持浅珊瑚底
+   （下面 `:hover` 规则与本条同为 (0,2,0)，靠**书写顺序**让 `.is-active` 赢，别调换）。 */
+.assistant-sidebar-convo:hover { background:var(--sidebar-hover); }
+.assistant-sidebar-convo.is-active { background:var(--sidebar-selected); box-shadow:inset 3px 0 0 var(--coral); }
+.assistant-sidebar-convo-open { display:flex; align-items:center; flex:1; min-width:0; padding:10px 9px; color:#45474c; font-size:12.5px; text-align:left; border-radius:7px; cursor:pointer; }
+.assistant-sidebar-convo.is-active .assistant-sidebar-convo-open { color:#091426; font-weight:600; }
+.assistant-sidebar-convo-title { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* 时刻：默认透明，悬停 / 选中才淡入。它压在标题尾部、用一层同底色渐变做遮罩，
+   不占布局位置 —— 标题不会因为悬停而跳一下（这是不直接用 display:none 的原因）。
+   right:34px 是给右侧的 ⋯ 让位（悬停时两者同时出现）。 */
+.assistant-sidebar-convo-open > time { position:absolute; right:34px; top:50%; transform:translateY(-50%); padding-left:16px; color:#98a1ac; font-size:10px; opacity:0; background:linear-gradient(90deg, transparent, var(--sidebar-hover) 42%); transition:opacity .14s ease; pointer-events:none; }
+.assistant-sidebar-convo:hover .assistant-sidebar-convo-open > time,
+.assistant-sidebar-convo.is-active .assistant-sidebar-convo-open > time { opacity:1; }
+.assistant-sidebar-convo.is-active .assistant-sidebar-convo-open > time { background:linear-gradient(90deg, transparent, var(--sidebar-selected-veil) 42%); }
+/* ⋯ 只在悬停 / 选中 / 菜单开着时出现 —— 平时整行只有标题，行与行之间很干净。
+   它常驻布局（只是透明），所以显出来的时候标题不位移。 */
+.assistant-sidebar-convo-more { flex:none; display:grid; place-items:center; width:24px; height:24px; margin-right:4px; color:#8a93a2; border-radius:6px; opacity:0; cursor:pointer; transition:opacity .14s ease, color .14s ease, background .14s ease; }
+.assistant-sidebar-convo:hover .assistant-sidebar-convo-more,
+.assistant-sidebar-convo.is-active .assistant-sidebar-convo-more,
+.assistant-sidebar-convo.is-menu-open .assistant-sidebar-convo-more { opacity:1; }
+.assistant-sidebar-convo-more:hover { color:#091426; background:rgba(9,20,38,.08); }
+/* ⋯ 菜单：fixed 挂到视口上，位置在点击时量按钮矩形算出来 ——
+   列表是 overflow-y:auto，菜单若留在行内会被裁掉（最后几行尤其明显）。 */
+.assistant-sidebar-menu { position:fixed; z-index:40; display:flex; flex-direction:column; min-width:132px; padding:4px; background:#fff; border:1px solid var(--sidebar-line); border-radius:10px; box-shadow:0 14px 32px rgba(9,20,38,.16); }
+.assistant-sidebar-menu button { display:flex; align-items:center; gap:7px; padding:7px 9px; color:#45474c; font-size:12px; text-align:left; border-radius:7px; cursor:pointer; transition:color .14s ease, background .14s ease; }
+.assistant-sidebar-menu button:hover { color:#091426; background:var(--sidebar-hover); }
+.assistant-sidebar-menu button > svg { flex:none; color:#8a93a2; }
+.assistant-sidebar-menu button.is-danger { color:#ad312b; }
+.assistant-sidebar-menu button.is-danger > svg { color:#d1574c; }
+.assistant-sidebar-menu button.is-danger:hover { background:#fdeeec; }
+.assistant-sidebar-hint { display:flex; align-items:center; gap:6px; margin:0; padding:6px 9px; color:#98a1ac; font-size:11px; }
+
+/* 底部不放用户区（09-18 用户拍板去掉）—— 头像 / 名字 / 设置只在全局顶栏右上角一处，
+   侧边栏不重复第二份。列表区 flex:1 会自己撑到底。 */
+
+/* 窄屏（≤900px，此时全局 nav-rail 已隐藏、底栏接管导航）：网格退回单列，
+   侧边栏改成覆盖式抽屉 —— 竖栏挤在手机上会把主内容压没。
+   抽屉宽度**不跟桌面一起加宽**：它盖在内容上，越窄越不挡视野，220px 够放标题。
+   ⚠️ 高度不能写 height:auto 交给 top/bottom 兜（实测在 600px 窗口里会缩成内容高、
+   面板悬在半空），保留基类那条 calc(100vh - var(--topbar-h)) —— 三值同时给定时 bottom 被忽略、高度说了算。 */
+@media (max-width:900px) {
+  .assistant-modern.sidebar-open { display:block; }
+  .assistant-modern.sidebar-open > .assistant-sidebar { position:fixed; top:var(--topbar-h); left:0; bottom:0; z-index:25; width:220px; box-shadow:24px 0 60px rgba(9,20,38,.18); }
+  /* 抽屉是覆盖式的、z-index 比顶栏高，所以顶栏那个「新会话」胶囊会被压在底下。
+     给它让出抽屉的宽度，状态才看得见（≤700px 时另有 margin-left:auto 把它顶到最右，两者不冲突）。 */
+  .assistant-modern.sidebar-open > .assistant-modern-header { padding-left:236px; }
+}
+.ws-picker-confirm:hover { background:#e05a50; }
+.ws-picker-confirm:disabled { opacity:.45; cursor:not-allowed; }
+
+/* 「停止生成」（09-19）：生成中点发送键原位变停止键（ChatGPT 同款方块） */
+/* 形态（09-19 用户拍板）：发送键/停止键是**正圆**（30×30 + border-radius:50%，基类在文件上部），
+   内部图标仍是方形 —— 圆底 + 方停，别把 .stop-square 也改成圆的。
+   圆角值只有基类那一处，没有断点覆盖，改一次两页（欢迎页/对话页）两个状态（发送/停止）同时生效。 */
+.assistant-send.is-stop { background:#091426; }
+.assistant-send.is-stop .stop-square { fill:currentColor; }
+.assistant-send.is-stop:hover { background:#ad312b; }
+
+/* 「继续」（10-08）：软暂停落地后发送键原位变继续键（青绿=「任务还活着，接着跑」，
+   与停止键的深色/警示红区分开）；用户一开始输入就切回普通发送键，见 PromptComposer */
+.assistant-send.is-resume { background:#0f6e56; }
+.assistant-send.is-resume:hover { background:#0c5945; }
+
+/* ===== 附件上传（09-19）：回形针入口 + 附件行 + 拖拽浮层 =====
+   两页共用同一个输入框（欢迎页 / 对话页），所以这套样式也放在共用文件里，
+   不写进 pages.css 的会话页段落。 */
+
+/* 拖拽浮层要贴着输入框的边缘铺满，所以表单得先成为定位上下文 */
+.assistant-prompt { position:relative; }
+
+/* 真·文件选择器：肉眼看不见但**真实存在**（点回形针按钮时由它弹系统选择框）。
+   不用 display:none —— 部分浏览器对隐藏元素调 .click() 不弹框。 */
+.assistant-attach-input { position:absolute; width:0; height:0; opacity:0; pointer-events:none; }
+
+/* 附件行：表单最上面一行（页头「当前调度」09-23 已撤），一个文件一枚胶囊（图标 + 文件名 + 体积 + 移除） */
+.assistant-attach-list { display:flex; flex-wrap:wrap; gap:6px; padding:3px 0 5px; }
+.assistant-attach-chip { display:inline-flex; align-items:center; gap:5px; max-width:100%; padding:4px 5px 4px 8px; color:#31405a; font-size:11px; background:#f4f6f8; border:1px solid #e4e9ef; border-radius:999px; }
+.assistant-attach-chip .attach-chip-icon { display:inline-flex; flex:none; color:#7b8794; }
+.assistant-attach-chip .attach-chip-name { overflow:hidden; max-width:190px; font-weight:400; text-overflow:ellipsis; white-space:nowrap; }
+.assistant-attach-chip .attach-chip-size { flex:none; color:#94a3b8; font-size:10px; }
+.assistant-attach-chip .attach-chip-remove { display:grid; place-items:center; flex:none; width:15px; height:15px; padding:0; color:#8a93a2; background:transparent; border-radius:50%; }
+.assistant-attach-chip .attach-chip-remove:hover { color:#fff; background:#c2453a; }
+/* 09-19 二阶：文件不再预上传 → 没有 uploading / error 两态，「重试」按钮一并删除。
+   被拒的文件（格式 / 体积）不建胶囊，只走下面的 .assistant-attach-hint。 */
+
+/* 被拒文件（格式 / 体积）的提示：几秒后自己消失，不常驻 */
+.assistant-attach-hint { margin:0; padding:2px 2px 5px; color:#b23c31; font-size:11px; }
+
+/* 拖拽浮层：盖满整个输入框，虚线珊瑚描边 + 半透明底。
+   pointer-events:none 是必须的 —— 否则这一层会吃掉底下的 drop 事件。 */
+.assistant-drop-hint { position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; gap:7px; color:#ad312b; font-size:12px; font-weight:500; background:rgba(255,255,255,.94); border:1.5px dashed #e0867f; border-radius:inherit; pointer-events:none; }
+.assistant-prompt.is-drag-over { border-color:#e0867f; }
