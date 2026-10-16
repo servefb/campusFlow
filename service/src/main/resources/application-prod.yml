@@ -1,0 +1,7 @@
+server:
+  shutdown: graceful
+
+logging:
+  level:
+    root: info
+    com.campusflow: info

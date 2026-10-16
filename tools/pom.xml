@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.campusflow</groupId>
+        <artifactId>campus-flow</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <artifactId>tools</artifactId>
+    <name>campus-flow-tools</name>
+    <dependencies>
+        <dependency>
+            <groupId>com.campusflow</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <!-- Spring Boot会自动管理版本，不需要指定version -->
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>3.3.2</version>       <!-- 3.x 稳定线；4.0.0 刚发（2026-08），暂不追 -->
+        </dependency>
+        <!-- PDF -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+
+        <!-- Word / Excel -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.3.0</version>
+        </dependency>
+
+        <!--
+          腾讯云文本内容安全（TMS）—— 只引 tms 单模块，别引 tencentcloud-sdk-java 全量包
+          （全量包含几百个产品，jar 上百 MB，构建和启动都拖）。
+          tms 会传递依赖 tencentcloud-sdk-java-common，无需显式声明。
+          用法见 tools/src/main/java/com/campusflow/tools/fileUtils/TencentTmsModerator.java
+        -->
+        <dependency>
+            <groupId>com.tencentcloudapi</groupId>
+            <artifactId>tencentcloud-sdk-java-tms</artifactId>
+            <version>3.1.1501</version>
+        </dependency>
+
+        <!--
+          腾讯云通用印刷体识别（OCR）—— 只引 ocr 单模块（与上面 tms 同一套 SDK 大版本，common 传递共享）。
+          用途：扫描版 PDF 没有文字层，PDFBox 抽不出正文 → 渲页成图后调 OCR 把文字救回来再送审。
+          ⚠️ OCR 模块在中央仓库恰好没有 3.1.1501（tms 有），相邻版本 3.1.1502 与 tms 的 common 完全兼容。
+          用法见 tools/src/main/java/com/campusflow/tools/fileUtils/TencentOcrClient.java
+        -->
+        <dependency>
+            <groupId>com.tencentcloudapi</groupId>
+            <artifactId>tencentcloud-sdk-java-ocr</artifactId>
+            <version>3.1.1502</version>
+        </dependency>
+
+        <!--
+          腾讯云图片内容安全（IMS）—— 只引 ims 单模块（common 与 tms/ocr 传递共享）。
+          用途：图片文件（头像、任务材料里的图）走图片审核，不再以「无可审核文本」绕过审核链。
+          ⚠️ ims 模块在阿里云仓库没有 3.1.15x 线的镜像，最高 3.2.35；common API 跨版本稳定，实测编译/运行兼容。
+          用法见 tools/src/main/java/com/campusflow/tools/fileUtils/TencentImsModerator.java
+        -->
+        <dependency>
+            <groupId>com.tencentcloudapi</groupId>
+            <artifactId>tencentcloud-sdk-java-ims</artifactId>
+            <version>3.2.35</version>
+        </dependency>
+
+        <!--
+          ClamAV 客户端 —— 用第三方库替代原先手写的 INSTREAM 协议实现。
+          MIT 许可；底层是 Kotlin（会传递引入 kotlin-stdlib-jdk8 与 kotlin-logging-jvm）。
+          ⚠️ 该库**没有任何超时设置**，封锁在 ClamAvScanner 里用线程池 + Future.get 补上了，
+             别绕过 ClamAvScanner 直接调它。
+          最新版本是 2.1.2（2022-02）；2.1.3 并不存在（Maven Central 上的版本号止于 2.1.2）。
+        -->
+        <dependency>
+            <groupId>xyz.capybara</groupId>
+            <artifactId>clamav-client</artifactId>
+            <version>2.1.2</version>
+        </dependency>
+    </dependencies>
+</project>

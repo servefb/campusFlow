@@ -1,0 +1,262 @@
+spring:
+  ai:
+    openai:
+      api-key: ${DEEPSEEK_API_KEY}   # 推荐通过环境变量注入，避免硬编码
+      base-url: https://api.deepseek.com
+      chat:
+        options:
+          model: deepseek-flash
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=10000,expireAfterWrite=10m
+  application:
+    name: campus-flow
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${MYSQL_URL:jdbc:mysql://192.168.150.100:3306/campus_flow?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:0706}
+    # ===== HikariCP 连接池（Spring Boot 默认实现，此前走的是隐式默认值 max=10/timeout=30s）=====
+    # 池大小不是越大越好：连接数 ≈ 核数*2 左右吞吐最高，池子大会把压力转嫁给 MySQL。
+    # 20 = 覆盖抢课峰值时「Redis 扣减成功后落库」的并发写，同时不压垮单机 MySQL。
+    hikari:
+      pool-name: campus-flow-hikari
+      maximum-pool-size: ${HIKARI_MAX_POOL_SIZE:20}
+      minimum-idle: ${HIKARI_MIN_IDLE:10}
+      # 拿连接的超时。抢课场景宁可 5s 快速失败返回「系统繁忙」，也不要让请求线程挂着等 30s（默认值）堆积起来。
+      connection-timeout: ${HIKARI_CONNECTION_TIMEOUT:5000}
+      # 连接最长寿命。必须小于 MySQL 的 wait_timeout（默认 8h，这里远小于，安全）；
+      # 太长会撞上服务端/中间件单方面断连，太短则频繁建连浪费。
+      max-lifetime: ${HIKARI_MAX_LIFETIME:1800000}
+      # 空闲连接 10 分钟后回收，避免常年占着 min-idle 之外的连接
+      idle-timeout: ${HIKARI_IDLE_TIMEOUT:600000}
+      # 每 5 分钟对空闲连接发一次 keepalive 探测，防止被防火墙/MySQL 静默掐断
+      # ⚠️ 必须小于 max-lifetime，否则启动校验不通过
+      keepalive-time: ${HIKARI_KEEPALIVE_TIME:300000}
+      # 连接被借出超过 60s 未归还就在日志里告警（只是检测不回收），排查「连接池被慢 SQL 抽干」很有用
+      leak-detection-threshold: ${HIKARI_LEAK_DETECTION:60000}
+  data:
+    redis:
+      host: ${REDIS_HOST:192.168.150.100}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:0706}
+      database: ${REDIS_DATABASE:0}
+  rabbitmq:
+    # ===== 1. 基础连接 =====
+    host: 192.168.150.100
+    port: 5672
+    username: admin
+    password: '0706'
+    virtual-host: /
+    connection-timeout: 5000
+
+    # ===== 2. 消费者配置（你关心的是这里）=====
+    listener:
+      simple:
+        # 自动确认模式。结合你“要自动确认”的需求，这里选 auto。
+        # 注意：Spring 的 auto 是方法正常返回才 ack，抛异常会走重试/死信。
+        acknowledge-mode: auto
+
+        # 关键：每次只预取 1 条消息。
+        # 你的 Python 端处理文件耗时很长，prefetch 设小能防止消息在 Python 端内存里堆积，
+        # 也能在进程崩溃时把损失降到最低。
+        prefetch: 1
+
+        # 并发消费者数量，建议与你的 Python 处理能力匹配，初期保持 1 即可。
+        concurrency: 1
+        max-concurrency: 3
+
+        # 消费失败时的自动重试策略（与 auto 模式配合使用）。
+        retry:
+          enabled: true
+          initial-interval: 3s      # 首次重试间隔
+          max-attempts: 3           # 最多重试 3 次（含首次）
+          max-interval: 10s         # 最大重试间隔
+          multiplier: 2             # 重试间隔倍数
+
+        # 重试耗尽后，消息会被拒绝（nack）。
+        # default-requeue-rejected: false 表示不重新入队，直接丢弃或进入死信队列。
+        # 结合你的 RAG 场景，建议设为 false，防止坏消息无限循环。
+        default-requeue-rejected: false
+#  flyway:
+#    enabled: ${FLYWAY_ENABLED:true}
+#    locations: classpath:db/migration
+
+minio:
+  endpoint: http://192.168.150.100:9000  # MinIO API 地址
+  access-key: ${MINIO_ACCESS_KEY:admin}       # 你的 Access Key
+  secret-key: ${MINIO_SECRET_KEY:}     # 你的 Secret Key
+  bucket-name: campusflow     # 默认的存储桶名称
+
+server:
+  port: ${SERVER_PORT:8080}
+
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    default-enum-type-handler: com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler
+  global-config:
+    banner: false
+    db-config:
+      id-type: assign_id
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+campus-flow:
+  jwt:
+    secret: ${JWT_SECRET:campus-flow-local-secret-key-change-me-2026}
+    expiration-seconds: ${JWT_EXPIRATION_SECONDS:7200}
+  ai:
+    base-url: ${AI_SERVICE_BASE_URL:http://localhost:8000}
+  cors:
+    # 允许的跨域来源，多个用英文逗号分隔；开发阶段默认放开，生产请改成具体前端地址
+    allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:*}
+
+  # 审计日志（@MyLog → audit_logs）的异步落库。
+  # 🔴 键名由 AsyncConfig 用 @Value 读取，@Value 【不做宽松绑定】—— 必须精确匹配，
+  #    写成 corePoolSize 会静默取到代码里的兜底值（表现是「改了配置没反应」）。
+  audit:
+    async:
+      core-pool-size: ${AUDIT_ASYNC_CORE_POOL_SIZE:2}
+      max-pool-size: ${AUDIT_ASYNC_MAX_POOL_SIZE:4}
+      # 队列上限。满了不是丢任务，而是退回【请求线程】同步执行（CallerRunsPolicy）——
+      # 宁可那一次请求变慢，也不要静默缺审计行。调小会让降级更早发生。
+      queue-capacity: ${AUDIT_ASYNC_QUEUE_CAPACITY:1000}
+      # 停机时等在途审计写完的秒数。设 0 = 不等待，发布重启会丢掉正在排队的审计行。
+      await-termination-seconds: ${AUDIT_ASYNC_AWAIT_TERMINATION_SECONDS:5}
+  moderation:
+    # 内容审核链：关键词（离线）→ 腾讯云 TMS（云审核）→ LLM（语义补充）
+    # 离线敏感词表，逗号分隔；留空则该层不拦截任何内容（启动时会打 WARN 提醒）
+    keywords: ${MODERATION_KEYWORDS:}
+    tms:
+      # 腾讯云 API 密钥。secret-id / secret-key 任一为空 → 整层跳过（是「没跑」，不是「通过」）
+      secret-id: ${TENCENT_TMS_SECRET_ID:}
+      secret-key: ${TENCENT_TMS_SECRET_KEY:}
+      # 地域，如 ap-guangzhou / ap-shanghai
+      region: ${TENCENT_TMS_REGION:ap-guangzhou}
+      # 控制台配置的审核策略编号；留空则用默认策略 TencentCloudDefault
+      biz-type: ${TENCENT_TMS_BIZ_TYPE:}
+    # 腾讯云图片内容安全（IMS）：头像 / 图片文件的内容审核。图片文件以前不做内容审核，
+    # 现在会送 IMS 定级（Block→rejected / Review→转人工）。
+    ims:
+      # 🔴 默认复用 TMS 的同一对密钥（同一账号开通「图片内容安全」服务即可）；要单独换密钥才改这里
+      secret-id: ${TENCENT_IMS_SECRET_ID:${TENCENT_TMS_SECRET_ID:}}
+      secret-key: ${TENCENT_IMS_SECRET_KEY:${TENCENT_TMS_SECRET_KEY:}}
+      region: ${TENCENT_IMS_REGION:${TENCENT_TMS_REGION:ap-guangzhou}}
+      # 控制台配置的图片审核策略编号；留空则用默认策略
+      biz-type: ${TENCENT_IMS_BIZ_TYPE:}
+  clamav:
+    # clamd 的 TCP 地址（INSTREAM 端口）。
+    # 🔴 默认值是内网 192.168.150.100 —— clamd 跑在那台机器的 docker 容器 `clamav` 里（3310:3310），
+    #    **开发本机并没有 clamd**。这里曾经写成 127.0.0.1，症状是每个文件都拿不到结论：
+    #    reason_code=scanner_unavailable、「无法与 clamd 通信（连接失败/中断）」，文件一直卡在 scanning。
+    #    （实测 127.0.0.1:3310 = ECONNREFUSED；192.168.150.100:3310 = PONG）
+    # ⚠️ ClamAvConfig 里 @Value 的兜底值也是这个地址，两处必须一致。
+    #    改这里就生效（yml 存在该键时优先于 @Value 的兜底值）。
+    host: ${CLAMAV_HOST:192.168.150.100}
+    port: ${CLAMAV_PORT:3310}
+    # 🔴 单次扫描超时（毫秒）。底层 clamav-client 库自身没有任何超时设置，全靠这个值兜底，别调小。
+    scan-timeout-ms: ${CLAMAV_SCAN_TIMEOUT_MS:60000}
+    # 并发扫描线程数；超出的请求排队，排队时间计入上面的超时预算
+    pool-size: ${CLAMAV_POOL_SIZE:4}
+
+  # 正文抽取（只为内容审核链服务；病毒/MIME 扫描不需要它）
+  scan:
+    text:
+      # 抽取字符上限。
+      # 🔴 必须【大于】腾讯云 TMS 的单文件送审预算（20 万字符，见 TencentTmsModerator.MAX_CHUNKS）。
+      #    设小了会出现静默漏审：尾部内容在 TMS 的「截断」判断之前就被这里截掉，
+      #    结果 TMS 以为整篇都审过并给出 Pass，文件被判成 ready。
+      max-chars: ${SCAN_TEXT_MAX_CHARS:300000}
+      # 单个文档最多抽前 N 页，挡住「声明几百万页」的畸形文件
+      max-pages: ${SCAN_TEXT_MAX_PAGES:200}
+      # 送解析器之前的字节上限，防止大文件打爆堆（默认 50MB）
+      max-bytes: ${SCAN_TEXT_MAX_BYTES:52428800}
+      # 单次抽取超时（毫秒）。PDFBox / POI 遇到畸形文件可能长时间循环，必须有上限
+      timeout-ms: ${SCAN_TEXT_TIMEOUT_MS:30000}
+      # OCR 兜底（扫描版 PDF 文字救援）—— 文字层抽出的字符数低于阈值时，
+      # 逐页渲染成图送腾讯云通用印刷体识别（GeneralBasicOCR），把文字救回来再走审核链。
+      # 没配密钥时兜底关闭：扫描件以「无可审核文本」跳过内容审核（是「没审」，不是「通过」）。
+      ocr:
+        # 🔴 默认复用 TMS 的同一对密钥（同一账号开通 OCR 服务即可）；要单独换密钥时才改这里
+        secret-id: ${TENCENT_TMS_SECRET_ID:}
+        secret-key: ${TENCENT_TMS_SECRET_KEY:}
+        region: ${TENCENT_TMS_REGION:ap-guangzhou}
+        # PDF 文字层低于该字符数 → 判定扫描件 → 走 OCR。别设 0：有些扫描件带零星可抽字符
+        min-chars: ${SCAN_TEXT_OCR_MIN_CHARS:50}
+        # 单文件最多 OCR 的页数。OCR 按次计费（每月有免费额度），超出页数按「未审完」转人工
+        max-pages: ${SCAN_TEXT_OCR_MAX_PAGES:15}
+
+    # 扫描僵死补偿（XXL-JOB 任务 fileScanRetryJob 用；见 FileScanRetryService）
+    retry:
+      # 判定僵死的静默时长（分钟）：status=scanning 且 updated_at 早于 now()-N 分钟。
+      # 🔴 必须【大于】单次扫描的最坏耗时，否则正常在跑的文件会被误判成僵死，
+      #    遭到重复投递（白白消耗重试次数，也会让同一条被扫两遍）。
+      #    最坏耗时 ≈ MIME + clamd 超时(60s) + 正文抽取超时(30s) + TMS 切片串行送审(20 片)
+      #    + OCR 兜底(每页 ~2s × 最多 15 页)。OCR 打开后如出现「正常扫描被误判僵死」，
+      #    先把 stale-minutes 调大再排查。
+      stale-minutes: ${SCAN_RETRY_STALE_MINUTES:30}
+      # 同一条记录最多被补偿重投几次；用完只报错不再重投，等人工。
+      # ⚠️ 调大不会更安全，只会把「扫描器一直没修好」这件事拖更久才暴露出来。
+      max-attempts: ${SCAN_RETRY_MAX_ATTEMPTS:3}
+      # 单批查询条数（批与批之间用主键游标推进，不会把候选一次全捞进内存）
+      batch-size: ${SCAN_RETRY_BATCH_SIZE:200}
+      # 单次调度最多处理多少条，防止一个分片跑太久把下一次调度堵在后面
+      max-scan-per-run: ${SCAN_RETRY_MAX_SCAN_PER_RUN:2000}
+
+xxl:
+  job:
+    # XXL-JOB 3.5.0 执行器开关
+    enabled: ${XXL_JOB_ENABLED:true}
+    admin:
+      # 与调度中心通讯的超时时间，单位秒
+      timeout: ${XXL_JOB_ADMIN_TIMEOUT:3}
+      # 调度中心地址（内网 192.168.150.100 上的 docker 容器 xxljob，与 MySQL/Redis/MinIO/ClamAV 同一台机器）。
+      # ⚠️ 端口是 8880、context-path 是 /xxl-job-admin —— 都不是官方默认值，别按 8080 想当然。
+      #    实测：GET /xxl-job-admin/ 返回 302 跳 /xxl-job-admin/toLogin，控制台 admin/123456。
+      # 地址填错的表现是启动日志刷注册失败、调度中心「执行器管理」里该执行器一直离线。
+      # 想让「不注册」的静默待命行为回来，用环境变量显式置空：XXL_JOB_ADMIN_ADDRESSES=
+      # 任务要在调度中心里配好 fileScanRetryJob 才会跑 —— 见 FileScanRetryJob 的类注释。
+      addresses: ${XXL_JOB_ADMIN_ADDRESSES:http://192.168.150.100:8880/xxl-job-admin}
+    # ⚠️ 键名必须是驼峰 accessToken。本工程的 XxlJobConfig 用 @Value 读配置，
+    #    而 @Value **不做宽松绑定**（只有 @ConfigurationProperties 才做），
+    #    写成 access-token 会静默取到空值 —— 表现是调度中心报「通讯令牌不一致」而配置看起来明明写了。
+    # 值是调度中心容器挂载的 application.properties 里 xxl.job.accessToken 的原值，两端必须一字不差。
+    # ADMIN 那边如果哪天改了令牌，这里跟着改，否则注册会被拒（执行器日志：The access token is wrong）。
+    accessToken: ${XXL_JOB_ACCESS_TOKEN:tianji}
+    executor:
+      # 是否支持 GLUE 任务
+      glueEnabled: ${XXL_JOB_EXECUTOR_GLUE_ENABLED:true}
+      # 执行器名字。同名实例构成一个集群，调度中心按它做路由（分片广播时 shardTotal = 在线实例数）
+      appname: ${XXL_JOB_EXECUTOR_APPNAME:campus-flow-executor}
+      # 执行器注册地址，留空则按 ip:port 自动生成
+      address: ${XXL_JOB_EXECUTOR_ADDRESS:}
+      # 执行器 IP，留空自动获取；多网卡机器必须显式指定，否则可能注册成一个调度中心连不上的网段地址
+      ip: ${XXL_JOB_EXECUTOR_IP:}
+      # 执行器端口，同机多实例必须各不相同
+      port: ${XXL_JOB_EXECUTOR_PORT:9999}
+      logpath: ${XXL_JOB_EXECUTOR_LOGPATH:./logs/xxl-job/jobhandler}
+      logretentiondays: ${XXL_JOB_EXECUTOR_LOGRETENTIONDAYS:30}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: health,info,metrics,prometheus
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
