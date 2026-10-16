@@ -18,7 +18,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${MYSQL_URL:jdbc:mysql://192.168.150.100:3306/campus_flow?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false}
     username: ${MYSQL_USERNAME:root}
-    password: ${MYSQL_PASSWORD:0706}
+    password: ${MYSQL_PASSWORD:}
     # ===== HikariCP 连接池（Spring Boot 默认实现，此前走的是隐式默认值 max=10/timeout=30s）=====
     # 池大小不是越大越好：连接数 ≈ 核数*2 左右吞吐最高，池子大会把压力转嫁给 MySQL。
     # 20 = 覆盖抢课峰值时「Redis 扣减成功后落库」的并发写，同时不压垮单机 MySQL。
@@ -42,14 +42,14 @@ spring:
     redis:
       host: ${REDIS_HOST:192.168.150.100}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:0706}
+      password: ${REDIS_PASSWORD:}
       database: ${REDIS_DATABASE:0}
   rabbitmq:
     # ===== 1. 基础连接 =====
     host: 192.168.150.100
     port: 5672
     username: admin
-    password: '0706'
+    password: ${RABBITMQ_PASSWORD:}
     virtual-host: /
     connection-timeout: 5000
 
