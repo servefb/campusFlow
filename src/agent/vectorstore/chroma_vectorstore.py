@@ -143,6 +143,34 @@ class VectorStore:
         return "\n\n".join(parts)
 
     @staticmethod
+    def search_raw(kb_id: str, question: str, k: int = 6,
+                   exclude_document_id=None) -> list:
+        """检索并返回原始片段（content + metadata），供冲突扫描等后台场景用。
+
+        与 search_with_db 的差别：不拼接展示文本，保留 metadata（documentId 等），
+        让调用方能定位「这段话来自哪篇文档」。检索系统（retriever_tool）的用户
+        可见路径不要改用这里 —— 那边的输出要过 laya 护栏（guard_retrieved），
+        本方法只服务不入提示词的后台比对。
+
+        exclude_document_id：跳过刚写入的自己（冲突扫描在 add_sections 之后跑，
+        自己的块必然是最像的，不排除会全打在自己身上）。
+        """
+        docs = get_vectorstore(kb_id).similarity_search(question, k=k * 3)
+        out = []
+        for d in docs:
+            meta = d.metadata or {}
+            if exclude_document_id is not None:
+                try:
+                    if int(meta.get("documentId")) == int(exclude_document_id):
+                        continue
+                except (TypeError, ValueError):
+                    pass
+            out.append({"content": d.page_content, "metadata": meta})
+            if len(out) >= k:
+                break
+        return out
+
+    @staticmethod
     def delete_by_version(kb_id: str, version_id: int):
         """按 versionId 精确删某个版本的向量，不影响同文档其他版本。"""
         vs = get_vectorstore(kb_id)

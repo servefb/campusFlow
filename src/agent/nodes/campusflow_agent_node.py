@@ -71,6 +71,18 @@ from src.agent.prompt.subagent_prompts import (
     WORKFLOW_SUBAGENT_PROMPT,
 )
 from src.agent.sandbox.open_sandbox import get_backend
+# 校园业务 API 工具（走 192.168.150.100:9080 网关，接口见 Java 仓
+# CampusNewsController / CoursesController，模块头注释有鉴权与降级说明）
+from src.agent.tools.campus_api_tool import (
+    get_campus_news,
+    get_campus_news_detail,
+    get_course_detail,
+    get_course_offerings,
+    get_my_courses,
+    get_news_categories,
+    get_news_home,
+    search_courses,
+)
 from src.agent.state.common_state import MultiAgentState
 from src.agent.store.mongdb_store import store
 from src.agent.supplement_inject import StopPauseMiddleware, SupplementInjectionMiddleware
@@ -124,7 +136,9 @@ SUBAGENTS = [
         "description": "学业与选课：选课与退改选、考试与成绩、学籍异动（休学复学转专业）、"
                        "培养方案与学分、毕业与学位要求、先修课与课程认定。",
         "system_prompt": ACADEMIC_SUBAGENT_PROMPT,
-        "tools": [retriever_tool, get_knowledge_tool, wiki_search, wiki_save],
+        # 课程四件套：以当前用户身份查教务系统（选课/课表/开课班次），见 campus_api_tool
+        "tools": [retriever_tool, get_knowledge_tool, wiki_search, wiki_save,
+                  get_my_courses, search_courses, get_course_detail, get_course_offerings],
         "interrupt_on": {},
         "permissions": SUBAGENT_RULES,
     },
@@ -143,7 +157,10 @@ SUBAGENTS = [
         "description": "资料调研：需要查最新外部信息（新闻、版本、政策动态、网页内容）时委派。"
                        "子代理内部会多轮搜索与抓取，返回一段带来源 URL 的报告。",
         "system_prompt": RESEARCH_SUBAGENT_PROMPT,
-        "tools": [search, extract, crawl, map_site],
+        # 新闻四件套：校内新闻优先走内部接口（免确认卡、比外网搜的准），
+        # 查不到再退回 search/extract 走外网
+        "tools": [search, extract, crawl, map_site,
+                  get_news_home, get_campus_news, get_campus_news_detail, get_news_categories],
         "interrupt_on": {},
         "permissions": SUBAGENT_RULES,
     },
@@ -159,7 +176,11 @@ SUBAGENTS = [
         "tools": [retriever_tool, get_knowledge_tool, get_task_info,
                   upload_to_sandbox, download_from_sandbox,
                   search, extract, crawl, map_site,
-                  wiki_search, wiki_save],
+                  wiki_search, wiki_save,
+                  # 校园业务查询全量（新闻+课程，只读）
+                  get_news_home, get_campus_news, get_campus_news_detail,
+                  get_news_categories,
+                  get_my_courses, search_courses, get_course_detail, get_course_offerings],
         "interrupt_on": {},
         "permissions": SUBAGENT_RULES,
     },
@@ -257,6 +278,10 @@ async def common_agent_node(state: MultiAgentState, config: RunnableConfig):
             upload_to_sandbox, download_from_sandbox,
             run_on_host,
             submit_answer, search, extract, crawl, map_site, search_memories,
+            # 校园业务查询（新闻/课程，只读，走内网网关，不弹卡）
+            get_news_home, get_campus_news, get_campus_news_detail,
+            get_news_categories,
+            get_my_courses, search_courses, get_course_detail, get_course_offerings,
             *mcp_tools, run_openwiki,
             # 经验知识库三件套（OpenWiki personal，按用户隔离，见 knowledge_wiki_tool 模块注释）
             wiki_search, wiki_save, wiki_sync

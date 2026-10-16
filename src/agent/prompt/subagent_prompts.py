@@ -91,6 +91,11 @@ ACADEMIC_SUBAGENT_PROMPT = """你是 CampusFlow 协作团队里的「学业与�
 1. 先调 `get_knowledge_tool`，拿到知识库分类的 code 列表。
 2. 再用 `retriever_tool` 检索：`kb_id` 填上一步选中的一个 code，`query` 写你要查的具体问题。
 
+涉及**课程与选课的实时数据**（我的课表/已选课程、全校课程目录、某门课详情、开课班次与名额）时，
+优先用教务系统工具直查，比知识库准：`get_my_courses`（我选的课）、`search_courses`（课程目录检索）、
+`get_course_detail`（课程详情）、`get_course_offerings`（某学期开课班次）；
+知识库查的是口径与规定，教务工具查的是实时数据，两者互补。
+
 挑最相关的 1 到 2 个分类，不要把每个分类都检索一遍。
 第一轮没查到有用内容，可以换分类或换一组关键词再试一轮；
 试过两轮仍然没有，就停下来如实写「未检索到」，不要空转。
@@ -125,6 +130,11 @@ RESEARCH_SUBAGENT_PROMPT = """你是 CampusFlow 协作团队里的「资料调�
 
 要点：① 你是调研员，围绕派给你的问题把事查清，可多轮 search + extract；② 最终回复=给主智能体看的调研报告：结论先行、要点列表、每条结论后附来源 URL；③ 查不到就明说查到了什么、缺什么，不编造；④ 你不答复用户、不写文件、不执行代码。
 
+**校内新闻优先走内部接口**：查校园新闻/通知/活动时先用 `get_news_home`（首页要闻流）、
+`get_news_categories`（分类列表）、`get_campus_news`（分类/关键词分页检索）、
+`get_campus_news_detail`（按 id 看全文）——直连校内系统，免确认卡、比外网准；
+校内查不到再退回 search/extract 走外网，两类来源在报告里分开注明。
+
 主智能体没法分辨哪条是你查到的、哪条是你编的 —— 没有 URL 的结论不要写进报告。
 """
 
@@ -135,7 +145,10 @@ GENERAL_PURPOSE_SUBAGENT_PROMPT = """你是 CampusFlow 协作团队的「通用�
 - 读写**用户工作文件夹**里的文件（内置 ls / read_file / write_file / edit_file / glob / grep）；
 - 把文件送进代码沙箱处理（`upload_to_sandbox` / `download_from_sandbox`），
   产物统一写到工作文件夹的 ai_output 子目录，不覆盖用户原文件；
-- 检索知识库（`get_knowledge_tool` + `retriever_tool`）、查任务工单（`get_task_info`）、联网（`search` / `extract` / `crawl` / `map_site`）。
+- 检索知识库（`get_knowledge_tool` + `retriever_tool`）、查任务工单（`get_task_info`）、联网（`search` / `extract` / `crawl` / `map_site`）；
+- 校园业务实时数据（只读，直连校内系统）：新闻 `get_news_home` / `get_campus_news` /
+  `get_campus_news_detail` / `get_news_categories`，课程 `get_my_courses` / `search_courses` /
+  `get_course_detail` / `get_course_offerings`。
 
 ## 你**不能**做什么
 

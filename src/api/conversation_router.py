@@ -6,7 +6,7 @@ from sqlalchemy import select
 
 from src.db.basic_config import get_session_mysql
 from src.db.db_conversation import conversation
-from src.jwt.JWTAuthMiddleware import get_current_user_id
+from src.jwt.JWTAuthMiddleware import get_current_user_id, get_user_token
 from src.models.meassage import Message
 from src.repositories.conversations_repo import (
     create_conversation, chat_create_conversation, stop_stream, send_supplement,
@@ -24,12 +24,14 @@ chat_or_agent={
 # JSON body 参数，multipart 正文整体当字符串塞进模型 → 422 model_attributes_type。
 # 两个端点都要这么写，漏一个就有一条路进不来。
 @conversation_router.post("/messages/stream")
-async def stream_messages(message: Annotated[Message, Form()], session=Depends(get_session_mysql), user_id=Depends(get_current_user_id)):
+async def stream_messages(message: Annotated[Message, Form()], session=Depends(get_session_mysql), user_id=Depends(get_current_user_id), user_token: str = Depends(get_user_token)):
     """
     Endpoint to stream messages in real-time.
     """
     return StreamingResponse(
-        chat_or_agent[message.mode] (message, session, user_id),
+        # user_token：原样传给生成器（conversations_repo 里 bind_user_token 绑进
+        # ContextVar），campus_api_tool 等工具用它以用户身份调 Java 业务系统。
+        chat_or_agent[message.mode] (message, session, user_id, user_token),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
@@ -40,13 +42,13 @@ async def stream_messages(message: Annotated[Message, Form()], session=Depends(g
 
 @conversation_router.post("/{conversation_id}/messages/stream")
 async def stream_messages(conversation_id: int, message: Annotated[Message, Form()], session=Depends(get_session_mysql),
-                          user_id=Depends(get_current_user_id)):
+                          user_id=Depends(get_current_user_id), user_token: str = Depends(get_user_token)):
     """
     Endpoint to stream messages in real-time.
     """
     message.conversation_id = conversation_id
     return StreamingResponse(
-        chat_or_agent[message.mode] (message, session, user_id),
+        chat_or_agent[message.mode] (message, session, user_id, user_token),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

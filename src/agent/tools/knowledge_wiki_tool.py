@@ -41,6 +41,8 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+from src.agent.tools.laya_guard import guard_retrieved
+
 from langchain.tools import tool, ToolRuntime
 
 # 两个测试/部署覆盖口（模块级读一次，自测 reload 生效，同旧行为）：
@@ -167,7 +169,7 @@ def wiki_search(query: str, runtime: ToolRuntime) -> str:
                 out.extend(f"- {h}" for h in hits)
             else:
                 out.append("（无逐行命中，标题级相关）")
-        return "\n".join(out)[:4000]
+        return guard_retrieved("wiki", "\n".join(out)[:4000])
     except Exception as e:  # noqa: BLE001 —— 辅助步骤只降级
         return f"知识库查询失败（已降级，不影响主流程）：{e!r}"
 

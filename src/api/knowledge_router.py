@@ -126,6 +126,34 @@ async def ingest_status(file_id: int, user_id=Depends(get_current_user_id)):
     return result.success(data=data)
 
 
+@knowledge_router.get("/documents/removed")
+async def removed_documents(
+        query: str | None = None,
+        category: str | None = None,
+        page: int = 1,
+        page_size: int = 8,
+        user_id=Depends(get_current_user_id)):
+    """已移出知识库的文档列表（管理端「移除知识库」页签）。
+
+    ⚠️ 必须声明在 `GET /documents/{document_id}` **之前**：FastAPI 按声明顺序匹配，
+    若顺序颠倒，"removed" 会被拿去解析 document_id(int) 直接 422。
+
+    query / category 是页签共享检索框的透传（口径同 Java 文档列表：
+    query LIKE 标题/文号/摘要，category 为分类名精确匹配，不存在的分类回空页）。
+    响应分页包络：data.items / page / page_size / total / has_more；
+    item 字段对齐 Java 文档列表（title / document_no / issuer / category /
+    updated_at…，另补 removed_at），缺的字段前端显示「未回传」。
+    """
+    try:
+        data = await kb.list_removed_documents(
+            query=query, category=category, page=page, page_size=page_size,
+        )
+    except Exception as exc:
+        logger.exception("查询已移出文档列表失败")
+        return result(500, f"查询已移出文档列表失败: {exc}").error()
+    return result.success(data=data)
+
+
 @knowledge_router.get("/documents/{document_id}")
 async def document_detail(document_id: int, user_id=Depends(get_current_user_id)):
     """文档详情（含当前版本、分块数、分类）。"""
@@ -144,15 +172,19 @@ async def document_detail(document_id: int, user_id=Depends(get_current_user_id)
     action="knowledge.remove",
     resource_type="knowledge_document",
     resource_id=from_path("document_id"),
+    # 响应契约只有 {"id": ...}（前端不依赖状态回显），审计里能拿到的就这一个
     detail=lambda kwargs, data: {
         "documentId": kwargs.get("document_id"),
-        "removed": (data or {}).get("removed"),
-        "status": (data or {}).get("status"),
+        "id": (data or {}).get("id"),
     },
 )
 async def remove_document(document_id: int, request: Request,
                           user_id=Depends(get_current_user_id)):
-    """把文档移出知识库（删向量，PG 行保留为 removed 留痕）。"""
+    """把文档移出知识库（删向量，行保留为软删留痕）。
+
+    🔴 移出判据唯一 = knowledge_documents.deleted_at IS NOT NULL（status 枚举里
+    没有 'removed'，不写状态）。响应契约：`{ "code": 0, "data": { "id": 123 } }`。
+    """
     try:
         data = await kb.remove_document(document_id=document_id)
     except kb.IngestError as exc:

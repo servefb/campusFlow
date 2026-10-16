@@ -17,6 +17,7 @@ from src.agent.llm.llm_node import model
 from src.agent.prompt.chat_agent_prompt import chat_agent_prompt
 from src.agent import approvals
 from src.agent.tools.host_exec import blocked_reason, outside_notice
+from src.agent.tools.campus_api_tool import bind_user_token
 from src.agent.tools.knowledge_categories_tool import get_knowledge_tool
 from src.repositories.workspace_browse_repo import resolve_workspace_path
 from src.agent.tools.retriever_tool import retriever_tool
@@ -332,8 +333,11 @@ def _extract_answer_prefix(raw: str) -> tuple[str | None, bool]:
     return "".join(out), False
 
 
-async def chat_create_conversation(messages: Message, session: AsyncSession, user_id: int):
+async def chat_create_conversation(messages: Message, session: AsyncSession, user_id: int, user_token: str = ""):
     gen = SnowflakeGenerator(instance=1)
+    # 用户令牌转发：campus_api_tool 等工具以「当前用户」身份调 Java 业务系统
+    # （两边同一套 JWT）。绑在生成器体里，随 asyncio 上下文流进 astream/子代理。
+    bind_user_token(user_token)
     # 客户端回传 conversation_id 则续接同一线程(多轮对话)，否则新开线程
     thread_id = messages.conversation_id or str(next(gen))
     config = {"configurable": {"thread_id": thread_id, "tags": ["internal"]}}
@@ -700,7 +704,7 @@ def build_attachment_block(saved: list, rejected: list, is_default: bool = False
     return "".join(segs)
 
 
-async def create_conversation(messages: Message, session: AsyncSession, user_id: int):
+async def create_conversation(messages: Message, session: AsyncSession, user_id: int, user_token: str = ""):
     """对路由仍暴露为 async generator（调用方式零改动）。内部拆成生产者/消费者：
 
     生产者 task 跑 _agent_stream，把 SSE 事件写进队列 —— 这个 task 就是停止注册表里
@@ -709,6 +713,9 @@ async def create_conversation(messages: Message, session: AsyncSession, user_id:
     队列不设上界：SSE 事件都很小，背压不值得用「取消落在 put 上、丢了优雅收尾」去换。
     """
     gen = SnowflakeGenerator(instance=1)
+    # 用户令牌转发：必须在 TaskGroup.create_task 之前绑定 —— 生产者 task 继承
+    # 创建时的上下文，campus_api_tool 靠它以用户身份调 Java 业务系统。
+    bind_user_token(user_token)
     # 客户端回传 conversation_id 则续接同一线程(多轮对话)，否则新开线程
     thread_id = messages.conversation_id or str(next(gen))
 

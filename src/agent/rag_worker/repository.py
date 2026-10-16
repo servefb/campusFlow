@@ -103,6 +103,13 @@ class Repository:
         )
         return result.scalar_one_or_none()
 
+    async def get_category_ids_by_name(self, name: str) -> List[int]:
+        """按分类名精确解析 id 集合（与 Java 文档列表 resolveCategoryIds 同口径）。"""
+        result = await self.session.execute(
+            select(KnowledgeCategory.id).where(KnowledgeCategory.name == name)
+        )
+        return [int(x) for x in result.scalars().all()]
+
     async def update_document_meta(self, document_id, *, title=None, summary=None,
                                    document_no=None, category_id=None):
         values = {}
@@ -198,12 +205,14 @@ class Repository:
         )
 
     async def mark_document_removed(self, document_id: int):
-        """移出知识库：状态置 removed + deleted_at 打时间戳，不物理删行。"""
+        """移出知识库：deleted_at 打软删戳，**不动 status**（枚举里没有 'removed'，
+        写进去要么报错要么静默变空串）。移出判据唯一 = deleted_at IS NOT NULL，
+        与 Java 侧「软删一律 deleted_at IS NOT NULL」的统计口径天然一致。"""
         from datetime import datetime
         await self.session.execute(
             update(KnowledgeDocument)
             .where(KnowledgeDocument.id == document_id)
-            .values(status="removed", deleted_at=datetime.now())
+            .values(deleted_at=datetime.now())
         )
 
     # ---------- 上传文件表（Java 与 Python 共用 campus_flow 库，这里只读） ----------
@@ -243,6 +252,7 @@ class Repository:
                        v.chunk_count   AS chunk_count,
                        d.id            AS document_id,
                        d.status        AS document_status,
+                       d.deleted_at    AS document_deleted_at,
                        d.title         AS title,
                        c.code          AS category_code,
                        c.name          AS category_name
@@ -273,11 +283,13 @@ class Repository:
 
             刻意在 Python 侧折叠而不是让前端拼：前端只该消费一个状态字符串，
             三张表的 NULL 组合规则留在这里一处维护。
+
+            🔴 「已移出」判据 = document_deleted_at 非空（status 枚举里没有 removed）。
             """
             if row["version_id"] is None:
                 return "none"          # 从未确认入库
-            if row["document_status"] == "removed":
-                return "removed"       # 曾入库后被移出
+            if row["document_deleted_at"] is not None:
+                return "removed"       # 曾入库后被移出（软删戳）
             return row["version_status"] or "none"
 
         out = []
@@ -300,3 +312,58 @@ class Repository:
                 "categoryName": r["category_name"],
             })
         return out
+
+    # ---------- 已移出文档（判据唯一 = deleted_at IS NOT NULL） ----------
+    @staticmethod
+    def _removed_where(keyword: Optional[str], category_ids: Optional[List[int]]):
+        """已移出列表的统一过滤条件。参数一律走绑定变量，绝不拼值。"""
+        conds = ["d.deleted_at IS NOT NULL"]
+        params: dict = {}
+        if keyword:
+            conds.append(
+                "(d.title LIKE :kw OR d.document_no LIKE :kw OR d.summary LIKE :kw)")
+            params["kw"] = f"%{keyword}%"
+        if category_ids is not None:
+            keys = []
+            for i, cid in enumerate(category_ids):
+                params[f"cat{i}"] = int(cid)
+                keys.append(f":cat{i}")
+            conds.append(f"d.category_id IN ({', '.join(keys)})")
+        return " AND ".join(conds), params
+
+    async def count_removed_documents(
+            self, keyword: Optional[str] = None,
+            category_ids: Optional[List[int]] = None) -> int:
+        where, params = self._removed_where(keyword, category_ids)
+        result = await self.session.execute(
+            text(f"SELECT COUNT(*) FROM knowledge_documents d WHERE {where}"),
+            params,
+        )
+        return int(result.scalar_one() or 0)
+
+    async def list_removed_documents(
+            self, keyword: Optional[str] = None,
+            category_ids: Optional[List[int]] = None,
+            *, offset: int = 0, limit: int = 20) -> List[dict]:
+        where, params = self._removed_where(keyword, category_ids)
+        params["lim"] = int(limit)
+        params["off"] = int(offset)
+        rows = (await self.session.execute(
+            text(
+                f"""
+                SELECT d.id, d.title, d.document_no, d.summary, d.status, d.validity,
+                       d.published_at, d.updated_at,
+                       d.deleted_at AS removed_at,
+                       c.name       AS category,
+                       o.name       AS issuer
+                FROM knowledge_documents d
+                LEFT JOIN knowledge_categories c ON c.id = d.category_id
+                LEFT JOIN organizations o ON o.id = d.issuer_organization_id
+                WHERE {where}
+                ORDER BY d.deleted_at DESC, d.id DESC
+                LIMIT :lim OFFSET :off
+                """
+            ),
+            params,
+        )).mappings().all()
+        return [dict(r) for r in rows]

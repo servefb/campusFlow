@@ -13,7 +13,7 @@
 
 状态取值（knowledge_documents.status / knowledge_document_versions.status）：
     processing → ready | failed
-    removed   —— 曾入库后被移出
+    移出不留状态值：判据 = knowledge_documents.deleted_at IS NOT NULL（见下）
 
 失败重试复用同一条 version 记录（清掉上次的 sections 与向量），不堆版本号。
 """
@@ -41,7 +41,9 @@ logger = logging.getLogger(__name__)
 PROCESSING = "processing"
 READY = "ready"
 FAILED = "failed"
-REMOVED = "removed"
+# 🔴 「已移出」**没有** status 值：库枚举里不含 'removed'（写进去会静默变空串），
+# 判据唯一 = knowledge_documents.deleted_at IS NOT NULL，状态保持原值（通常是 ready）。
+# 这与 Java 侧「软删一律 deleted_at IS NOT NULL」的口径天然一致。
 
 # processing 卡住多久算僵死、允许重新触发。进程中途挂掉会让任务丢失，
 # 没有这个兜底那条记录就永远停在 processing，所以必须留一个出口。
@@ -243,7 +245,7 @@ async def start_ingest(
         ver = await repo.find_version_by_source_file_id(file_id)
         if ver:
             doc = await repo.get_document_by_id(ver.document_id)
-            if doc and doc.status == REMOVED:
+            if doc and doc.deleted_at is not None:
                 # 曾移出知识库的文件再入库 → 当作全新入库，不复用旧记录
                 ver, doc = None, None
 
@@ -430,6 +432,26 @@ async def run_ingest(
             await repo.update_version_status(version_id, READY)
             await session.commit()
 
+        # 6. 冲突扫描（规则层 + LLM 语义层）→ knowledge_conflicts（pending），
+        #    管理端「冲突列表」读的就是这张表。★ 只降级不中断：
+        #    扫描挂了入库照样 ready —— 冲突提示是锦上添花，入库失败才是事故。
+        try:
+            from src.agent.rag_worker.conflict_scan import scan_conflicts
+            cstats = await scan_conflicts(
+                document_id=document_id,
+                category_code=category_code,
+                chunk_texts=[c.page_content for c in chunks],
+                title=title or meta.get("title"),
+                document_no=document_no or meta.get("document_no"),
+            )
+            if cstats.get("total"):
+                logger.info(
+                    f"冲突扫描发现疑似冲突 docId={document_id} "
+                    f"rule={cstats['rule']} semantic={cstats['semantic']}"
+                )
+        except Exception:
+            logger.exception(f"冲突扫描异常（不影响入库结果）docId={document_id}")
+
         logger.info(
             f"入库完成 fileId={file_id} docId={document_id} "
             f"verId={version_id} category={category_code} chunks={len(rows)}"
@@ -539,18 +561,92 @@ async def get_document_detail(*, document_id: int) -> dict:
         }
 
 
-async def remove_document(*, document_id: int) -> dict:
-    """移出知识库：删向量 + 状态置 removed + deleted_at，不物理删行。
+async def list_removed_documents(
+        *,
+        query: Optional[str] = None,
+        category: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 8,
+) -> dict:
+    """已移出知识库的文档列表（管理端「移除知识库」页签）。
 
-    保留 PG 行是为了留痕（谁、什么时候移出的），也便于日后追溯。
+    判据 = `knowledge_documents.deleted_at IS NOT NULL`（向量在移出那一刻已删干净，
+    所以这份数据与向量库天然一致 —— 不需要再去向量库反查「缺了谁」）。
+
+    检索口径与 Java 文档列表对齐：
+      query    —— LIKE title / document_no / summary；
+      category —— 分类**名称**精确匹配（Java resolveCategoryIds 同款）；
+                  指定了不存在的分类 → 空页，绝不退回「不过滤」。
+    分页包络：{items, page, page_size, total, has_more}。
+    """
+    page = max(1, int(page or 1))
+    page_size = min(max(1, int(page_size or 8)), 100)
+    keyword = (query or "").strip() or None
+    category_name = (category or "").strip() or None
+
+    empty = {"items": [], "page": page, "page_size": page_size,
+             "total": 0, "has_more": False}
+
+    async with AsyncSessionLocal() as session:
+        repo = Repository(session)
+        category_ids = None
+        if category_name:
+            category_ids = await repo.get_category_ids_by_name(category_name)
+            if not category_ids:
+                return empty
+        total = await repo.count_removed_documents(keyword, category_ids)
+        if total == 0:
+            return empty
+        rows = await repo.list_removed_documents(
+            keyword, category_ids,
+            offset=(page - 1) * page_size, limit=page_size,
+        )
+
+    items = [_removed_item(r) for r in rows]
+    return {
+        "items": items, "page": page, "page_size": page_size,
+        "total": total, "has_more": page * page_size < total,
+    }
+
+
+def _removed_item(r: dict) -> dict:
+    """字段口径对齐 Java 文档列表 KnowledgeDocumentVo（snake_case），缺的留给前端显示「未回传」。
+
+    补充一个契约外字段 removed_at（= deleted_at）—— 移除页签最关心的就是「什么时候移的」。
+    """
+    return {
+        "id": r["id"],
+        "title": r["title"],
+        "document_no": r["document_no"],
+        "issuer": r["issuer"],
+        "category": r["category"],
+        "validity": r["validity"],
+        "status": r["status"],
+        "published_at": r["published_at"].isoformat() if r["published_at"] else None,
+        "updated_at": r["updated_at"].isoformat() if r["updated_at"] else None,
+        "removed_at": r["removed_at"].isoformat() if r["removed_at"] else None,
+    }
+
+
+async def remove_document(*, document_id: int) -> dict:
+    """移出知识库：删向量 + deleted_at 打软删戳，不物理删行。
+
+    🔴 **判据唯一 = deleted_at IS NOT NULL**（状态保持原值，不改写成 removed ——
+    枚举里没有这个值）。保留行是为了留痕（谁、什么时候移出的），也供
+    「已移出」列表展示；同一文件日后重新入库会建**新** document 行，旧行留作痕迹。
+
+    顺序刻意是「先删向量、成功后才写 deleted_at」：向量删除失败就抛错，
+    库里一个字都不动 —— 不会出现「列表里显示已移出、向量却还能被检索到」的脏状态。
+
+    返回契约：`{"id": document_id}`，前端不依赖状态回显；重复移出是幂等的成功。
     """
     async with AsyncSessionLocal() as session:
         repo = Repository(session)
         doc = await repo.get_document_by_id(document_id)
         if not doc:
             raise IngestError(f"文档不存在: {document_id}")
-        if doc.status == REMOVED:
-            return {"documentId": document_id, "status": REMOVED, "removed": False}
+        if doc.deleted_at is not None:
+            return {"id": document_id}
         category_code = await repo.get_category_code(doc.category_id) if doc.category_id else None
         cur = await repo.get_current_version(document_id)
         cur_id = cur.id if cur else None
@@ -568,12 +664,12 @@ async def remove_document(*, document_id: int) -> dict:
         repo = Repository(session)
         await repo.mark_document_removed(document_id)
         if cur_id:
-            await repo.update_version_status(cur_id, REMOVED)
+            # 版本只下线（is_current=false）；status 保持原值，不写 'removed'
             await repo.update_version_fields(cur_id, is_current=False)
         await session.commit()
 
     logger.info(f"已移出知识库 docId={document_id}")
-    return {"documentId": document_id, "status": REMOVED, "removed": True}
+    return {"id": document_id}
 
 
 # --------------------------------------------------------------------------
@@ -616,7 +712,7 @@ async def reindex_document(*, document_id: int, user_id: Optional[int]) -> dict:
         doc = await repo.get_document_by_id(document_id)
         if not doc:
             raise IngestError(f"文档不存在: documentId={document_id}", "not_found")
-        if doc.status == REMOVED:
+        if doc.deleted_at is not None:
             # 已移出的文档在库里留着痕（版本 is_current=false），走的是「重新加入」那条路
             raise IngestError(
                 "该文档已移出知识库，请用「加入知识库」重新入库，而不是重建索引", "removed")

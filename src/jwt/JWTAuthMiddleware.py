@@ -40,6 +40,9 @@ class JWTAuthMiddleware(BaseHTTPMiddleware):
             if user_id is None:
                 raise JWTError("缺少 userId")
             request.state.user_id = user_id
+            # 原始令牌留给需要「转发用户身份」的场景（如 campus_api_tool 转发给
+            # Java 业务系统——两边同一套 JWT，同一把密钥）。
+            request.state.user_token = token
         except JWTError as e:
             return JSONResponse(status_code=401, content={"detail": f"Token 无效: {str(e)}"})
 
@@ -51,3 +54,7 @@ async def get_current_user_id(request: Request) -> str:
     if user_id is None:
         raise HTTPException(status_code=401, detail="未认证")
     return user_id
+
+async def get_user_token(request: Request) -> str:
+    """当前请求的原始 access token（转发用户身份用；白名单路径上为空串）。"""
+    return getattr(request.state, "user_token", "")

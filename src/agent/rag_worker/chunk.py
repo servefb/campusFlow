@@ -61,6 +61,34 @@ def _extract_chapter_article(text: str):
     )
 
 
+class _ChapterCounter:
+    """兜底章号分配器（文档级，按 chunk 顺序发号）。
+
+    背景：chapter_no / article_no 原本只从正文的「第X章 / 第X条」提取，
+    而通知 / 手册 / 制度类文档根本没有这种结构 —— 入库后
+    knowledge_sections 这两列整片 NULL，管理员在库里看到的就是一片空。
+
+    适配规则：**抽不到「第X条」的块，按章处理** —— 按文档顺序依次补一个
+    章号。分块严格按文档顺序产出，顺序编号即可，不需要理解文档结构。
+
+    计数器同时记录已出现过的显式章号并取 max：混排文档（真有「第X章」的
+    段落后面跟着普通段落）里，兜底章号从显式章号往后排，不会撞号。
+    """
+
+    def __init__(self):
+        self._max = 0
+        self.assigned = 0  # 实际发了多少个兜底章号（日志 / 自测用）
+
+    def observe(self, chapter_no):
+        if chapter_no is not None and chapter_no > self._max:
+            self._max = chapter_no
+
+    def next_chapter(self) -> int:
+        self._max += 1
+        self.assigned += 1
+        return self._max
+
+
 # ---------- 通用读文本 ----------
 def _read_text(path):
     for enc in ("utf-8", "gbk", "latin-1"):
@@ -195,13 +223,24 @@ def _chunk_markdown(docs):
 
 
 # ---------- 分块后加工：补 knowledge_sections 需要的字段 ----------
-def _enrich_chunk(chunk: Document, index: int, total: int):
+def _enrich_chunk(chunk: Document, index: int, total: int,
+                  counter: _ChapterCounter):
     """给每个 chunk 的 metadata 补上 chapter_no / article_no /
-    section_label / token_count / chunkIndex / chunkTotal。"""
+    section_label / token_count / chunkIndex / chunkTotal。
+
+    chapter_no / article_no 取值优先级：
+      1. 正文里的「第X章 / 第X条」（法规类文档，原行为）；
+      2. 都抽不到时（article_no 为空）把该块当作一章，按文档顺序补章号，
+         保证 knowledge_sections.chapter_no 不会整列 NULL。
+    """
     text = chunk.page_content
     meta = chunk.metadata
 
     chapter_no, article_no = _extract_chapter_article(text)
+    counter.observe(chapter_no)
+    if chapter_no is None and article_no is None:
+        # 「第X章」「第X条」都抽不到 → 该块没有条款结构，按章兜底编号
+        chapter_no = counter.next_chapter()
 
     label_parts = []
     if chapter_no:
@@ -243,7 +282,13 @@ def parse_and_chunk(file_path: str, file_name: str):
 
     chunks = [c for c in chunks if c.page_content.strip()]
     total = len(chunks)
-    chunks = [_enrich_chunk(c, i, total) for i, c in enumerate(chunks)]
+    counter = _ChapterCounter()
+    chunks = [_enrich_chunk(c, i, total, counter) for i, c in enumerate(chunks)]
+    if counter.assigned:
+        logger.info(
+            f"{file_name} 有 {counter.assigned}/{total} 个分块无「第X章/第X条」结构，"
+            f"已按文档顺序补章号"
+        )
 
     logger.info(f"{file_name} 分块完成，共 {total} 块")
     return chunks

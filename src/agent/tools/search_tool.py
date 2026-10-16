@@ -4,6 +4,8 @@ import dotenv
 dotenv.load_dotenv()
 from langchain_core.tools import tool
 
+from src.agent.tools.laya_guard import guard_retrieved
+
 
 @tool
 def search(query: str, topic: str, time_range: str, search_depth: str, purpose: str) -> str:
@@ -34,7 +36,7 @@ def search(query: str, topic: str, time_range: str, search_depth: str, purpose: 
         time_range=time_range,  # 时间范围：day / week / month / year
         include_raw_content="markdown",  # 同时返回清洗后的 Markdown 全文
     )
-    return _search.invoke(query)
+    return guard_retrieved("web:search", _search.invoke(query))
 
 
 from langchain_tavily import TavilyExtract
@@ -57,7 +59,7 @@ def extract(urls: list, purpose: str) -> str:
     - 每个 URL 的提取结果，通常包含 url、title、raw_content 等；失败时可能包含错误信息。
     """
     _extract = TavilyExtract()
-    return _extract.invoke(urls)
+    return guard_retrieved("web:extract", _extract.invoke(urls))
 
 
 from langchain_tavily import TavilyCrawl
@@ -81,7 +83,7 @@ def crawl(url: str, purpose: str) -> str:
    - 爬取到的页面结果，通常包含 base_url、results 列表，每个页面包含 url、raw_content 等。
    """
     _crawl = TavilyCrawl(max_depth=2, max_breadth=10)
-    return _crawl.invoke({"url": url})
+    return guard_retrieved("web:crawl", _crawl.invoke({"url": url}))
 
 
 from langchain_tavily import TavilyMap
