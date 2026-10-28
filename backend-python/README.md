@@ -67,21 +67,49 @@ curl http://127.0.0.1:8000/health
 ## 项目结构
 
 ```
-src/
-├── api/            # FastAPI 路由：对话(SSE)、知识库、历史、任务代理、健康检查
-├── agent/
-│   ├── nodes/      # LangGraph 节点（common_agent_node）
-│   ├── prompt/     # 主/子智能体提示词
-│   ├── tools/      # RAG 检索、校园业务 API、OpenWiki、laya 护栏、搜索
-│   ├── rag_worker/ # 知识库入库：切分、冲突扫描、审计
-│   ├── sandbox/    # OpenSandbox 会话级代码执行
-│   ├── cache/      # LLM Redis 缓存
-│   └── llm/        # 模型接入、reasoning_effort 收敛、历史窗口
-├── cache/          # Redis 客户端（惰性单例）
-├── db/             # MySQL 共库访问（参数化 SQL，不建 ORM）
-├── jwt/            # JWT 鉴权中间件
-└── repositories/   # 会话/消息仓储、SSE 流管理
+backend-python/
+├── run.py              # 唯一启动入口（Windows 事件循环策略在内部处理）
+├── src/
+│   ├── api/            # FastAPI 路由：对话(SSE)、知识库、历史、任务代理、健康检查
+│   ├── agent/
+│   │   ├── nodes/      # LangGraph 节点（common_agent_node）
+│   │   ├── prompt/     # 主/子智能体提示词
+│   │   ├── tools/      # RAG 检索、校园业务 API、OpenWiki、laya 护栏、搜索
+│   │   ├── rag_worker/ # 知识库入库：切分、冲突扫描、审计
+│   │   ├── sandbox/    # OpenSandbox 会话级代码执行
+│   │   ├── cache/      # LLM Redis 缓存
+│   │   └── llm/        # 模型接入、reasoning_effort 收敛、历史窗口
+│   ├── cache/          # Redis 客户端（惰性单例）
+│   ├── db/             # MySQL 共库访问（参数化 SQL，不建 ORM）
+│   ├── jwt/            # JWT 鉴权中间件
+│   └── repositories/   # 会话/消息仓储、SSE 流管理
+├── tools/              # 数据构建与指标评测脚本
+└── tests/              # 回归守卫（离线自测，不连库）
 ```
+
+### tools/ 与 tests/
+
+两者都是可独立运行的脚本，**统一在 `backend-python/` 目录下用 `-m` 方式运行**（脚本内部 `from src.xxx import` 依赖当前目录在 `sys.path` 里，直接 `python tests/xxx.py` 会 ImportError）：
+
+```bash
+# 回归守卫：不需要数据库/模型，纯静态或纯逻辑断言
+python -m tests._kb_remove_selftest      # 知识库「移出」契约（AST 守卫）
+python -m tests._chunk_section_selftest  # 章节/条文切分
+python -m tests._conflict_scan_selftest  # 入库冲突扫描
+python -m tests._laya_guard_selftest     # laya 护栏（需加载模型，冷启动较慢）
+python -m tests._laya_wiring_selftest    # 护栏接线（lifespan + prompt 两处成对）
+python -m tests._campus_api_tool_selftest
+python -m tests._taskgroup_stream_probe  # 流的 TaskGroup/GeneratorExit 行为
+python -m tests._stop_pause_probe2       # 停止/暂停续跑断点
+python -m tests._vision_probe            # 视觉链路探针
+
+# 数据构建与评测（产出 jsonl/json 已被 .gitignore 排除，不入库）
+python -m tools._build_eval_v17          # 评估集 v17
+python -m tools._build_finetune_v17_input # 微调输入集 v17
+python -m tools._metric_laya_bench        # 指标：laya 判定基准
+```
+
+`tools/` 下脚本按**当前工作目录**读写 `_finetune_*.jsonl` 等数据集，这些数据集不入库，需自备或由上游步骤生成后再运行。
 
 ## 安全说明
 

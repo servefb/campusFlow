@@ -26,3 +26,7 @@ debug.log
 *.log
 _resume_*.pdf
 _resume_*_out.*
+
+# 数据产物：微调/评估数据集与指标结果（由 tools/ 脚本生成，不入库）
+*.jsonl
+_metric_*.json

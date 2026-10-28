@@ -11,14 +11,16 @@
      且 remove 响应契约 = {"id": ...}。
 
 🔴 守卫查 AST 结构，不 grep 文本（'removed' 这个词必然出现在解释注释里）。
-用 .venv/Scripts/python.exe 或任意 3.10+ 运行：python _kb_remove_selftest.py
+用 .venv/Scripts/python.exe 或任意 3.10+ 运行（在 backend-python/ 下）：
+    python -m tests._kb_remove_selftest
 """
 
 import ast
 import os
 import sys
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+# 本文件在 tests/ 下，仓库根（backend-python/）是上一级
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROUTER = os.path.join(ROOT, "src", "api", "knowledge_router.py")
 SVC = os.path.join(ROOT, "src", "agent", "rag_worker", "ingest_service.py")
 REPO = os.path.join(ROOT, "src", "agent", "rag_worker", "repository.py")
