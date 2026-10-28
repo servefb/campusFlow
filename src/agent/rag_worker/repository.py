@@ -367,3 +367,102 @@ class Repository:
             params,
         )).mappings().all()
         return [dict(r) for r in rows]
+
+    # ---------- job / step（Java 共库表：knowledge_jobs / knowledge_job_steps） ----------
+    # 🔴 这两张表 Java 侧**只读不写**（管理端「任务记录」与数据看板的数据源），
+    #    写入责任全部在 Python 入库链路。列名逐字对齐 Java PO
+    #    （KnowledgeJobs / KnowledgeJobSteps，MyBatis-Plus 驼峰↔下划线自动映射），
+    #    参数化 text()、不建 ORM（与全仓对 Java 共库表的纪律一致）。
+    # 🔴 status 必须落在库 CHECK 枚举内：
+    #    jobs = pending / running / completed / failed / cancelled（AdminKnowledgeServiceImpl.JOB_STATUS）
+    #    steps 一阶段一行、(job_id, stage) 唯一键；stage 命名 snake_case，
+    #    末阶段固定 fulltext_indexing —— 看板「最近一次全文索引」统计的就是它。
+
+    async def count_jobs_for_version(self, version_id: int) -> int:
+        res = await self.session.execute(
+            text("SELECT COUNT(*) FROM knowledge_jobs WHERE version_id = :vid"),
+            {"vid": version_id},
+        )
+        return int(res.scalar() or 0)
+
+    async def insert_job(self, *, document_id: int, version_id: int,
+                         job_type: str, attempt_count: int,
+                         requested_by: Optional[int], stage: str) -> int:
+        """建一条 running 任务，返回自增 id。"""
+        res = await self.session.execute(
+            text("""
+                INSERT INTO knowledge_jobs
+                    (document_id, version_id, job_type, status, current_stage,
+                     progress, attempt_count, requested_by, started_at, created_at, updated_at)
+                VALUES
+                    (:doc_id, :ver_id, :job_type, 'running', :stage,
+                     0, :attempt, :requested_by, NOW(), NOW(), NOW())
+            """),
+            {
+                "doc_id": document_id, "ver_id": version_id, "job_type": job_type,
+                "stage": stage, "attempt": attempt_count, "requested_by": requested_by,
+            },
+        )
+        return int(res.lastrowid)
+
+    async def insert_job_step(self, job_id: int, stage: str) -> int:
+        res = await self.session.execute(
+            text("""
+                INSERT INTO knowledge_job_steps
+                    (job_id, stage, status, started_at)
+                VALUES (:job_id, :stage, 'running', NOW())
+            """),
+            {"job_id": job_id, "stage": stage},
+        )
+        return int(res.lastrowid)
+
+    async def complete_job_step(self, step_id: int, *, detail: Optional[str] = None):
+        await self.session.execute(
+            text("""
+                UPDATE knowledge_job_steps
+                SET status = 'completed', progress = 100,
+                    detail = :detail, elapsed_ms = TIMESTAMPDIFF(MICROSECOND, started_at, NOW()) DIV 1000,
+                    completed_at = NOW()
+                WHERE id = :sid
+            """),
+            {"sid": step_id, "detail": detail},
+        )
+
+    async def fail_job_step(self, step_id: int, *, detail: Optional[str] = None):
+        await self.session.execute(
+            text("""
+                UPDATE knowledge_job_steps
+                SET status = 'failed',
+                    detail = :detail, elapsed_ms = TIMESTAMPDIFF(MICROSECOND, started_at, NOW()) DIV 1000,
+                    completed_at = NOW()
+                WHERE id = :sid
+            """),
+            {"sid": step_id, "detail": detail},
+        )
+
+    async def advance_job_stage(self, job_id: int, stage: str, progress: int):
+        await self.session.execute(
+            text("""
+                UPDATE knowledge_jobs
+                SET current_stage = :stage, progress = :progress, updated_at = NOW()
+                WHERE id = :job_id
+            """),
+            {"job_id": job_id, "stage": stage, "progress": progress},
+        )
+
+    async def finish_job(self, job_id: int, *, status: str, stage: str, progress: int,
+                         error_code: Optional[str] = None, error_message: Optional[str] = None):
+        await self.session.execute(
+            text("""
+                UPDATE knowledge_jobs
+                SET status = :status, current_stage = :stage, progress = :progress,
+                    error_code = :error_code, error_message = :error_message,
+                    completed_at = NOW(), updated_at = NOW()
+                WHERE id = :job_id
+            """),
+            {
+                "job_id": job_id, "status": status, "stage": stage, "progress": progress,
+                "error_code": error_code,
+                "error_message": (error_message or "")[:900] or None,
+            },
+        )

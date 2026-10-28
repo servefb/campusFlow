@@ -125,6 +125,89 @@ class _SectionRow:
         self.page_end = s.page_end
 
 
+class _JobTracker:
+    """把一次入库写到 knowledge_jobs / knowledge_job_steps（Java 共库表）。
+
+    🔴 定位是**可观测性数据**，不是入库的正确性依赖：任何一个写失败都只打日志，
+    绝不向入库主流程抛异常 —— 管理端少一行记录是损失，入库挂掉是事故。
+    每个方法独立开 session、独立提交，与 run_ingest 自己的事务完全隔离。
+
+    stage 命名对齐 Java 看板已有约定（snake_case，末阶段 fulltext_indexing ——
+    AdminMetricsMapper「最近一次全文索引」统计的就是这个 stage）。
+    """
+
+    STAGES = ("parsing", "meta_extraction", "store_sections", "fulltext_indexing")
+    # 每阶段完成后的整体进度（与 STAGES 一一对应）
+    _PROGRESS = (25, 50, 75, 100)
+
+    def __init__(self, *, document_id: int, version_id: int,
+                 user_id: Optional[int], job_type: str = "ingest"):
+        self.document_id = document_id
+        self.version_id = version_id
+        self.user_id = user_id
+        self.job_type = job_type
+        self.job_id: Optional[int] = None
+        self._step_id: Optional[int] = None
+        self._stage_idx = -1
+
+    async def _run(self, method_name: str, *args, **kwargs):
+        """独立 session 执行一个 Repository 调用，返回其结果；任何异常只记日志。"""
+        try:
+            async with AsyncSessionLocal() as session:
+                repo = Repository(session)
+                result = await getattr(repo, method_name)(*args, **kwargs)
+                await session.commit()
+                return result
+        except Exception:
+            logger.warning(f"job/step 记录写入失败（不影响入库）method={method_name}",
+                           exc_info=True)
+            return None
+
+    async def start(self):
+        """建 running 任务行。attempt_count = 该版本已有的历史 job 数 + 1。"""
+        attempts = await self._run("count_jobs_for_version", self.version_id)
+        self.job_id = await self._run(
+            "insert_job",
+            document_id=self.document_id, version_id=self.version_id,
+            job_type=self.job_type, attempt_count=(attempts or 0) + 1,
+            requested_by=self.user_id, stage=self.STAGES[0],
+        )
+
+    async def stage_begin(self, idx: int):
+        """进入某阶段：插入一行 running 的 step。"""
+        self._stage_idx = idx
+        if self.job_id is None:
+            return
+        self._step_id = await self._run("insert_job_step", self.job_id, self.STAGES[idx])
+
+    async def stage_done(self, *, ok: bool, detail: Optional[str] = None):
+        """结束当前阶段（step 失败也走这里；job 级失败由 finish() 统一收尾）。"""
+        if self.job_id is None or self._stage_idx < 0:
+            return
+        stage = self.STAGES[self._stage_idx]
+        if self._step_id is not None:
+            method = "complete_job_step" if ok else "fail_job_step"
+            await self._run(method, self._step_id, detail=detail)
+        if ok:
+            await self._run("advance_job_stage", self.job_id, stage,
+                            self._PROGRESS[self._stage_idx])
+        self._step_id = None
+
+    async def finish(self, *, ok: bool, error: Optional[str] = None):
+        if self.job_id is None:
+            return
+        if ok:
+            await self._run("finish_job", self.job_id, status="completed",
+                            stage=self.STAGES[-1], progress=100)
+        else:
+            idx = max(self._stage_idx, 0)
+            await self._run("finish_job", self.job_id, status="failed",
+                            stage=self.STAGES[idx],
+                            progress=self._PROGRESS[idx] if self._stage_idx > 0 else 0,
+                            error_code="INGEST_ERROR", error_message=error)
+
+
+
 def _to_section_models(chunks, version_id: int):
     from src.db.db_Knowledge import KnowledgeSection
     sections = []
@@ -370,19 +453,24 @@ async def run_ingest(
 ):
     tmp_path = None
     loop = asyncio.get_running_loop()
+    tracker = _JobTracker(document_id=document_id, version_id=version_id, user_id=user_id)
+    await tracker.start()
     try:
         # 1. 下载 + 解析分块（都是同步阻塞，丢线程池）
+        await tracker.stage_begin(0)
         tmp_path = await loop.run_in_executor(None, download, bucket, object_key)
         chunks = await loop.run_in_executor(None, parse_and_chunk, tmp_path, file_name)
         if not chunks:
             raise ValueError(f"文件解析后无内容: {file_name}")
         full_text = "\n".join(c.page_content for c in chunks)
+        await tracker.stage_done(ok=True)
 
         # 2. LLM 抽元数据（不含分类）
         #    ★ 降级而非中断：元数据是「锦上添花」，正文分块才是入库的必需品；
         #      下面每个字段都有正则/文件名兜底，所以模型抽失败不该把整篇文档卡在 FAILED。
         #      （09-21 就是这么挂的：extractor 取了 OpenAI 原生 SDK 的 .choices，
         #        异常冒泡后 document status=FAILED、正文白解析一遍。）
+        await tracker.stage_begin(1)
         try:
             meta = await loop.run_in_executor(
                 None, llm_extract_meta, model, file_name, full_text
@@ -392,8 +480,13 @@ async def run_ingest(
             meta = {}
         if not isinstance(meta, dict):
             meta = {}
+        await tracker.stage_done(
+            ok=True,
+            detail=None if meta else "llm_failed_rule_fallback",
+        )
 
         # 3. 落库：元数据 + sections（人工传入的 title/document_no 优先于 LLM）
+        await tracker.stage_begin(2)
         async with AsyncSessionLocal() as session:
             repo = Repository(session)
             await repo.update_document_fields(
@@ -418,12 +511,15 @@ async def run_ingest(
             )
             await session.commit()
             rows = [_SectionRow(s) for s in sections]
+        await tracker.stage_done(ok=True)
 
         # 4. 写 Chroma（外部系统，放事务外；分类用人工指定的 code 作 collection）
+        await tracker.stage_begin(3)
         await loop.run_in_executor(
             None, VectorStore.add_sections,
             category_code, document_id, version_id, rows,
         )
+        await tracker.stage_done(ok=True)
 
         # 5. 两处状态一起置 ready
         async with AsyncSessionLocal() as session:
@@ -431,6 +527,7 @@ async def run_ingest(
             await repo.update_document_fields(document_id, status=READY)
             await repo.update_version_status(version_id, READY)
             await session.commit()
+        await tracker.finish(ok=True)
 
         # 6. 冲突扫描（规则层 + LLM 语义层）→ knowledge_conflicts（pending），
         #    管理端「冲突列表」读的就是这张表。★ 只降级不中断：
@@ -459,6 +556,7 @@ async def run_ingest(
 
     except Exception as e:
         logger.exception(f"入库失败 fileId={file_id} docId={document_id}")
+        await tracker.finish(ok=False, error=str(e)[:900])
         try:
             async with AsyncSessionLocal() as session:
                 repo = Repository(session)
