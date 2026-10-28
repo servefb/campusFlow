@@ -1,0 +1,29 @@
+# ---- 构建产物 ----
+target/
+*.class
+
+# ---- IDE / 工具 ----
+.idea/
+*.iml
+.vscode/
+.workbuddy/
+
+# ---- 日志与临时文件 ----
+logs/
+outputs/
+*.log
+
+# ---- 本地私有配置（真实密码/密钥，永不提交） ----
+application-local.yml
+
+# ---- 本地依赖 / 运行时（不入库） ----
+skywalking-agent/
+
+# ---- 个人文件（简历等） ----
+简历*
+安全护栏微调-简历素材.md
+抢课高并发-简历素材.md
+
+# ---- OS 杂物 ----
+.DS_Store
+Thumbs.db
