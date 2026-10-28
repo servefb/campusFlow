@@ -1,0 +1,45 @@
+# ---- 环境与密钥 ----
+.env
+.env.*
+!.env.example
+*.bak-before-*
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+unsloth_compiled_cache/
+
+# ---- Node / 前端 ----
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.local
+
+# ---- Java ----
+target/
+*.class
+*.jar.original
+
+# ---- 运行时产物 ----
+logs/
+uploads/
+.tmp_*
+debug.log
+*.log
+
+# ---- IDE / 工具 ----
+.idea/
+.vscode/
+.workbuddy/
+.DS_Store
+Thumbs.db
+
+# ---- 本地草稿（不参与版本管理）----
+_local_scratch/
