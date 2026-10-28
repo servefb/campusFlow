@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Third-party runtime (nginx distribution)
+nginx-1.20.2/
+
+# Logs
+*.log
+logs/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.local
+
+# WorkBuddy agent workspace
+.workbuddy/

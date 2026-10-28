@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f7f8f5" />
+    <title>CampusFlow · 校园事务管理控制台</title>
+    <link rel="icon" type="image/png" href="/campus-flow-logo-v3.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      两种角色，别互相顶替：
+        Inter          —— 界面正文与控件（拉丁字母与数字的字形）
+        JetBrains Mono —— 所有数字 / 编号 / 时间戳 / 台账字段
+      中文交给系统字体（PingFang SC / 微软雅黑 / Noto Sans SC）：
+      中文字体包动辄数 MB，而系统中文字体的易读性已经足够，
+      这一套界面追求的是"轻"，不是"字库齐全"。
+      衬线体已从本项目中彻底退场 —— 业务界面全走无衬线。
+    -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
