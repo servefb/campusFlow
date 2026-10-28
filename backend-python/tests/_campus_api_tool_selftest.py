@@ -1,6 +1,6 @@
 """campus_api_tool 离线自测（不发真实请求）。
 
-跑法：`D:/worker-space/campusflow/.venv/Scripts/python.exe _campus_api_tool_selftest.py`
+跑法（在 backend-python/ 下）：python -m tests._campus_api_tool_selftest
 
 验证四件事：
 1. 模块可导入（装饰器、注解都没写错）；

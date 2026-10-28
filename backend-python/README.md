@@ -84,7 +84,10 @@ backend-python/
 │   ├── jwt/            # JWT 鉴权中间件
 │   └── repositories/   # 会话/消息仓储、SSE 流管理
 ├── tools/              # 数据构建与指标评测脚本
-└── tests/              # 回归守卫（离线自测，不连库）
+└── tests/              # 回归守卫（离线自测，不连库）与测试素材
+    ├── _*_selftest.py  # 契约/切分/护栏等断言守卫
+    ├── _*_probe*.py    # 流、暂停续跑、视觉等行为探针
+    └── fixtures/       # 护栏对抗用例、知识库样本文段
 ```
 
 ### tools/ 与 tests/
