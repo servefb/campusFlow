@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+
+# Local env files
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+
+# WorkBuddy workspace data
+.workbuddy/
+
+# Temp files
+_tmp_*
+*.ts.timestamp-*.mjs

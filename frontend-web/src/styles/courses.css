@@ -1,0 +1,107 @@
+/* 课程页（/courses）：沿用全站 --ink / --coral 色板，课程目录与开课班做成卡片层次。 */
+
+/* 页头复用全站玻璃材质 .page-heading（见 glass.css），这里只管版式：标题与统计药丸同一行。 */
+.course-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:28px;margin-bottom:28px}
+.course-title-group{display:flex;min-width:0;flex-direction:column}
+.course-title-line{display:flex;flex-wrap:wrap;align-items:center;gap:20px}
+.course-title-line h1{margin:0;font-size:30px}
+.course-summary-pills{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.course-pill{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;font-size:13px;color:#465060;background:#fff;border:1px solid var(--border);border-radius:999px;font-weight:500;white-space:nowrap}
+.course-pill-dot{width:6px;height:6px;flex:none;border-radius:50%;background:#8c94a1}
+.course-pill-dot.success{background:#10b981}
+.course-pill-dot.ping{background:#f59e0b;animation:course-ping 1.8s cubic-bezier(0,0,.2,1) infinite}
+@keyframes course-ping{0%{box-shadow:0 0 0 0 rgba(245,158,11,.45)}70%,100%{box-shadow:0 0 0 6px rgba(245,158,11,0)}}
+
+/* 标签页：胶囊式分段控件。 */
+.course-tabs{display:inline-flex;gap:4px;padding:4px;margin-bottom:18px;background:#eef1f5;border-radius:12px}
+.course-tabs button{padding:9px 18px;border-radius:9px;color:var(--muted);font-weight:500;transition:background .15s,color .15s}
+.course-tabs button:hover{color:var(--ink)}
+.course-tabs button.active{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(15,23,42,.08)}
+
+/* 工具栏：搜索框和下拉框同高，圆角统一。 */
+.course-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:22px}
+.course-toolbar select{height:44px;border:1px solid var(--border);border-radius:10px;padding:0 14px;background:#fff;color:var(--ink);outline:0;cursor:pointer}
+.course-toolbar select:focus{border-color:var(--ink)}
+.course-search{flex:1;min-width:240px;display:flex;align-items:center;gap:10px;height:44px;border:1px solid var(--border);border-radius:10px;padding:0 14px;background:#fff;color:var(--muted);transition:border-color .15s,box-shadow .15s}
+.course-search:focus-within{border-color:var(--ink);box-shadow:0 0 0 3px rgba(9,20,38,.08)}
+.course-search input{flex:1;border:0;padding:0;height:auto;min-width:0;outline:0;color:var(--ink);background:transparent}
+
+.course-layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px;align-items:start}
+
+/* 课程卡：左侧按课程类型着色的竖线，悬停抬起。 */
+.course-list{display:flex;flex-direction:column;gap:12px}
+.course-row{position:relative;text-align:left;width:100%;padding:18px 20px 18px 22px;border:1px solid var(--border);border-radius:14px;background:#fff;display:flex;flex-direction:column;gap:8px;transition:transform .15s,box-shadow .15s,border-color .15s;overflow:hidden}
+.course-row:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--type-color,#cbd5e1)}
+.course-row:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(15,23,42,.07);border-color:#cbd5e1}
+.course-row.required{--type-color:var(--coral)}
+.course-row.elective{--type-color:#6366f1}
+.course-row.public{--type-color:var(--green)}
+.course-row.practice{--type-color:#f59e0b}
+.course-row.active{border-color:var(--ink);box-shadow:0 10px 24px rgba(9,20,38,.1)}
+.course-row-head{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.course-row-head strong{font-size:16px;color:var(--ink);font-weight:600}
+.course-row-meta{font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.course-row-meta>span+span:before{content:"·";margin-right:14px;color:#cbd5e1}
+
+/* 类型标签 */
+.course-tag{font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:#f1f5f9;color:#475569;white-space:nowrap;letter-spacing:.02em}
+.course-tag.required{background:#fff1ee;color:#b4362c}
+.course-tag.elective{background:#eef2ff;color:#4338ca}
+.course-tag.public{background:#ecfdf5;color:#047857}
+.course-tag.practice{background:#fffbeb;color:#b45309}
+
+.course-pager{display:flex;justify-content:space-between;align-items:center;margin-top:16px;font-size:13px;color:var(--muted)}
+.course-pager>div{display:flex;gap:8px}
+.course-pager button{padding:8px 16px;border:1px solid var(--border);border-radius:999px;background:#fff;color:var(--ink);font-weight:500;transition:border-color .15s}
+.course-pager button:hover:not(:disabled){border-color:var(--ink)}
+.course-pager button:disabled{opacity:.45;cursor:not-allowed}
+
+/* 右侧详情面板 */
+.course-detail{position:sticky;top:calc(var(--topbar-h) + 20px);padding:28px;border-radius:16px;background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.05),0 12px 32px rgba(15,23,42,.05)}
+.course-detail h2{margin:0 0 10px;font-size:22px;color:var(--ink);letter-spacing:-.01em}
+.course-detail h3{margin:26px 0 12px;font-size:14px;letter-spacing:.04em;color:var(--muted);font-weight:600}
+.course-detail-desc{color:#475569;font-size:14px;line-height:1.7;margin:14px 0}
+.course-detail .muted{font-size:13px;margin:0 0 4px}
+
+/* 开课班卡：票据式，左侧一条状态色带。 */
+.course-offering{position:relative;border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-top:12px;display:flex;flex-direction:column;gap:12px;background:linear-gradient(180deg,#fff,#fcfcfd)}
+.course-offering:before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;background:#cbd5e1}
+.course-offering[data-status="open"]:before{background:var(--green)}
+.course-offering[data-status="closed"]:before{background:#94a3b8}
+.course-offering-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.course-offering-head>span:first-child{font-size:15px;font-weight:700;color:var(--ink)}
+.course-offering dl{display:grid;grid-template-columns:76px 1fr;gap:8px 12px;margin:0;font-size:13.5px;align-items:start}
+.course-offering dt{color:var(--muted)}
+.course-offering dd{margin:0;color:var(--ink);display:flex;align-items:flex-start;gap:6px;flex-wrap:wrap}
+.course-offering dd svg{flex-shrink:0;margin-top:2px;color:var(--muted)}
+.course-schedule-line{display:flex;align-items:center;gap:6px;white-space:nowrap}
+
+/* 余量进度条 */
+.course-capacity{display:flex;align-items:center;gap:10px;width:100%}
+.course-capacity-bar{flex:1;height:6px;border-radius:999px;background:#eef1f5;overflow:hidden}
+.course-capacity-bar i{display:block;height:100%;border-radius:999px;background:var(--green)}
+.course-capacity-bar i.tight{background:#f59e0b}
+.course-capacity-bar i.full{background:var(--coral)}
+
+.course-offering-actions{display:flex;gap:10px;margin-top:4px;padding-top:14px;border-top:1px dashed var(--border)}
+.course-offering-actions .primary-button{padding:10px 20px;border-radius:999px}
+.course-offering-actions button:not(.primary-button){padding:10px 18px;border:1px solid var(--border);border-radius:999px;background:#fff;color:var(--ink);font-weight:600}
+.course-offering-actions button:not(.primary-button):hover:not(:disabled){border-color:var(--coral);color:var(--coral)}
+.course-offering-actions button:disabled{opacity:.55;cursor:wait}
+.course-offering .form-error{margin:0;border-radius:10px}
+
+/* 空态 / 加载 / 错误 */
+.course-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:48px 24px;text-align:center;color:var(--muted);font-size:14px;border:1px dashed #d5dbe3;border-radius:14px;background:#fbfcfd}
+.course-state svg{color:#94a3b8;background:#f1f5f9;border-radius:50%;padding:12px;box-sizing:content-box}
+.course-state h3{margin:4px 0 0;color:var(--ink);font-size:16px}
+.course-state p{margin:0;max-width:320px;line-height:1.6}
+.course-state button{margin-top:8px;padding:9px 18px;border-radius:999px;background:var(--ink);color:#fff;font-weight:600}
+
+/* 我的课表 */
+.course-my{padding:22px;border-radius:16px;background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.05),0 12px 32px rgba(15,23,42,.05)}
+
+@media(max-width:900px){
+  .course-layout{grid-template-columns:1fr}
+  .course-detail{position:static}
+  .course-hero{flex-direction:column;align-items:stretch}
+}

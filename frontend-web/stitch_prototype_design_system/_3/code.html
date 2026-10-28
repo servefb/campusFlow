@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter,+PingFang+SC,+system-ui,+sans-serif:wght@100..900&display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-container-lowest": "#ffffff", "outline": "#75777d", "on-secondary-container": "#6d0006", "outline-variant": "#c5c6cd", "inverse-primary": "#bcc7de", "on-secondary": "#ffffff", "secondary-fixed-dim": "#ffb4ab", "surface-dim": "#dadad9", "primary-container": "#1e293b", "on-error": "#ffffff", "tertiary": "#00190e", "primary-fixed-dim": "#bcc7de", "background": "#f9f9f8", "on-surface-variant": "#45474c", "on-secondary-fixed": "#410002", "on-secondary-fixed-variant": "#8b1817", "on-tertiary-fixed-variant": "#005236", "on-tertiary-container": "#00a472", "tertiary-fixed": "#6ffbbe", "secondary": "#ad312b", "error-container": "#ffdad6", "primary-fixed": "#d8e3fb", "inverse-surface": "#2f3130", "primary": "#091426", "tertiary-fixed-dim": "#4edea3", "surface-container-low": "#f3f4f3", "inverse-on-surface": "#f1f1f0", "on-error-container": "#93000a", "secondary-fixed": "#ffdad6", "surface-container": "#eeeeed", "on-tertiary-fixed": "#002113", "on-surface": "#1a1c1c", "surface-container-high": "#e8e8e7", "surface": "#f9f9f8", "error": "#ba1a1a", "on-primary-container": "#8590a6", "on-primary": "#ffffff", "tertiary-container": "#00301e", "on-tertiary": "#ffffff", "on-background": "#1a1c1c", "surface-tint": "#545f73", "on-primary-fixed-variant": "#3c475a", "secondary-container": "#fe6c61", "on-primary-fixed": "#111c2d", "surface-bright": "#f9f9f8", "surface-variant": "#e2e2e2", "surface-container-highest": "#e2e2e2" }, borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, spacing: { "max-content-width": "1280px", "context-drawer-width": "360px", "sidebar-width": "64px", "gutter-xl": "24px", "gutter-md": "12px", "gutter-sm": "8px", "gutter-2xl": "32px", "sidebar-width-expanded": "200px", "gutter-3xl": "48px", "gutter-lg": "20px", "gutter-base": "16px", "gutter-xs": "4px" }, fontFamily: { "code-sm": ["\"ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace\""], "headline-md": ["\"Inter, PingFang SC, system-ui, sans-serif\""], "label-md": ["\"Inter, PingFang SC, system-ui, sans-serif\""], "body-sm": ["\"Inter, PingFang SC, system-ui, sans-serif\""], "headline-lg": ["\"Inter, PingFang SC, system-ui, sans-serif\""], "headline-sm": ["\"Inter, PingFang SC, system-ui, sans-serif\""], "body-md": ["\"Inter, PingFang SC, system-ui, sans-serif\""], "body-lg": ["\"Inter, PingFang SC, system-ui, sans-serif\""], "label-sm": ["\"Inter, PingFang SC, system-ui, sans-serif\""], "display": ["\"Inter, PingFang SC, system-ui, sans-serif\""] }, fontSize: { "code-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "headline-md": ["18px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }], "body-sm": ["13px", { "lineHeight": "18px", "letterSpacing": "0", "fontWeight": "400" }], "headline-lg": ["22px", { "lineHeight": "30px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "headline-sm": ["15px", { "lineHeight": "22px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "22px", "letterSpacing": "0", "fontWeight": "400" }], "body-lg": ["15px", { "lineHeight": "24px", "letterSpacing": "0", "fontWeight": "400" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "600" }], "display": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600" }] } } } }</script><style>@layer base{html,body{width:100%;margin:0;padding:0;}body{overscroll-behavior-y:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style></head><body class="bg-surface font-body-md text-body-md text-on-surface min-h-screen flex flex-col antialiased selection:bg-secondary-fixed selection:text-on-secondary-fixed"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter-base flex items-center justify-between"><div class="flex items-center gap-gutter-sm"><img alt="Brand logo. - Primary color: #1e293b
+- Font: inter
+- Mode: light
+- Roundness: rounded-sm
+" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1V2SZdTL4vi07PJ8WEjdET662XYj5_hKDe2nkhU2LgcB6U3vixd38jYoMe5ckM5-bMRB2rbZesI_twRAnRtax8x3blSMnxTw1GD3FgtrznEWIrB854PSuZkFthstw9qK2CYPQXM6Il_qEAc1ud2020uAdQ3Ze9cyXxwBWHJwJU96PLobCum4xmbit96uvMMnp7qX7v-18RfA_Vd7MKPSxdmphjmta-3LCPPvvoeeCvomlg4A_LnGFMBpRE"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-primary tracking-tight">校园脉络</span><span class="font-label-sm text-label-sm text-on-surface-variant leading-none">Assistant Hub</span></div></div><div class="flex items-center gap-gutter-xs"><button aria-label="通知中心" class="w-11 h-11 flex items-center justify-center rounded-xl text-on-surface-variant hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[22px]">notifications</span></button><div class="w-11 h-11 flex items-center justify-center"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-1 ring-outline-variant/30" src="https://lh3.googleusercontent.com/aida/AEtjO1XV2de_J_zZCFNMj8K3nmhiz863dAGTTh4IRMefONu7XTc9aM3RR8xNaP-8a1l1c6lLGAjDVgw3jJIR6A6dG-9AKlH7R-QE1qXPFV40_Cog4SKJ4oSqg_22hTRFDOHcRHV3AQd2_r5regMB-1ehgSGvVUwdPjnCA3QHg6RG2JqErAXwHXHdKnbj4seB_McDcym0_t2DFxzPadac6lMRlW10dv27Nc-wtZrDVK4XvjXd4t2XEeP2MaRaKdw"/></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-20 bg-surface"><div class="flex flex-col w-full">
+<div class="w-full max-w-[1280px] mx-auto px-gutter-base sm:px-gutter-xl py-gutter-lg flex flex-col gap-gutter-lg">
+<!-- Top Action Bar & Metrics -->
+<header class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-gutter-md">
+<div class="flex flex-col gap-gutter-xs">
+<div class="flex items-center gap-gutter-sm flex-wrap">
+<h1 class="font-display text-display text-primary tracking-tight">我的任务</h1>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-ping"></span>
+            1 项等待你的材料
+          </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+            2 项进行中
+          </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+            3 项历史已办结
+          </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          全流程脉络溯源 · 当前关联 4 个职能部门协同流转
+        </p>
+</div>
+<!-- Controls & Quick Action -->
+<div class="flex items-center gap-gutter-sm flex-wrap">
+<div class="relative min-w-[240px]">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">search</span>
+<input class="w-full h-[38px] pl-9 pr-3 rounded-lg bg-surface-container-lowest text-primary font-body-sm text-body-sm placeholder:text-outline shadow-sm focus:outline-none focus:ring-1 focus:ring-primary" placeholder="搜索事项、单号或受理机构..." type="text"/>
+</div>
+<a class="h-[38px] px-3.5 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md flex items-center gap-1.5 shadow-sm hover:opacity-95 transition-opacity" data-path="assistant-hub" href="#">
+<span class="material-symbols-outlined text-[18px]">add_comment</span>
+          从对话发起新事项
+        </a>
+</div>
+</header>
+<!-- State Filter Segment & Interactive Demo Switch -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-gutter-sm bg-surface-container-low p-1.5 rounded-xl">
+<div class="flex items-center gap-1 overflow-x-auto" id="filter-tabs">
+<button class="filter-btn active-filter px-3 py-1.5 rounded-lg font-label-md text-label-md bg-surface-container-lowest text-primary shadow-sm font-semibold transition-all" data-filter="all" onclick="setFilter('all')">
+          全部 (6)
+        </button>
+<button class="filter-btn px-3 py-1.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all" data-filter="in-progress" onclick="setFilter('in-progress')">
+          进行中 (2)
+        </button>
+<button class="filter-btn px-3 py-1.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all flex items-center gap-1" data-filter="action-required" onclick="setFilter('action-required')">
+          待补充材料
+          <span class="w-2 h-2 rounded-full bg-secondary"></span>
+          (1)
+        </button>
+<button class="filter-btn px-3 py-1.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all" data-filter="completed" onclick="setFilter('completed')">
+          已完成 (3)
+        </button>
+</div>
+<!-- Demo Viewport Switcher -->
+<div class="flex items-center gap-1 px-2 py-1 rounded-lg bg-surface-container self-end sm:self-auto text-on-surface-variant font-label-sm text-label-sm">
+<span class="text-outline">视图切换:</span>
+<button class="px-2 py-0.5 rounded bg-surface-container-lowest text-primary shadow-sm" id="btn-view-normal" onclick="switchView('normal')">标准</button>
+<button class="px-2 py-0.5 rounded text-on-surface-variant hover:text-primary" id="btn-view-materials" onclick="switchView('focus-materials')">聚焦待办</button>
+<button class="px-2 py-0.5 rounded text-on-surface-variant hover:text-primary" id="btn-view-empty" onclick="switchView('empty')">空状态</button>
+</div>
+</div>
+<!-- Main Workspace Container -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-lg items-start" id="content-workspace">
+<!-- LEFT COLUMN: Campus Flow Task Stream (approx 60% = 7 cols) -->
+<div class="lg:col-span-7 flex flex-col gap-gutter-base" id="task-stream">
+<!-- Task Item 1: Active / Action Required -->
+<div class="task-card active-card bg-surface-container-lowest rounded-xl shadow-md p-gutter-base flex flex-col gap-gutter-base transition-all relative overflow-hidden ring-2 ring-primary/90" data-status="action-required">
+<div class="absolute top-0 right-0 w-24 h-24 bg-secondary-fixed/30 rounded-bl-full pointer-events-none -mr-6 -mt-6"></div>
+<!-- Header -->
+<div class="flex items-start justify-between gap-gutter-sm relative z-10">
+<div class="flex items-center gap-gutter-sm">
+<div class="w-10 h-10 rounded-lg bg-primary/5 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[24px]">badge</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm text-primary">学生证补办申请</h3>
+<span class="font-code-sm text-code-sm text-outline">#2024091104</span>
+</div>
+<div class="flex items-center gap-2 mt-0.5 text-on-surface-variant font-body-sm text-body-sm">
+<span>学生工作处学籍事务管理科</span>
+<span>·</span>
+<span class="font-code-sm text-code-sm">2024-09-24 09:12 发起</span>
+</div>
+</div>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-semibold whitespace-nowrap">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+              等待补充材料
+            </span>
+</div>
+<!-- Step Rail (Campus Flow Stepper) -->
+<div class="bg-surface-container-low/70 rounded-xl p-gutter-base flex flex-col gap-gutter-md relative">
+<div class="font-label-sm text-label-sm text-outline uppercase tracking-wider">办理流转脉络轨道</div>
+<div class="flex flex-col relative pl-6">
+<!-- Continuous timeline track line -->
+<div class="absolute left-2.5 top-3 bottom-3 w-0.5 bg-outline-variant/60"></div>
+<!-- Node 1: Completed -->
+<div class="relative flex items-start gap-gutter-sm pb-5">
+<div class="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-on-tertiary-container flex items-center justify-center text-on-tertiary shadow-sm z-10">
+<span class="material-symbols-outlined text-[13px] font-bold">check</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary font-medium">填写基本学籍信息与挂失申明</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">09-24 09:30</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">学号、原证件编号核验通过，身份校对完毕</span>
+</div>
+</div>
+<!-- Node 2: Active / Pulsing Focus -->
+<div class="relative flex items-start gap-gutter-sm pb-5">
+<div class="absolute -left-6 top-0 w-5 h-5 rounded-full bg-surface-container-lowest flex items-center justify-center z-10 ring-2 ring-secondary">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary animate-ping"></span>
+</div>
+<div class="flex flex-col flex-1 bg-surface-container-lowest p-3 rounded-lg shadow-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-secondary font-semibold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">file_upload</span>
+                      上传近期待核验免冠照
+                    </span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed font-medium">需本人操作</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mt-1">
+                    系统校验到迎新档案历史底片分辨率不足，请上传近6个月一寸蓝底相片。
+                  </p>
+<div class="mt-2 flex items-center justify-between text-on-surface-variant font-code-sm text-code-sm">
+<span class="flex items-center gap-1 text-secondary font-medium">
+<span class="material-symbols-outlined text-[15px]">timer</span>
+                      倒计时 48 小时 (剩余2天将自动挂起)
+                    </span>
+<span class="text-primary font-semibold">右侧直接办理 ➔</span>
+</div>
+</div>
+</div>
+<!-- Node 3: Pending -->
+<div class="relative flex items-start gap-gutter-sm pb-5">
+<div class="absolute -left-6 top-1 w-5 h-5 rounded-full bg-surface-container-lowest flex items-center justify-center z-10 ring-2 ring-outline-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+</div>
+<div class="flex flex-col flex-1 opacity-70">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-medium">学院学工组在线资格审核</span>
+<span class="font-code-sm text-code-sm text-outline">待前序就绪</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">由计算机学院辅导员张老师审核补办资质</span>
+</div>
+</div>
+<!-- Node 4: Pending -->
+<div class="relative flex items-start gap-gutter-sm">
+<div class="absolute -left-6 top-1 w-5 h-5 rounded-full bg-surface-container-lowest flex items-center justify-center z-10 ring-2 ring-outline-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+</div>
+<div class="flex flex-col flex-1 opacity-70">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-medium">事务大厅线下制卡与领证</span>
+<span class="font-code-sm text-code-sm text-outline">预计耗时 1 工作日</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">师生综合服务大厅 12 号专柜现场芯片写卡</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Footer Action -->
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-body-sm text-body-sm text-secondary font-medium">当前选中任务，正在右侧办理面板处理</span>
+</div>
+<button class="font-label-md text-label-md text-primary flex items-center gap-1 hover:underline">
+              查看流转日志
+              <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Task Item 2: AI Automation in progress -->
+<div class="task-card bg-surface-container-lowest rounded-xl shadow-sm hover:shadow-md p-gutter-base flex flex-col gap-gutter-sm transition-all" data-status="in-progress">
+<div class="flex items-start justify-between gap-gutter-sm">
+<div class="flex items-center gap-gutter-sm">
+<div class="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[24px]">workspace_premium</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm text-primary">2024-2025学年国家奖学金资格线上预审</h3>
+<span class="font-code-sm text-code-sm text-outline">#2024092288</span>
+</div>
+<div class="flex items-center gap-2 mt-0.5 text-on-surface-variant font-body-sm text-body-sm">
+<span>党委学生工作部学生资助管理中心</span>
+<span>·</span>
+<span class="font-code-sm text-code-sm">昨日 16:40 对话转化</span>
+</div>
+</div>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary-container text-on-primary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px] animate-spin">sync</span>
+              智能材料初审中
+            </span>
+</div>
+<!-- Context Strip: AI Agent Origin -->
+<div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container-low text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[18px] text-primary">smart_toy</span>
+<span>关联会话：来自昨日与「校规与奖励政策 Agent」问答自动归集生成自评表。</span>
+<a class="ml-auto text-primary font-label-sm text-label-sm hover:underline flex items-center" href="#">查看对话记录</a>
+</div>
+<!-- Simple 3-step progress track -->
+<div class="grid grid-cols-3 gap-2 pt-1">
+<div class="flex flex-col gap-1">
+<div class="h-1.5 rounded-full bg-on-tertiary-container w-full"></div>
+<div class="flex items-center justify-between text-on-surface font-label-sm text-label-sm">
+<span>1. 自评表提交</span>
+<span class="text-on-tertiary-container font-code-sm text-code-sm font-bold">✓</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="h-1.5 rounded-full bg-primary-container w-full animate-pulse"></div>
+<div class="flex items-center justify-between text-primary font-label-sm text-label-sm font-medium">
+<span>2. 综测自动核验</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Agent跑批中</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="h-1.5 rounded-full bg-surface-container-highest w-full"></div>
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span>3. 辅导员复核</span>
+<span class="font-code-sm text-code-sm">等待</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Task Item 3: In Review -->
+<div class="task-card bg-surface-container-lowest rounded-xl shadow-sm hover:shadow-md p-gutter-base flex flex-col gap-gutter-sm transition-all" data-status="in-progress">
+<div class="flex items-start justify-between gap-gutter-sm">
+<div class="flex items-center gap-gutter-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[24px]">school</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm text-primary">跨院系辅修专业备案 (人工智能+法学双学位)</h3>
+<span class="font-code-sm text-code-sm text-outline">#2024091802</span>
+</div>
+<div class="flex items-center gap-2 mt-0.5 text-on-surface-variant font-body-sm text-body-sm">
+<span>法学院教学办公室</span>
+<span>·</span>
+<span class="font-code-sm text-code-sm">2024-09-18 发起</span>
+</div>
+</div>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+              学院审批中
+            </span>
+</div>
+<div class="flex items-center justify-between px-3 py-2 rounded-lg bg-surface-container-low text-on-surface-variant font-body-sm text-body-sm">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary">person_outline</span>
+              流转至：法学院主管教学副院长办公室在线审签阶段
+            </span>
+<span class="font-code-sm text-code-sm text-outline">预计明早 10:00 前完成</span>
+</div>
+</div>
+<!-- Task Item 4: Completed -->
+<div class="task-card bg-surface-container-lowest rounded-xl shadow-sm hover:shadow-md p-gutter-base flex flex-col gap-gutter-sm transition-all opacity-90" data-status="completed">
+<div class="flex items-start justify-between gap-gutter-sm">
+<div class="flex items-center gap-gutter-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-tertiary-container">
+<span class="material-symbols-outlined text-[24px]">confirmation_number</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm text-primary">开学火车票优惠卡磁条充值</h3>
+<span class="font-code-sm text-code-sm text-outline">#2024090215</span>
+</div>
+<div class="flex items-center gap-2 mt-0.5 text-on-surface-variant font-body-sm text-body-sm">
+<span>后勤与生活保障服务处</span>
+<span>·</span>
+<span class="font-code-sm text-code-sm">2024-09-02 已完结</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-tertiary-container font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                已办结
+              </span>
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-low hover:bg-surface-container text-primary font-label-sm text-label-sm font-medium transition-colors">
+                查看回执凭证
+              </button>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: Task Details & Material Submission Drawer (approx 40% = 5 cols) -->
+<div class="lg:col-span-5 flex flex-col gap-gutter-base sticky top-20" id="detail-pane">
+<div class="bg-surface-container-lowest rounded-xl shadow-md p-gutter-base sm:p-gutter-lg flex flex-col gap-gutter-base relative">
+<!-- Panel Header -->
+<div class="flex items-start justify-between pb-gutter-sm">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-primary text-on-primary font-medium">办理工作台</span>
+<span class="font-code-sm text-code-sm text-outline">工单编号: 2024091104</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-primary mt-1">学生证补办申请 (本科生生源)</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+                受理机构：学工处学籍科 · 经办人：王老师 (行政楼 204)
+              </p>
+</div>
+<button class="w-8 h-8 rounded-lg text-outline hover:text-primary flex items-center justify-center" onclick="dismissMaterialHint()" title="折叠面板">
+<span class="material-symbols-outlined text-[20px]">close_fullscreen</span>
+</button>
+</div>
+<!-- Policy & Regulatory Guide Box -->
+<div class="rounded-lg bg-surface-container-low p-3.5 flex items-start gap-2.5">
+<span class="material-symbols-outlined text-[20px] text-primary shrink-0 mt-0.5">verified_user</span>
+<div class="flex flex-col text-on-surface">
+<span class="font-label-md text-label-md font-semibold text-primary">办事规范与合规核验标准</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">
+                根据《学生手册》第三章第十二条：每名学生在校期间补办不得超过 2 次。补办制卡工本费 15 元由学校资助账户自动划扣，现场免收现金。
+              </p>
+</div>
+</div>
+<!-- Material Check Checklist -->
+<div class="flex flex-col gap-gutter-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md font-semibold text-primary">所需材料核验清单 (2/3)</span>
+<span class="font-code-sm text-code-sm text-secondary font-medium">尚欠 1 份照片材料</span>
+</div>
+<!-- Material 1: Verified -->
+<div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-low/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-on-tertiary-container">check_circle</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-primary">身份证正反面电子扫描件</span>
+<span class="font-code-sm text-code-sm text-outline">已核验 · 系统自动调取迎新注册档案</span>
+</div>
+</div>
+<span class="font-code-sm text-code-sm text-outline-variant">AUTO</span>
+</div>
+<!-- Material 2: Verified -->
+<div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-low/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-on-tertiary-container">check_circle</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-primary">辅导员谈话核实备忘记录</span>
+<span class="font-code-sm text-code-sm text-outline">已签批 · 学工综合系统流转回执</span>
+</div>
+</div>
+<span class="font-code-sm text-code-sm text-outline-variant">PASS</span>
+</div>
+<!-- Material 3: ACTIVE DROPZONE -->
+<div class="flex flex-col gap-2 p-3.5 rounded-xl bg-secondary-fixed/20 shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-secondary">error</span>
+<span class="font-label-md text-label-md font-semibold text-on-secondary-fixed">
+                    近期免冠一寸蓝底电子相片 (待提交)
+                  </span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-secondary text-on-secondary font-bold">必填项</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                证件印刷专用照片：必须为 6 个月内蓝底照片，免冠白衬衫为佳，JPG/PNG 格式，文件小于 10MB。
+              </p>
+<!-- Upload Drag Zone -->
+<div class="group flex flex-col items-center justify-center p-5 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low transition-all cursor-pointer text-center" id="drop-zone" onclick="triggerUpload()">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary mb-2 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[22px]">cloud_upload</span>
+</div>
+<div class="font-label-md text-label-md text-primary font-medium" id="upload-label">
+                  点击选择文件 或 将照片拖放至此
+                </div>
+<div class="font-code-sm text-code-sm text-outline mt-0.5">
+                  支持 JPG / PNG / WEBP · 分辨率不低于 295×413 像素
+                </div>
+<input accept="image/*" class="hidden" id="photo-input" onchange="fileSelected(this)" type="file"/>
+</div>
+<!-- Quick Action Options -->
+<div class="grid grid-cols-2 gap-2 mt-1">
+<button class="px-2 py-2 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-primary font-label-sm text-label-sm flex items-center justify-center gap-1.5 transition-colors shadow-sm" onclick="autoFillPhoto()" type="button">
+<span class="material-symbols-outlined text-[16px] text-secondary">face_retouching_natural</span>
+                  调取迎新证件照比对
+                </button>
+<button class="px-2 py-2 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-primary font-label-sm text-label-sm flex items-center justify-center gap-1.5 transition-colors shadow-sm" onclick="showScanModal()" type="button">
+<span class="material-symbols-outlined text-[16px]">qr_code_scanner</span>
+                  手机扫码拍摄直传
+                </button>
+</div>
+</div>
+</div>
+<!-- Supplementary Remarks -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-primary font-medium flex items-center justify-between">
+<span>补充办理说明 (选填)</span>
+<span class="font-code-sm text-code-sm text-outline">最多200字</span>
+</label>
+<textarea class="w-full p-2.5 rounded-lg bg-surface-container-low text-primary font-body-sm text-body-sm placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary resize-none" placeholder="如有遗失报案编号或特殊急办需求请在此标注，例如：原有证件在二教阶梯教室遗失，已在保卫处备案..." rows="2">原学生证在东区第二教学楼302阶梯教室自习时遗失，已向保卫处登记报失备查。</textarea>
+</div>
+<!-- Action Dock Footer -->
+<div class="flex flex-col gap-2 pt-2">
+<button class="w-full h-11 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md font-semibold flex items-center justify-center gap-2 shadow-md hover:bg-primary transition-all active:scale-[0.99]" id="submit-action-btn" onclick="submitProcess()">
+<span>立即提交材料并推进流转</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+<div class="grid grid-cols-2 gap-2">
+<button class="h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface-variant font-label-sm text-label-sm transition-colors">
+                暂存办理草稿
+              </button>
+<a class="h-9 rounded-lg bg-surface-container-low hover:bg-surface-container text-primary font-label-sm text-label-sm flex items-center justify-center gap-1 transition-colors" data-path="assistant-hub" href="#">
+<span class="material-symbols-outlined text-[16px]">support_agent</span>
+                向助手催问进度
+              </a>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State Container (Hidden by default, shown via filter demo switch) -->
+<div class="hidden flex-col items-center justify-center py-20 px-4 text-center bg-surface-container-lowest rounded-xl shadow-sm" id="empty-state">
+<div class="w-16 h-16 rounded-full bg-surface-container-low flex items-center justify-center text-outline mb-4">
+<span class="material-symbols-outlined text-[36px]">checklist_rtl</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary">暂无相匹配的办事任务</h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md mt-1 mb-6">
+        您当前没有需要补充材料或审核中的事项。遇到学籍、请假、奖助贷或报销等校园流程，可随时与智能助手发起问答转化。
+      </p>
+<div class="flex items-center gap-3">
+<a class="px-5 py-2.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md flex items-center gap-2 shadow-sm hover:opacity-90" data-path="assistant-hub" href="#">
+<span class="material-symbols-outlined text-[18px]">smart_toy</span>
+          前往助手咨询办理校园事务
+        </a>
+<button class="px-4 py-2.5 rounded-lg bg-surface-container text-primary font-label-md text-label-md hover:bg-surface-container-high" onclick="switchView('normal')">
+          重置筛选条件
+        </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  function setFilter(filterType) {
+    const buttons = document.querySelectorAll('.filter-btn');
+    buttons.forEach(btn => {
+      if (btn.getAttribute('data-filter') === filterType) {
+        btn.classList.add('bg-surface-container-lowest', 'text-primary', 'shadow-sm', 'font-semibold');
+        btn.classList.remove('text-on-surface-variant');
+      } else {
+        btn.classList.remove('bg-surface-container-lowest', 'text-primary', 'shadow-sm', 'font-semibold');
+        btn.classList.add('text-on-surface-variant');
+      }
+    });
+
+    const tasks = document.querySelectorAll('.task-card');
+    const emptyState = document.getElementById('empty-state');
+    const workspace = document.getElementById('content-workspace');
+    let visibleCount = 0;
+
+    tasks.forEach(task => {
+      const status = task.getAttribute('data-status');
+      if (filterType === 'all' || status === filterType) {
+        task.style.display = 'flex';
+        visibleCount++;
+      } else {
+        task.style.display = 'none';
+      }
+    });
+
+    if (visibleCount === 0) {
+      workspace.classList.add('hidden');
+      emptyState.classList.remove('hidden');
+      emptyState.classList.add('flex');
+    } else {
+      workspace.classList.remove('hidden');
+      emptyState.classList.add('hidden');
+      emptyState.classList.remove('flex');
+    }
+  }
+
+  function switchView(viewMode) {
+    const normalBtn = document.getElementById('btn-view-normal');
+    const materialsBtn = document.getElementById('btn-view-materials');
+    const emptyBtn = document.getElementById('btn-view-empty');
+    const emptyState = document.getElementById('empty-state');
+    const workspace = document.getElementById('content-workspace');
+
+    [normalBtn, materialsBtn, emptyBtn].forEach(b => {
+      b.className = 'px-2 py-0.5 rounded text-on-surface-variant hover:text-primary';
+    });
+
+    if (viewMode === 'normal') {
+      normalBtn.className = 'px-2 py-0.5 rounded bg-surface-container-lowest text-primary shadow-sm font-semibold';
+      workspace.classList.remove('hidden');
+      emptyState.classList.add('hidden');
+      emptyState.classList.remove('flex');
+      setFilter('all');
+    } else if (viewMode === 'focus-materials') {
+      materialsBtn.className = 'px-2 py-0.5 rounded bg-surface-container-lowest text-primary shadow-sm font-semibold';
+      workspace.classList.remove('hidden');
+      emptyState.classList.add('hidden');
+      emptyState.classList.remove('flex');
+      setFilter('action-required');
+    } else if (viewMode === 'empty') {
+      emptyBtn.className = 'px-2 py-0.5 rounded bg-surface-container-lowest text-primary shadow-sm font-semibold';
+      workspace.classList.add('hidden');
+      emptyState.classList.remove('hidden');
+      emptyState.classList.add('flex');
+    }
+  }
+
+  function triggerUpload() {
+    document.getElementById('photo-input').click();
+  }
+
+  function fileSelected(input) {
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const label = document.getElementById('upload-label');
+      label.innerHTML = `<span class="text-on-tertiary-container font-semibold">✓ 已选择：${file.name}</span>`;
+      const btn = document.getElementById('submit-action-btn');
+      btn.classList.remove('bg-primary-container');
+      btn.classList.add('bg-secondary');
+      btn.innerHTML = `<span>材料已就绪，立即确认提交</span><span class="material-symbols-outlined text-[18px]">verified</span>`;
+    }
+  }
+
+  function autoFillPhoto() {
+    const label = document.getElementById('upload-label');
+    label.innerHTML = `<span class="text-primary font-semibold">✓ 已调取迎新蓝底照片 (档案编号: ARC-2024-XJ)</span>`;
+    const btn = document.getElementById('submit-action-btn');
+    btn.classList.remove('bg-primary-container');
+    btn.classList.add('bg-secondary');
+    btn.innerHTML = `<span>材料已就绪，立即确认提交</span><span class="material-symbols-outlined text-[18px]">verified</span>`;
+  }
+
+  function showScanModal() {
+    alert('已向您的校园身份绑定设备推送扫码直传邀请，请用手机相机完成拍摄。');
+  }
+
+  function submitProcess() {
+    const btn = document.getElementById('submit-action-btn');
+    btn.innerHTML = `<span class="material-symbols-outlined text-[18px] animate-spin">sync</span><span>正在核验照片参数与元数据...</span>`;
+    setTimeout(() => {
+      btn.innerHTML = `<span class="material-symbols-outlined text-[18px]">check</span><span>已提交，等待学院在线复审</span>`;
+      btn.classList.remove('bg-secondary');
+      btn.classList.add('bg-on-tertiary-container');
+    }, 900);
+  }
+
+  function dismissMaterialHint() {
+    const detailPane = document.getElementById('detail-pane');
+    detailPane.classList.toggle('opacity-50');
+  }
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/85 backdrop-blur-xl shadow-[0_-2px_12px_rgba(0,0,0,0.03)]" data-active-classes="text-secondary font-semibold"><div class="h-16 px-gutter-base flex items-center justify-around"><a aria-current="page" class="flex-1 h-full flex flex-col items-center justify-center gap-0.5 transition-colors relative text-secondary font-semibold" data-path="assistant-hub" href="#"><span class="material-symbols-outlined text-[24px]">smart_toy</span><span class="font-label-sm text-label-sm">问助手</span></a><a class="flex-1 h-full flex flex-col items-center justify-center gap-0.5 text-on-surface-variant hover:text-on-surface transition-colors relative" data-path="my-tasks" href="#"><span class="material-symbols-outlined text-[24px]">checklist</span><span class="font-label-sm text-label-sm">我的任务</span></a><a class="flex-1 h-full flex flex-col items-center justify-center gap-0.5 text-on-surface-variant hover:text-on-surface transition-colors relative" data-path="knowledge-base" href="#"><span class="material-symbols-outlined text-[24px]">menu_book</span><span class="font-label-sm text-label-sm">知识库</span></a><a class="flex-1 h-full flex flex-col items-center justify-center gap-0.5 text-on-surface-variant hover:text-on-surface transition-colors relative" data-path="profile-settings" href="#"><span class="material-symbols-outlined text-[24px]">manage_accounts</span><span class="font-label-sm text-label-sm">个人设置</span></a></div></nav></body></html>

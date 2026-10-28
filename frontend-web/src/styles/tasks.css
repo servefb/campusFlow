@@ -1,0 +1,1015 @@
+/* ============================================================================
+   我的任务（/tasks）—— 按 stitch 设计稿（DESIGN.md + code.html）重做
+   ----------------------------------------------------------------------------
+   设计规范要点：
+   · 结构化编排主义：1px 细边框 + 极淡投影，不用重阴影、不用彩色辉光。
+   · 语义只靠**圆点**与**左侧竖条**：小标签（状态徽章 / 摘要药丸 / 时限）共用一套
+     胶囊几何与底色，颜色差异只落在 6px 圆点上；卡片左侧珊瑚竖条 = 异常 / 已截止。
+   · 红（--t-danger，仅截止时刻）与珊瑚（--coral，仅竖条）是全页仅有的两处暖色强调。
+   · 圆角：卡片 16px、流程区与摘要块 12px、控件 8~10px、胶囊 999px。
+   · 底色阶：卡片 #fff → 流程 / 进度块 #f1f5fa（很浅的灰蓝）→ 胶囊白底 + 浅灰描边 → 凹槽控件 #eeeeed。
+   · 字体：正文 12~13px，标题 18px，元信息 11px；编号用等宽字体。
+   · 文字只分三级：标题 → 当前节点 / 关键数字 → 次要元信息（对比度逐级下降）。
+
+   本文件只管版式与皮肤；左列承托板、右栏焦点玻璃的**材质**由 glass.css 提供。
+   ============================================================================ */
+
+/* ⚠️ 本页只声明自己的**宽度**，留白一律继承全局 `.page`（44px 48px 120px / 窄屏 32px 20px 100px）。
+   2026-09-11 统一页头时把这里的 `padding:24px 30px 80px` 删掉了 —— 站内 5 个页面本来就走 `.page` 的标准留白，
+   只有本页、/history、/news 各写了一套（24/30、24/32、32/36），标题因此不在同一条竖线上、离页顶的高度也不同。
+   现在改回「一处标准、各页只覆盖宽度」，别再往这里加 padding。 */
+.tasks-page {
+  max-width: 1560px;
+  /* 「待办」档：普通待补充只用**琥珀圆点 / 小图标**表达（2026-09-15 起不再铺琥珀底：
+     整块黄底会让上传区看着像一大片警告）。珊瑚/红只留给**超期**与**校验错误**，
+     否则等待补充、当前节点、时限、必填项、上传区全是红的，真正紧急的反而看不出来。 */
+  --warn-solid: #d97706;
+  --warn-ink: #92400e;
+
+  /* ----- 三级文字层级（2026-09-15 定档，同日按「整页发灰」的反馈上调一档）-------
+     ① 标题（卡片 h2 / 当前节点名）：最深、最重，一眼先落在标题上；
+     ② 当前节点与关键数字：中灰偏冷，比标题弱一档但仍是正文；
+     ③ 次要文字（编号以外的元信息、进度、时间、说明）：比 ①② 弱，但**必须站得住** ——
+        上一版压到 #8b95a3（白底 3.0:1）整页发灰，现在收到 #646b76。
+        要再压就必须换底色，不能只调浅字。
+     异常（左侧竖条 + 截止时刻）用 --t-danger，全页唯一的红。 */
+  --t-title: var(--ink);
+  --t-node: #1e293b;
+  /* 实测（无头 Chrome 取真实合成底色）：
+     #6b7280 → 白底 4.83、浅灰蓝流程底 4.42 —— 4.42 差一点点没过正文线，
+     所以再压深一档到 #646b76（白底 5.38 / 流程底 4.91）。 */
+  --t-meta: #646b76;
+  /* 同理，原来的 #d92f2f 在流程底上只有 4.36；#c62828 → 流程底 5.10 / 白底 5.58。 */
+  --t-danger: #c62828;
+  /* 品牌色（DESIGN.md primary #091426 / primary-container #1e293b）：只给「当前选中」。 */
+  --brand: #091426;
+  --brand-line: #1e293b;
+  /* 统一浅灰描边：默认卡片、白底行、胶囊共用一条边。 */
+  --card-line: #e6eaf0;
+  --card-line-hover: #d9e0e9;
+  /* 流程区域：很浅的灰蓝底 —— 卡内所有「流程 / 进度」块共用这一档，只留一层容器。 */
+  --flow-bg: #f1f5fa;
+}
+
+/* ===== 页头 ============================================================== */
+/* 右侧操作区按**底边**对齐：标题块底部就是中文主标题的底边，
+   所以搜索框/主按钮会跟"我的任务中心"这一行同轴（探针实测中心差 2px）。
+   若用默认的 flex-start，操作区会跑去跟新增的英文小标齐顶，
+   实测偏上 19px，等于把原本与主标题对齐的搜索框往上挪了一行。 */
+/* 页头右侧原先挂着「搜索框 + 从对话流转新建」，2026-09-15 按要求整块删除 ——
+   页头只剩标题与状态药丸（.task-page-heading 的 flex 对齐无需改动，单列照样成立）。
+   发起流程的唯一入口回到右下角的悬浮球（弹窗里已含「智能体协同发起 / 手动自主申报」两种模式），
+   搜索入口随之取消，需要时再按筛选行的样式加回来。 */
+.task-page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 28px; margin-bottom: 28px; }
+.task-heading-main { display: flex; min-width: 0; flex-wrap: wrap; align-items: center; gap: 20px; }
+
+/* 标题块：英文小标独占上一行，中文主标题与状态药丸同行——与 /history 的
+   `.eyebrow` + `.history-title-line`（h1 + 徽标同行）同构，全站统一。
+   改动前这里是「珊瑚竖条 .task-title-rule + h1」，而竖条只有本页在用，
+   其余各页都是 .eyebrow 珊瑚小标，故按用户要求统一成后者，竖条规则已删。 */
+.task-title-group { min-width: 0; }
+.task-title-line { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; }
+/* 主标题字号与全站一致（全局 `.page h1` 为 30px / 行高 1.25 / 字距 -.02em）。
+   本页原先自己写了 26px，是站内最小的一个；2026-09-11 统一。 */
+.task-title-group h1 { margin: 0; color: var(--ink); font-size: 30px; letter-spacing: -.02em; }
+
+/* ===== 统一胶囊（本页唯一的「小标签」样式）===============================
+   2026-09-15 统一：此前摘要药丸是琥珀 / 灰 / 薄荷三套底色，卡片状态徽章又各有各的
+   填充与图标（已办结是勾选图标、待补充是琥珀块），同屏看像三个不同组件。
+   现在**几何 / 底色 / 边框 / 字重全部共用**，语义只由 6px 圆点的颜色承担 ——
+   换语义色只动 `.task-pill-dot` / `.task-badge-dot` 那几条，别再去改胶囊本体。 */
+.task-summary-pills { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.task-pill,
+.task-badge {
+  display: inline-flex;
+  align-items: center;
+  color: #465060;
+  background: #fff;
+  border: 1px solid var(--card-line);
+  border-radius: 999px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+/* 摘要药丸：高度 22→32、字号 12→13、padding 5×10→7×14（2026-09-13 对齐设计稿），
+   让 3 个药丸在玻璃托盘页头上读得出是「标签」而不是「涂色的小片」。 */
+.task-pill { gap: 7px; padding: 7px 14px; font-size: 13px; }
+.task-badge { gap: 5px; padding: 3px 10px; font-size: 11px; }
+.task-pill-dot,
+.task-badge-dot { width: 6px; height: 6px; flex: none; background: currentColor; border-radius: 50%; }
+
+/* 圆点＝语义：琥珀＝待本人处理，中性＝流转中，薄荷＝已办结，珊瑚＝取消/异常。 */
+.task-pill.warn .task-pill-dot,
+.task-badge.warn .task-badge-dot { background: var(--warn-solid); }
+.task-pill.neutral .task-pill-dot,
+.task-badge.neutral .task-badge-dot { background: #8c94a1; }
+.task-pill.success .task-pill-dot,
+.task-badge.success .task-badge-dot { background: #10b981; }
+.task-pill.danger .task-pill-dot,
+.task-badge.danger .task-badge-dot { background: #e0564c; }
+.task-pill.muted .task-pill-dot,
+.task-badge.muted .task-badge-dot { background: #b3b9c2; }
+
+/* 只有「待本人处理」这一档的圆点呼吸，其它档一律静止 —— 动效也算一种差异，
+   只在真正需要伸手的地方出现。 */
+.task-badge.warn .task-badge-dot { animation: task-breathe 1.8s ease-in-out infinite; }
+.task-pill-dot.ping { animation: task-ping 1.8s cubic-bezier(0, 0, .2, 1) infinite; }
+@keyframes task-ping { 70%, 100% { transform: scale(2); opacity: 0; } }
+@keyframes task-breathe { 50% { opacity: .35; } }
+
+/* 筛选行 */
+.task-filter-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 16px; }
+.task-filter-group { display: inline-flex; gap: 4px; padding: 4px; background: #eeeeed; border-radius: 10px; }
+.task-filter { display: inline-flex; align-items: center; gap: 5px; padding: 6px 11px; color: #45474c; background: transparent; border-radius: 8px; font-size: 12px; font-weight: 500; white-space: nowrap; transition: background .18s ease, color .18s ease; }
+.task-filter:hover { color: var(--ink); background: rgba(255, 255, 255, .6); }
+.task-filter.active { color: var(--ink); background: #fff; font-weight: 600; box-shadow: 0 1px 3px rgba(15, 23, 42, .1); }
+.task-filter-dot { width: 6px; height: 6px; background: var(--warn-solid); border-radius: 50%; }
+/* 计数与文字同色（设计稿如此），只保留等宽数字对齐 */
+.task-filter-count { color: inherit; font-variant-numeric: tabular-nums; }
+.task-sync-note { display: inline-flex; align-items: center; gap: 6px; margin: 0; color: #45474c; font-size: 11px; }
+.task-sync-note svg { color: #545f73; }
+
+/* ===== 布局 ============================================================== */
+/* 2026-09-15 按「左边占得太多、右边才是在办事」的反馈改宽度：
+   原来 1.45fr : 1fr（≈59% : 41%），左列只是选事项，右列要放材料、说明、表单和上传区，
+   挤在 41% 里滚动明显。改成 **45% : 55%**，右栏材料区与表单能横向铺开、少滚动。
+   左列仍留 min 320px 兜底，窄屏由下面的断点接管。 */
+.tasks-page .task-layout { display: grid; grid-template-columns: minmax(320px, 45fr) minmax(0, 55fr); gap: 16px; align-items: start; }
+.tasks-page .task-list { display: flex; flex-direction: column; gap: 14px; }
+.tasks-page .task-detail { position: sticky; top: 86px; padding: 0; overflow: hidden; }
+
+/* ===== 卡片 ============================================================== */
+/* 2026-09-13 按新设计稿对齐：圆角 12→16 + 顶部 18% 的白色高光，给浮在左列承托板
+   上的卡更"立体"的层次（§7/§5 拍板：卡片保持实色，**不**改成玻璃）。
+   2026-09-15：默认描边统一成一条浅灰（此前选中态是 #1e293b 深色外描边，第一张卡比其余卡
+   黑一档，读起来像另一种控件）。
+   2026-09-15 二次调整：**选中态改用品牌色细边框 + 一圈极淡品牌辉光**（用户要求「选中项用
+   品牌色细边框」，且红竖条要专门表达截止，两种含义不再混用）。仍然是 1px、不加深色底、
+   不加内边距，所以不会回到"第一张卡看着像另一个组件"的老样子。 */
+.tasks-page .task-card { position: relative; padding: 20px; background-color: #fff; background-image: linear-gradient(180deg, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, 0) 18%); border: 1px solid var(--card-line); border-radius: 16px; box-shadow: 0 1px 3px rgba(15, 23, 42, .04), 0 1px 2px rgba(15, 23, 42, .02); cursor: pointer; transition: box-shadow .2s ease, border-color .2s ease, transform .2s ease; }
+/* 2026-09-14：悬停浮起 1px —— 卡片在承托板上要能读成「可以点的一片」，
+   原来只有描边变色，在玻璃板上几乎看不出反馈。 */
+.tasks-page .task-card:hover { border-color: var(--card-line-hover); box-shadow: 0 8px 20px -4px rgba(15, 23, 42, .1), 0 3px 8px -2px rgba(15, 23, 42, .05); transform: translateY(-1px); }
+/* 选中 = 品牌色 1px 边框 + 3px 品牌辉光（浅到不形成"第二层边框"）+ 抬起投影。
+   辉光不是装饰：玻璃承托板上只换描边色，选中与未选中的差别在小屏上几乎读不出来。 */
+.tasks-page .task-card.selected { border-color: var(--brand-line); box-shadow: 0 0 0 3px rgba(9, 20, 38, .07), 0 8px 22px -6px rgba(15, 23, 42, .16), 0 2px 6px -2px rgba(15, 23, 42, .05); }
+.tasks-page .task-card.selected:hover { border-color: var(--brand); }
+/* 异常 / 已截止：左侧 3px 珊瑚竖条 —— 只管「截止 / 缺材料」这一件事，**不再兼任选中态**
+   （选中已由上面的品牌色边框承担，两种含义不再挤在同一条竖线上）。
+   不加 padding（加内边距会让这张卡的文字与上下卡错开 4px）；竖条上下各留 14px，避开 16px 圆角。
+   ⚠️ 这不算破例：上面那条「待补充走琥珀」管的是**填充与文案**（等待是要办的事，不是事故），
+   竖条只是一枚位置固定、不参与文字排版的注意力标记，两档同时出现也不打架。 */
+.tasks-page .task-card.is-alert::before { position: absolute; top: 14px; bottom: 14px; left: 0; width: 3px; content: ''; background: var(--coral); border-radius: 0 3px 3px 0; }
+
+/* 卡头 —— 固定两行：① 标题 + 状态徽章；② 编号 / 发起时间 / 主办方 */
+.task-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.task-card-title { min-width: 0; }
+.task-card-title-line { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.task-card-title-line h2 { margin: 0; color: var(--t-title); font-size: 18px; font-weight: 600; letter-spacing: -.01em; line-height: 1.4; }
+.task-card-head.is-expanded .task-card-title-line h2 { font-weight: 700; }
+/* 已办结只把标题降到二级色，字重不降 —— 标题始终是页面的第一层级。 */
+.task-card-head.is-completed .task-card-title-line h2 { color: #1e293b; }
+
+/* 第 2 行：全部是下落语气（三级），编号用等宽字体保留「凭证感」但不再抢标题。
+   ⚠️ 这一组（以及下面的 .task-step-desc / .task-step-due / 各类空态提示）都是 <p>，
+   pages.css 里有一条 `.task-card p{font-size:13px;color:#475569}`（(0,1,1)）比裸类名
+   (0,1,0) 更重，会把三级灰全部拉回 13px 深灰 —— 所以这里必须带 `.tasks-page` 前缀压回去，
+   否则这三级层级在实际页面上根本不生效（已用无头浏览器实测过 computed style）。 */
+.tasks-page .task-card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin: 7px 0 0; color: var(--t-meta); font-size: 11px; line-height: 1.5; }
+.tasks-page .task-card-no { color: #5b6675; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+.tasks-page .task-card-org { display: inline-flex; align-items: center; gap: 4px; color: var(--t-meta); }
+.tasks-page .task-card-org svg { color: #a7aeb9; }
+
+/* ===== 流转时间轴 ========================================================
+   2026-09-15：**只留一层容器**。此前是「白卡 → 灰底流程块 → 当前步骤白块」三层，
+   中间那层灰底（#f3f4f3）还把当前步骤又包成一张小白卡，卡里套卡、卡里再套卡。
+   现在：流程区自己就是那一层很浅的灰蓝底（--flow-bg），步骤直接落在它上面；
+   当前步骤不再有白色实底，只保留一点轻微阴影把它轻轻托起来。
+   选中卡片默认只摊开「当前节点 + 下一步」，完整流程由头部「查看完整流程」展开 ——
+   此前一选中就铺出整条轴，接近两张普通卡的高度，列表很难扫。 */
+.task-flow { padding: 12px 14px; margin-top: 14px; background: var(--flow-bg); border-radius: 12px; }
+.task-flow-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.task-flow-caption { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 8px; color: #4b5563; font-size: 11px; font-weight: 700; letter-spacing: .04em; }
+/* 「前 N 步已完成」：只是进度说明，与标题同行的次要信息（曾单独占一行带节点圆圈，太占高度） */
+.task-flow-done { color: var(--t-meta); font-size: 11px; font-weight: 500; letter-spacing: 0; }
+.task-flow-tools { display: inline-flex; align-items: center; gap: 10px; }
+.task-flow-link { display: inline-flex; align-items: center; gap: 2px; padding: 2px 0; color: #6b7684; background: transparent; font-size: 11px; white-space: nowrap; }
+.task-flow-link:hover { color: var(--ink); }
+.task-flow-link svg { transition: transform .18s ease; }
+.task-flow-link svg.is-open { transform: rotate(90deg); }
+/* ⚠️ 这几条 <p> 提示同样要带 .tasks-page 前缀才压得住 pages.css 的 `.task-card p`。 */
+.tasks-page .task-flow-empty { margin: 6px 0 0; color: var(--t-meta); font-size: 12px; }
+.task-flow-track { position: relative; display: flex; flex-direction: column; gap: 14px; }
+.task-flow-track::before { position: absolute; top: 6px; bottom: 6px; left: 10px; width: 2px; content: ''; background: #dbe3ee; }
+
+/* 被折叠掉的已完成步骤：2026-09-15 起不再单独占一行（那行带节点圆圈，白顶 36px 高度），
+   改成流程标题行里的「前 N 步已完成」，展开入口交给「查看流程」。 */
+
+.task-step { position: relative; display: flex; align-items: flex-start; gap: 12px; }
+.task-step-node { position: relative; z-index: 1; display: grid; flex: none; place-items: center; width: 22px; height: 22px; color: #fff; background: #fff; border-radius: 50%; }
+/* 节点的外圈一律刷成流程底色：它是用来压住连接线的，不是描边 */
+.task-step.done .task-step-node { background: #10b981; box-shadow: 0 0 0 2px var(--flow-bg); }
+/* 当前节点是「位置」不是告警，用深墨；红色只留给已截止的时限 */
+.task-step.current .task-step-node { box-shadow: 0 0 0 2px #1e293b, 0 0 0 7px rgba(30, 41, 59, .1); }
+.task-step.pending .task-step-node { box-shadow: 0 0 0 2px #dfe6ef; }
+.task-step-core { width: 8px; height: 8px; background: #1e293b; border-radius: 50%; }
+.task-step-idle { width: 6px; height: 6px; background: #c5c6cd; border-radius: 50%; }
+
+.task-step-body { min-width: 0; flex: 1; }
+/* 当前步骤：只有一点轻微阴影把它从流程底上托起 —— 没有白卡、没有描边、没有圈。
+   （透明底上的外阴影只描出四周，不额外造出一层「卡」。） */
+.task-step-body.active { padding: 10px 12px; background: transparent; border-radius: 10px; box-shadow: 0 1px 3px rgba(15, 23, 42, .08); }
+.task-step-line { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.task-step-name { color: var(--t-meta); font-size: 13px; line-height: 1.5; }
+/* 二级：当前节点名 —— 比标题弱、比说明强，是全卡第二个视觉落点 */
+.task-step.current .task-step-name { color: var(--t-node); font-weight: 600; }
+.task-step.done .task-step-name { color: #7b8794; }
+/* 时限胶囊（剩余 N 天 / 已超时 / 已截止）与状态徽章同一套：中性底 + 细描边，
+   超期也不在这里转红 —— 「截止」这件事只在正文里用一个红时刻表达。 */
+.task-step-flag { display: inline-flex; flex: none; align-items: center; gap: 4px; padding: 3px 10px; color: #4b5563; background: #fff; border: 1px solid var(--card-line); border-radius: 999px; font-size: 11px; font-weight: 500; white-space: nowrap; }
+.task-step-flag.muted { padding: 0; color: #9aa3ad; background: transparent; border: 0; font-weight: 400; }
+/* 当前步骤正文（都是 <p>，同样带前缀）—— 二级名 / 三级说明 / 唯一红色截止时刻 */
+.tasks-page .task-step-desc { margin: 6px 0 0; color: var(--t-meta); font-size: 12px; line-height: 1.7; }
+.tasks-page .task-step-due { margin: 5px 0 0; color: var(--t-meta); font-size: 11px; line-height: 1.5; font-variant-numeric: tabular-nums; }
+.tasks-page .task-step-due b { color: inherit; font-weight: 600; }
+.tasks-page .task-step-due b.overdue { color: var(--t-danger); }
+/* 后果说明（需申请延期 / 仍可补交）：与截止行同色，只留一个语义钩子方便以后单独弱化。 */
+.tasks-page .task-step-consequence { color: inherit; }
+
+/* ===== 非选中卡片的摘要块 ================================================= */
+/* 2026-09-14：父卡圆角加大到 16 后，内嵌块仍是 10 会显得「陷进去」，统一收到 12 —— 与父卡差 4px，读成同一层里的嵌套块。
+   2026-09-15：底色换成与流程区同一档浅灰蓝 —— 它是**折叠状态下的同一个区域**，
+   选中后换成时间轴时底色不该跟着跳。 */
+.task-card-progress { position: relative; padding: 12px 14px; margin-top: 14px; background: var(--flow-bg); border-radius: 12px; }
+
+/* 进行中卡片右上「⋯」菜单：hover / 键盘聚焦弹出，只放已有动作 */
+.task-card-menu { position: absolute; top: 8px; right: 10px; }
+/* 头部右侧预留菜单按钮的宽度，避免「进度 N%」被盖住 */
+.task-card-progress .task-progress-head { padding-right: 30px; }
+.task-menu-trigger { display: grid; place-items: center; width: 24px; height: 24px; color: #9aa3ad; background: transparent; border-radius: 6px; }
+.task-menu-trigger:hover { color: var(--ink); background: rgba(255, 255, 255, .9); }
+.task-menu-pop { position: absolute; top: 26px; right: 0; z-index: 6; display: none; min-width: 132px; padding: 4px; background: #fff; border: 1px solid var(--card-line); border-radius: 10px; box-shadow: 0 8px 24px rgba(15, 23, 42, .12); }
+.task-card-menu:hover .task-menu-pop, .task-card-menu:focus-within .task-menu-pop { display: block; }
+.task-menu-pop button { display: block; width: 100%; padding: 7px 10px; color: #4b5563; background: transparent; border-radius: 6px; font-size: 12px; text-align: left; white-space: nowrap; }
+.task-menu-pop button:hover { color: var(--ink); background: #f3f4f3; }
+
+/* 流转日志面板：卡片内部的一层浅底列表 */
+.task-log-panel { padding: 0 2px 4px; }
+.task-log-list { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 10px 12px; background: var(--flow-bg); border-radius: 10px; list-style: none; }
+.task-log-list li { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+.task-log-list li span { color: var(--t-node); font-size: 12px; }
+.task-log-list li small { color: var(--t-meta); font-size: 11px; font-variant-numeric: tabular-nums; }
+.tasks-page .task-log-empty { margin: 0; padding: 10px 12px; color: var(--t-meta); background: var(--flow-bg); border-radius: 10px; font-size: 12px; }
+/* 「当前流程节点：xxx」= 二级；进度与第 N 步 = 三级 */
+.task-progress-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--t-node); font-size: 12px; }
+.task-progress-head > span { min-width: 0; }
+.task-progress-head small { flex: none; color: var(--t-meta); font-size: 11px; }
+.task-progress-track { height: 6px; margin: 9px 0; overflow: hidden; background: #dde5ef; border-radius: 999px; }
+.task-progress-track i { display: block; height: 100%; background: #1e293b; border-radius: 999px; transition: width .4s ease; }
+.task-progress-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; color: var(--t-meta); font-size: 11px; }
+
+.task-card-result { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-top: 12px; margin-top: 14px; color: var(--t-meta); border-top: 1px solid #eef2f6; font-size: 12px; }
+.task-card-result span { display: inline-flex; align-items: center; gap: 6px; }
+.task-card-result span svg { color: #10b981; }
+.task-card-result button { display: inline-flex; align-items: center; gap: 3px; padding: 7px 11px; color: var(--t-node); background: #fff; border: 1px solid var(--card-line); border-radius: 999px; font-size: 11px; font-weight: 500; }
+.task-card-result button:hover { background: var(--flow-bg); }
+.task-card-result button:disabled { opacity: .6; cursor: wait; }
+
+.task-card-default { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; margin-top: 14px; color: var(--t-node); background: var(--flow-bg); border-radius: 12px; font-size: 12px; }
+.task-card-default > span:first-child { min-width: 0; }
+.task-card-default > span:last-child { display: inline-flex; align-items: center; gap: 5px; color: var(--t-meta); white-space: nowrap; }
+
+/* ===== 空态 ============================================================== */
+.task-empty-state { display: flex; align-items: center; flex-direction: column; gap: 7px; padding: 100px 20px; color: #75777d; background: rgba(255, 255, 255, .7); border: 1px dashed #c5c6cd; border-radius: 12px; text-align: center; }
+.task-empty-state h2 { margin: 7px 0 0; color: var(--ink); font-size: 18px; }
+.task-empty-state p { margin: 0 0 10px; color: #45474c; font-size: 13px; }
+.task-no-results { display: grid; place-items: center; gap: 8px; min-height: 200px; color: #75777d; background: rgba(255, 255, 255, .7); border: 1px dashed #c5c6cd; border-radius: 12px; }
+.task-no-results p { margin: 0; font-size: 13px; }
+
+/* ===== 办理工作台（右栏）================================================= */
+/* 右栏自身限高、正文滚动 —— 底部操作条才不会被长表单顶出视野。
+   用 flex + min-height:0 让正文成为唯一滚动区（不用 sticky：祖先 .task-detail
+   有 overflow:hidden，sticky 会以它为滚动容器而失效）。
+   106 = .task-detail 的 sticky top 86 + 底部留白 20。 */
+.task-wb { display: flex; flex-direction: column; max-height: calc(100vh - 106px); }
+.task-wb-header { display: flex; align-items: center; gap: 10px; padding: 12px 18px; background: rgba(243, 244, 243, .72); border-bottom: 1px solid rgba(226, 232, 240, .7); }
+.task-wb-tag { padding: 3px 8px; color: #fff; background: var(--ink); border-radius: 6px; font-size: 11px; font-weight: 600; letter-spacing: .02em; white-space: nowrap; }
+.task-wb-no { color: var(--ink); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; font-weight: 600; }
+.task-wb-icons { display: flex; gap: 4px; margin-left: auto; }
+.task-wb-icon { display: grid; place-items: center; width: 26px; height: 26px; color: #45474c; background: transparent; border-radius: 6px; }
+.task-wb-icon:hover { color: var(--ink); background: rgba(255, 255, 255, .9); }
+
+.task-wb-body { display: flex; flex: 1; flex-direction: column; gap: 14px; min-height: 0; padding: 18px; overflow-y: auto; }
+
+/* 2026-09-15 右栏整体减重（用户反馈：红、灰、黄三块大色块连续出现太厚重）：
+   · 截止提醒 —— 只有**超期**才铺浅红底，正常时限走流程那一档浅灰蓝，不铺第三个色；
+   · 办理说明 —— 取消灰底卡片，改成普通说明文字（小标 + 段落），不再占一块底色；
+   · 材料区 —— 全部白底 + 浅灰描边，缺材料只用琥珀小图标 + 一个胶囊标签表达。 */
+.task-wb-flow-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.task-wb-kicker { color: #6b7280; font-size: 11px; font-weight: 600; letter-spacing: .04em; }
+.task-wb-flow-hint { color: #4b5563; font-size: 11px; font-weight: 500; }
+.task-wb-flow-hint.warn { color: var(--warn-ink); }
+.task-wb-title { margin: 7px 0 0; color: var(--ink); font-size: 19px; font-weight: 700; letter-spacing: -.01em; line-height: 1.35; }
+.task-wb-sub { margin: 6px 0 0; color: #4b5563; font-size: 12px; line-height: 1.6; }
+
+/* 办理时限：把「截止到几点」和「超了会怎样」说清楚，避免右侧还能上传却被误解为不能办了。
+   未超期 = 中性底（与流程区同档），超期 = 浅红底 —— 整栏只有这一处会变红。 */
+.task-wb-due { display: flex; gap: 10px; padding: 10px 12px; background: var(--flow-bg); border-radius: 12px; }
+.task-wb-due > svg { margin-top: 2px; flex: none; color: #4b5563; }
+.task-wb-due strong { display: block; color: var(--ink); font-size: 12px; font-weight: 600; }
+.task-wb-due small { display: block; margin-top: 3px; color: #4b5563; font-size: 11px; line-height: 1.5; }
+.task-wb-due.overdue { background: #ffdad6; }
+.task-wb-due.overdue > svg, .task-wb-due.overdue strong { color: #ad312b; }
+.task-wb-due.overdue small { color: #8c211c; }
+
+/* 办理说明：改成普通说明文字（无底色、无边框），只在左侧留一枚小图标 */
+.task-wb-rules { display: flex; gap: 9px; padding: 0 2px; }
+.task-wb-rules svg { margin-top: 2px; flex: none; color: #6b7280; }
+.task-wb-rules strong { display: block; color: #4b5563; font-size: 11px; font-weight: 600; letter-spacing: .04em; }
+.task-wb-rules p { margin: 4px 0 0; color: #4b5563; font-size: 12px; line-height: 1.75; }
+
+.task-wb-material-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.task-wb-section { margin: 0; color: var(--ink); font-size: 12px; font-weight: 600; }
+.task-wb-code { color: #6b7280; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+
+.task-wb-list { display: flex; flex-direction: column; gap: 8px; }
+/* 材料行统一白底 + 浅灰描边（原来「已通过」是灰底、「待补充」是整块琥珀底，
+   两行并排就是两个大色块，上传区跟着看着像一大片警告）。 */
+.task-wb-req { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #fff; border: 1px solid var(--card-line); border-radius: 12px; }
+.task-wb-req-icon { display: grid; flex: none; place-items: center; width: 20px; height: 20px; }
+.task-wb-req.accepted .task-wb-req-icon { color: #10b981; }
+.task-wb-req > div, .task-wb-req-row > div { min-width: 0; flex: 1; }
+.task-wb-req strong { display: block; color: var(--ink); font-size: 13px; font-weight: 600; }
+.task-wb-req small { display: block; margin-top: 2px; color: #6b7280; font-size: 11px; }
+.task-wb-req-code { flex: none; padding: 3px 7px; color: #047857; background: rgba(111, 251, 190, .35); border-radius: 999px; font-size: 10px; font-weight: 700; letter-spacing: .04em; }
+
+/* 缺材料：不再是整块琥珀，只留白底 + 琥珀小图标 + 标签 */
+.task-wb-req.missing { flex-direction: column; align-items: stretch; gap: 10px; padding: 12px; }
+.task-wb-req-row { display: flex; align-items: center; gap: 10px; }
+.task-wb-req.missing .task-wb-req-icon { color: var(--warn-solid); }
+/* 与状态徽章同源的胶囊：白底 + 浅灰描边，语义靠圆点/文字，不再用实心深色块 */
+.task-wb-req-badge { display: inline-flex; flex: none; align-items: center; gap: 5px; padding: 3px 9px; color: #6b7280; background: #fff; border: 1px solid var(--card-line); border-radius: 999px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+.task-wb-req-badge::before { width: 5px; height: 5px; content: ''; background: var(--warn-solid); border-radius: 50%; }
+.task-wb-req-badge.optional { color: #6b7280; }
+.task-wb-req-badge.optional::before { background: #c5c6cd; }
+
+/* 上传区：白底 + 虚线描边，状态底色只做淡染、描边不变。
+   2026-09-15 高度砍掉约 1/3（留白 26→13、图标 46→32、间距 8→4，实测 148px→100px）——
+   它在右栏是最占地方的元素，而真正的操作只有「点一下选文件」。
+   「上传材料：xxx」那行标签也删了：材料名就在上面一行的标题里，重复一遍只是把它撑更高。 */
+.task-wb-upload { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 13px 16px; color: var(--ink); background: #fff; border: 1px dashed #c5c6cd; border-radius: 12px; text-align: center; cursor: pointer; transition: border-color .18s ease, background .18s ease, box-shadow .18s ease; }
+.task-wb-upload:hover { background: #fafafa; border-color: #9aa0a8; box-shadow: inset 0 0 0 1px rgba(15, 23, 42, .02); }
+.task-wb-upload.uploaded { background: rgba(111, 251, 190, .22); border-color: rgba(0, 164, 114, .55); }
+.task-wb-upload.error { background: rgba(255, 218, 214, .5); border-color: rgba(224, 86, 76, .6); }
+.task-wb-upload-icon { display: grid; place-items: center; width: 32px; height: 32px; color: #4b5563; background: #f1f5fa; border-radius: 50%; }
+.task-wb-upload strong { display: inline-flex; align-items: center; gap: 5px; color: var(--ink); font-size: 12px; font-weight: 600; }
+.task-wb-upload small { color: #6b7280; font-size: 11px; }
+.task-wb-upload.uploaded .task-wb-upload-icon { color: #047857; background: rgba(111, 251, 190, .3); }
+.task-wb-upload.error strong { color: #ad312b; }
+.task-wb-file-input { display: none; }
+
+/* 次级入口：从学籍库调取 / 手机扫码拍摄 —— 降级成一行文字链接，
+   不再和上传区抢「主按钮」的分量（原来是两个描边按钮，看起来像推荐操作）。 */
+.task-wb-upload-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding-left: 2px; }
+.task-wb-upload-btn { display: inline-flex; align-items: center; gap: 4px; color: #4b5563; font-size: 11px; cursor: pointer; }
+.task-wb-upload-btn:hover { color: var(--ink); text-decoration: underline; }
+.task-wb-upload-btn svg { color: #6b7280; }
+.task-wb-empty { margin: 0; padding: 14px 0; color: #6b7280; font-size: 12px; text-align: center; }
+
+.task-wb-note-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+/* 附言输入区：白底 + 1px 描边，圆角 8px（设计稿材质） */
+.task-wb-note { width: 100%; min-height: 66px; padding: 10px 12px; color: #1a1c1c; background: #fff; border: 1px solid var(--card-line); border-radius: 8px; outline: 0; font-size: 12px; line-height: 1.6; resize: vertical; }
+.task-wb-note::placeholder { color: #6b7280; }
+.task-wb-note:focus { border-color: var(--ink); }
+
+.task-wb-agent { display: flex; align-items: center; gap: 8px; padding: 10px 12px; color: #4b5563; background: var(--flow-bg); border-radius: 10px; font-size: 11px; }
+.task-wb-agent > svg { flex: none; color: var(--ink); }
+.task-wb-agent > span { flex: 1; line-height: 1.5; }
+.task-wb-agent button { display: inline-flex; align-items: center; gap: 4px; padding: 6px 9px; color: var(--ink); background: #fff; border: 1px solid var(--card-line); border-radius: 6px; font-size: 11px; font-weight: 500; white-space: nowrap; }
+.task-wb-agent button:hover { background: var(--flow-bg); }
+
+/* 结果提示放在正文之外、操作条之上：滚动到底部时仍然看得见 */
+.task-wb-message { display: flex; align-items: center; gap: 6px; margin: 0; padding: 9px 18px; color: #4b5563; background: #f7f8f7; border-top: 1px solid #eef2f6; font-size: 11px; line-height: 1.5; }
+
+/* 底部操作条常驻（正文滚动不跟着走）：左侧告诉还差几项 / 卡在哪一步，右侧是当下该做的那一下 */
+.task-wb-footer { display: flex; flex: none; align-items: center; gap: 10px; padding: 12px 18px; background: #fff; border-top: 1px solid #eef2f6; }
+.task-wb-foot-note { display: flex; flex-direction: column; gap: 2px; min-width: 0; margin: 0; color: #4b5563; font-size: 11px; }
+.task-wb-foot-note b { color: var(--ink); font-size: 12px; font-weight: 600; }
+.task-wb-foot-note small { color: #6b7280; font-size: 10px; line-height: 1.45; }
+.task-wb-foot-note.done { flex-direction: row; align-items: center; gap: 6px; color: #047857; font-size: 12px; font-weight: 600; }
+.task-wb-foot-note.done svg { flex: none; }
+/* 已截止：底部必须说清「现在该做什么」和「材料还在不在」，不能只留一个灰色的提交按钮 */
+.task-wb-foot-note.blocked b { color: #ad312b; }
+.task-wb-foot-note.blocked small { color: #8c211c; }
+.task-wb-draft { flex: none; padding: 9px 14px; color: #1a1c1c; background: #fff; border: 1px solid var(--card-line); border-radius: 10px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+.task-wb-draft:hover { background: var(--flow-bg); }
+.task-wb-submit { display: inline-flex; flex: none; align-items: center; justify-content: center; gap: 6px; min-width: 132px; margin-left: auto; padding: 9px 16px; color: #fff; background: var(--ink); border-radius: 10px; font-size: 12px; font-weight: 600; }
+.task-wb-submit:hover { background: #0f172a; }
+.task-wb-submit:disabled { opacity: .5; cursor: not-allowed; }
+
+@media(max-width:1180px) {
+  .tasks-page .task-layout { grid-template-columns:minmax(300px,1fr) minmax(0,1fr) }
+}
+
+@media(max-width:1100px) {
+  .task-page-heading { flex-direction:column;align-items:stretch }
+}
+
+@media(max-width:900px) {
+  .tasks-page .task-layout { grid-template-columns:1fr }
+  .tasks-page .task-detail { position:static }
+  .task-wb { max-height:none }
+  .task-wb-body { overflow:visible }
+}
+
+@media(max-width:700px) {
+  .task-heading-main { gap:12px }
+  .task-filter-bar { flex-direction:column;align-items:stretch }
+  .task-filter-group { overflow-x:auto }
+  .task-sync-note { justify-content:flex-end }
+  .tasks-page .task-card-meta { gap:8px }
+  .task-step-line { flex-direction:column;align-items:flex-start;gap:4px }
+  .task-wb-upload-actions { grid-template-columns:1fr }
+  .task-wb-footer { flex-direction:column;align-items:stretch }
+  .task-wb-draft,.task-wb-submit { justify-content:center }
+}
+
+.task-create-fab { --fab-top: #1d2942;--fab-mid: #0f172a;--fab-bottom: #0a1120;position:fixed;right:28px;bottom:28px;z-index:60;display:inline-flex;align-items:center;height:48px;padding:0 12px;color:#ffffffe6;background-color:#0f172a61;background-image:linear-gradient(180deg,#ffffff57,#fff0 46%);border-radius:999px;backdrop-filter:blur(8px) saturate(130%);-webkit-backdrop-filter:blur(8px) saturate(130%);box-shadow:0 6px 16px #0f172a1f,inset 0 1px #fff3;cursor:grab;-webkit-user-select:none;user-select:none;touch-action:none;opacity:1;transition:transform .18s ease,box-shadow .2s ease,background-color .2s ease,color .2s ease,opacity .45s ease }
+
+.task-create-fab.sleeping { opacity:.28;box-shadow:0 4px 12px #0f172a14,inset 0 1px #ffffff29 }
+
+.task-create-fab:hover,.task-create-fab:focus-visible,.task-create-fab.dragging { opacity:1;color:#fff;background-color:var(--fab-mid);background-image:linear-gradient(180deg,#ffffff47,#fff0 46%),linear-gradient(180deg,var(--fab-top) 0%,var(--fab-mid) 52%,var(--fab-bottom) 100%);box-shadow:0 18px 36px #0f172a47,inset 0 1px #ffffff57,inset 0 -1px #0000001a }
+
+.task-create-fab:hover,.task-create-fab:focus-visible { transform:translateY(-2px) }
+
+.task-create-fab:active { transform:translateY(0) }
+
+.task-create-fab svg { flex:none }
+
+.task-create-fab.is-positioned { right:auto;bottom:auto }
+
+.task-create-fab.dragging { cursor:grabbing;transform:none;transition:none }
+
+/* ===== 弹窗外壳 ==========================================================
+   ⚠️ 本段于 2026-09-14 晚因脚本误删整段后重建：以 dist 15:55 构建为底稿、
+   叠加当天的四轮改动（v15 重做 / 模式弹出菜单 / 收容器 / 收色 / 禁用态）。
+   重建依据 = 当天的全部 CSS 编辑 + `_verify-ai-assembly.mjs`（42 条计算样式断言）。 */
+.task-create-layer { position: fixed; inset: 0; z-index: 95; display: flex; justify-content: center; align-items: flex-start; padding: 56px 16px 24px; }
+.task-create-backdrop { position: absolute; inset: 0; width: 100%; height: 100%; background: rgba(9, 20, 38, .32); backdrop-filter: blur(2px); }
+.task-create { position: relative; z-index: 1; display: flex; flex-direction: column; width: min(880px, 100%); max-height: calc(100vh - 80px); overflow: hidden; background: #fbfbfb; border: 1px solid #e7e9ec; border-radius: 16px; box-shadow: 0 24px 70px rgba(15, 23, 42, .22); animation: task-create-in 180ms ease-out; }
+@keyframes task-create-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* 页头：左「图标 + 标题/说明」，右「模式切换 + 关闭」。
+   纵向对齐 center —— 右侧现在是一枚一行高的弹出触发器，跟两行的标题块顶对齐会显得浮。 */
+/* 2026-09-15 六改（用户反馈 4「滚动和顶部遮挡」的第 1 步）：
+   页头/底栏在纵向 flex 里**不许被压缩**（`flex:none`）。
+   原先 `align-items:center` 之外没有任何 `flex` 声明，正文一长、`.tc-body` 挤不动时，
+   浏览器会按 `flex-shrink:1` 把页头压扁 —— 正文内容"盖"在标题上就是这么来的。
+   现在页头固定、底栏固定，**只有中间 `.tc-body` 滚动**，见下面 `.tc-body` 的 `flex:1;min-height:0`。
+   注意 `.tc-head` 的 `align-items:center` 只管**页头内部那一行**的对齐，与固定无关，别混。 */
+.tc-head { display: flex; flex: none; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 24px 14px; background: #fbfbfb; border-bottom: 1px solid rgba(226, 232, 240, .8); }
+.tc-head-main { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+.tc-head-icon { position: relative; display: grid; flex: none; place-items: center; width: 40px; height: 40px; color: #fff; background: #1e293b; border-radius: 12px; box-shadow: 0 1px 3px rgba(15, 23, 42, .2); }
+/* 智能协作模式：渐变深墨（对齐 v15 设计稿的 AI 图标）。
+   ⚠️ 图标角上**不要**再挂脉动绿点：页头那枚「N 个智能体协同中」胶囊里已经有一颗，
+   紧挨着放第二颗＝同一件事说两遍（2026-09-14 用户要求去掉一颗）。 */
+.tc-head-icon.ai { background: linear-gradient(135deg, #0f172a 0%, #1e293b 52%, #1e1b4b 100%); box-shadow: 0 2px 8px rgba(15, 23, 42, .28); }
+.tc-head-icon.ai > svg { color: #c7d2fe; }
+.tc-head-copy { min-width: 0; }
+.tc-head-title { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.tc-head-title h2 { margin: 0; color: var(--ink); font-size: 18px; font-weight: 700; letter-spacing: -.01em; }
+.tc-head-copy p { margin: 6px 0 0; color: #64748b; font-size: 12px; line-height: 1.6; }
+.tc-online { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; color: #047857; background: rgba(236, 253, 245, .9); border: 1px solid #a7f3d0; border-radius: 999px; font-size: 11px; font-weight: 500; white-space: nowrap; }
+.tc-online i { width: 6px; height: 6px; flex: none; background: #10b981; border-radius: 50%; animation: tc-pulse 1.8s ease-in-out infinite; }
+.tc-close { display: grid; flex: none; place-items: center; width: 32px; height: 32px; color: #94a3b8; border-radius: 8px; }
+.tc-close:hover { color: var(--ink); background: #f1f5f9; }
+
+/* ===== 模式切换（页头右上角：悬停/点击弹出的菜单）=======================
+   2026-09-14 三改：整行分段 → 页头右侧分段 → **弹出菜单**。
+   常驻两个半宽标签时，页头右侧被吃掉近 300px，而「换一种发起方式」是次要操作；
+   收起后只剩「当前模式 + 推荐角标 + ▾」，两个模式的说明回到菜单里。
+   ⚠️ 三处细节别改坏：
+   ① `.tc-mode` 必须是 `position: relative` 的**包裹层**，菜单是它的子节点 ——
+      鼠标从触发器移到菜单上不能触发 `onMouseLeave`（否则菜单会在半路关掉）；
+   ② 触发器与菜单之间那 6px 是「真空地带」，靠菜单的 `::before` 铺一层透明桥接补上；
+   ③ 菜单要 `z-index` 高过正文，且宽度固定（内容两行，不能被标题挤变形）。 */
+.tc-head-side { display: flex; flex: none; align-items: center; gap: 10px; }
+.tc-mode { position: relative; display: inline-flex; }
+.tc-mode-trigger { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 9px; color: #1e293b; background: #fff; border: 1px solid #e2e8f0; border-radius: 9px; font-size: 12px; font-weight: 600; white-space: nowrap; transition: background .18s ease, border-color .18s ease; }
+.tc-mode-trigger:hover, .tc-mode.open .tc-mode-trigger { background: #f8fafc; border-color: #cbd5e1; }
+.tc-mode-caret { flex: none; color: #94a3b8; transition: transform .18s ease; }
+.tc-mode.open .tc-mode-caret { transform: rotate(180deg); }
+.tc-mode-menu { position: absolute; z-index: 30; top: calc(100% + 6px); right: 0; display: flex; flex-direction: column; gap: 2px; width: 232px; padding: 6px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 16px 32px rgba(15, 23, 42, .14); }
+/* 透明桥接（见上方 ②）：没有它，鼠标穿过那 6px 空白时 onMouseLeave 已经触发，菜单点不到 */
+.tc-mode-menu::before { position: absolute; top: -8px; left: 0; right: 0; height: 8px; content: ''; }
+.tc-mode-tab { display: flex; align-items: flex-start; gap: 8px; padding: 8px 9px; border: 1px solid transparent; border-radius: 9px; text-align: left; }
+.tc-mode-tab:hover { background: #f1f5f9; }
+.tc-mode-tab.active { background: rgba(241, 245, 249, .85); border-color: #e2e8f0; }
+.tc-mode-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tc-mode-name { display: inline-flex; align-items: center; gap: 6px; color: #1e293b; font-size: 12px; font-weight: 600; }
+.tc-mode-copy small { color: #64748b; font-size: 11px; }
+.tc-mode-icon { display: grid; flex: none; place-items: center; width: 18px; height: 18px; border-radius: 5px; }
+/* 颜色收到三类（2026-09-14 用户要求）：绿=已就绪 · 蓝黑=主要操作 · 灰=辅助信息。
+   所以智能协作那枚图标片从珊瑚改成**蓝黑**（它是主路径，不是告警）。 */
+.tc-mode-icon.ink { color: #fff; background: #1e293b; }
+.tc-mode-icon.muted { color: #64748b; background: rgba(226, 232, 240, .8); }
+.tc-mode-text { letter-spacing: -.01em; }
+/* 「推荐」是**珊瑚红实底小标签**（2026-09-14 用户明确要回红色）。
+   ⚠️ 曾按「颜色收到三类」把它压成灰底细边，用户看过后要求改回原红 —— 别再压灰。 */
+.tc-mode-badge { padding: 1px 5px; color: #fff; background: #e0564c; border-radius: 5px; font-size: 10px; font-style: normal; font-weight: 500; line-height: 1.4; }
+
+/* ===== 内容区 ============================================================ */
+/* 正文：**唯一滚动区**。
+   `min-height:0` 是必须的 —— flex 子项的默认 `min-height:auto` 会让它在内容高时
+   撑大自身、把外面的弹窗顶出 `max-height`，表现成「页头被内容盖住」（用户反馈 4）。
+   `scroll-padding-top` 让锚点 / `scrollIntoView` 的落点避开页头（页头 72px 左右）。 */
+.tc-body { flex: 1; min-height: 0; overflow-y: auto; padding: 20px 24px; scroll-padding-top: 16px; }
+.tc-view { display: flex; flex-direction: column; gap: 16px; }
+
+/* ===== 表单分区（手动申报的「一、二、三」）===============================
+   2026-09-15 二改（用户要求「步骤感更强」）：分区与标题行的留白各收一档，
+   完成状态徽标**紧跟标题同行**；右侧元信息（字数/编号）改 margin-left:auto 靠右，
+   不再把标题和元信息撑到两端。 */
+.tc-section { display: flex; flex-direction: column; gap: 10px; }
+.tc-section + .tc-section { margin-top: 2px; padding-top: 14px; border-top: 1px solid #eef2f6; }
+.tc-section-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.tc-section-head h3 { display: inline-flex; align-items: center; gap: 8px; margin: 0; color: var(--ink); font-size: 13px; font-weight: 700; letter-spacing: -.005em; }
+.tc-section-no { display: grid; flex: none; place-items: center; width: 20px; height: 20px; color: #334155; background: #eef2f6; border-radius: 50%; font-size: 11px; font-style: normal; font-weight: 700; }
+/* 步骤完成徽标：绿色（= 校验通过/已完成），由真实表单状态推导，没完成就不渲染。 */
+.tc-section-done { display: inline-flex; flex: none; align-items: center; gap: 4px; color: #047857; font-size: 11px; font-style: normal; font-weight: 500; }
+.tc-section-done svg { color: #10b981; }
+.tc-section-head > span { margin-left: auto; color: #64748b; font-size: 11px; line-height: 1.5; }
+/* 字数计量用等宽数字：值变化时宽度不跳，右侧那行不会左右抖。 */
+.tc-section-count { font-variant-numeric: tabular-nums; }
+/* 模板编号是「凭证」类信息，用等宽字体（与设计稿的事项编号同构）。 */
+.tc-section-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+/* 分区内的控件改成**白底**（玻璃底上白底输入框才读得出「这里是可填的」）。
+   ⚠️ 必须带 `.tc-section` 前缀只改分区内 —— 智能协作模式的输入框直接落在弹窗玻璃上，
+   那边灰底是正确的（玻璃上反而不能铺实白，会盖掉材质）。 */
+.tc-section .tc-field input,
+.tc-section .tc-field textarea,
+.tc-section .tc-select { background: #fff; }
+.tc-section .tc-field input:focus,
+.tc-section .tc-field textarea:focus,
+.tc-section .tc-select:focus { background: #fff; border-color: #1e293b; }
+/* 起点控件「要办理的事务」：手动申报的第一个动作，和智能协作的起点输入框同一档
+   （46px / 白底 / 略深描边 / 微投影）—— 它决定后面所有内容，视觉上必须是第一步。 */
+.tc-select-wrap.fluid { width: 100%; max-width: none; }
+.tc-select.lead { height: 46px; padding: 0 40px 0 14px; color: #0f172a; background: #fff; border-color: #cbd5e1; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
+.tc-select.lead:focus { border-color: #1e293b; }
+.tc-select-wrap.fluid .tc-select-arrow { right: 14px; }
+
+/* —— 手动申报的白色承载板（2026-09-15 用户要求「前景分层」）———————————
+   弹窗外壳在手动模式压成微蓝灰，整张表单抬到一块白色承载板上，底栏改实白：
+   灰外壳（背景层）→ 白板（内容层，凸）→ 实白底栏（操作层），边界分明。
+   ⚠️ 只作用于手动模式（`.task-create.manual`）；智能协作维持玻璃底的既有设计。 */
+.task-create.manual { background: #f2f4f8; }
+.task-create.manual .tc-foot { background: #fff; }
+.tc-sheet { display: flex; flex-direction: column; gap: 14px; padding: 18px 20px; background: #fff; border: 1px solid #e4e8ee; border-radius: 14px; }
+/* 白板上控件回到浅灰底（白板上的白输入框会隐形）；聚焦再回白。
+   必须放在上面 `.tc-section .tc-field input` 那组覆盖之后，靠源码顺序取胜。 */
+.tc-sheet .tc-field input, .tc-sheet .tc-field textarea, .tc-sheet .tc-select { background: #f6f8fb; }
+.tc-sheet .tc-field input:focus, .tc-sheet .tc-field textarea:focus, .tc-sheet .tc-select:focus { background: #fff; }
+/* 起点控件「要办理的事务」保持白底凸起（描边 + 投影在白板上仍读得出） */
+.tc-sheet .tc-select.lead, .tc-sheet .tc-select.lead:focus { background: #fff; }
+
+/* 会话选择器（分析中枢里）：**和旁边的图标按钮同高**（28px）+ 自绘箭头。
+   原先是 38px 的原生 select，比图标按钮高一截、箭头还是系统样式，一行里像两种控件拼起来的。 */
+.tc-select-wrap { position: relative; display: inline-flex; flex: 0 1 auto; min-width: 0; max-width: 360px; }
+.tc-select.tc-select-mini { width: 100%; height: 28px; padding: 0 26px 0 10px; appearance: none; color: #334155; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 11px; font-weight: 500; }
+.tc-select.tc-select-mini:hover { border-color: #cbd5e1; }
+/* 自绘箭头必须 `pointer-events:none`，否则点箭头会命中它而不是下方的 select */
+.tc-select-arrow { position: absolute; top: 50%; right: 8px; color: #94a3b8; pointer-events: none; transform: translateY(-50%); }
+
+/* 系统生成信息合并行（2026-09-15 用户要求）：事项申报标题 + 申请人信息并成一行辅助条，
+   降低第一步高度。**浅灰底 + 中灰文字** —— 读起来是「系统带出的资料」，不是「禁用的输入框」。
+   只放真有的字段：标题 = 所选事务名；申请人 = 登录会话的姓名/账号/部门/角色。 */
+.tc-meta-line { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; padding: 8px 12px; background: #f1f5f9; border-radius: 8px; }
+.tc-meta-item { display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px; min-width: 0; }
+.tc-meta-item > i { flex: none; color: #64748b; font-size: 11px; font-style: normal; }
+.tc-meta-item > b { color: #334155; font-size: 12px; font-weight: 600; }
+.tc-meta-item.is-empty > b { color: #94a3b8; font-weight: 400; }
+.tc-meta-item > small { color: #64748b; font-size: 11px; }
+.tc-meta-sep { flex: none; width: 1px; height: 14px; background: #dbe1ea; }
+.tc-meta-role { flex: none; padding: 1px 8px; color: #475569; background: #fff; border: 1px solid #e2e8f0; border-radius: 999px; font-size: 10px; font-style: normal; font-weight: 500; }
+
+/* ===== 分析中枢（v15 设计稿的 AgentAnalysisHub）———————————————
+   2026-09-14 二改：原来是「料带标题 + 三张事实卡 + 两列字段」，同一件事说三遍。
+   现在合成一张：状态行 + 会话工具 + 协作管线 + 原始问题回溯。 */
+.tc-strip { display: flex; flex-direction: column; gap: 12px; padding: 16px; background: rgba(241, 245, 249, .7); border: 1px solid #e2e8f0; border-radius: 12px; }
+/* 紧凑态（2026-09-15 用户反馈 5）：**匹配成功后自动收成一行** ——
+   ① 只留状态行（中枢胶囊 + 当前状态 + 会话选择器）；② 隐去会话说明与原始问题回溯；
+   目的是把纵向空间让给真正需要用户确认的结果区，并让 `.tc-results` 能滚到固定页头下方。
+   ⚠️ 用户在紧凑态下**仍能改会话、重新提取、换名称**（控件没藏），只是不再重复解释。 */
+.tc-strip.compact { gap: 0; padding: 12px 16px; }
+.tc-strip.compact .tc-field-hint,
+.tc-strip.compact .tc-recall { display: none; }
+.tc-strip.compact .tc-hub-meta { color: #047857; font-weight: 500; }
+
+.tc-strip-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.tc-hub-status { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
+/* 中枢胶囊：深墨底 + 白字 + 脉动点（对齐设计稿那枚「AI 协同分析中枢」） */
+.tc-hub-pill { display: inline-flex; flex: none; align-items: center; gap: 6px; padding: 3px 9px; color: #fff; background: #0f172a; border-radius: 8px; font-size: 11px; font-weight: 600; }
+.tc-ping { position: relative; width: 6px; height: 6px; flex: none; background: #10b981; border-radius: 50%; }
+.tc-ping::after { position: absolute; inset: 0; content: ''; background: #10b981; border-radius: 50%; animation: tc-ping 1.8s cubic-bezier(0, 0, .2, 1) infinite; }
+@keyframes tc-ping { 70%, 100% { transform: scale(2.2); opacity: 0; } }
+@keyframes tc-pulse { 50% { opacity: .4; } }
+.tc-hub-sep { color: #cbd5e1; font-size: 11px; }
+.tc-hub-meta { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; color: #64748b; font-size: 11px; }
+.tc-hub-dot { width: 3px; height: 3px; flex: none; background: #cbd5e1; border-radius: 50%; }
+/* 装配结果是**已经做到的事**，用绿字：与「已就绪」同一套语义（绿 = 校验通过 / 已完成）。 */
+.tc-hub-meta > .tc-hub-dot + * { color: #047857; font-weight: 500; }
+.tc-strip-tools { display: flex; align-items: center; gap: 8px; }
+/* 图标按钮（会话工具里的「重新提取」）：一行高、白底细边；disabled 时压灰、不做 hover 反馈 */
+.tc-icon-btn { display: grid; flex: none; place-items: center; width: 28px; height: 28px; color: #475569; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+.tc-icon-btn:hover:not(:disabled) { color: #1e293b; background: #f1f5f9; }
+.tc-icon-btn:disabled { color: #cbd5e1; cursor: default; }
+.tc-recall { margin: 0; padding: 12px; color: var(--ink); background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; line-height: 1.7; }
+.tc-recall > span { color: #64748b; font-weight: 500; }
+
+
+/* 空态总览（2026-09-15 用户第 4 条）：三个空状态原来各占一条通宽区域、每项只有一句废话，
+   现在**合并成一块浅底区域**，内部三行（图标 + 标题 + 一句说明），高度约为原来的 1/3。
+   ⚠️ 它**不是**给每项套大卡片：只有这一层浅底，明细展开后仍走 `.tc-group` + 分割线。 */
+.tc-preview { display: flex; flex-direction: column; gap: 9px; padding: 12px 14px; background: #f8fafc; border: 1px solid #eef2f6; border-radius: 10px; }
+.tc-preview-item { display: flex; align-items: flex-start; gap: 10px; }
+.tc-preview-ico { display: grid; flex: none; place-items: center; width: 26px; height: 26px; color: #64748b; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+.tc-preview-item > div { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.tc-preview-item b { color: #334155; font-size: 12px; font-weight: 600; }
+.tc-preview-item small { color: #64748b; font-size: 11px; line-height: 1.5; }
+
+/* ===== 智能预填结果（普通分组 + 分割线，不再是并排的大容器）=================
+   2026-09-14 用户要求：整屏只留「AI 协同分析中枢」一张重点容器，政策 / 材料 / 节点
+   改用**普通分组 + 发丝分割线**承载 —— 它们是输入之后的产物，不该和输入框抢重量。
+   所以这里没有底色、没有描边、没有圆角卡片，只有：一条 1px 顶线 + 小标题行 + 内容。 */
+/* `scroll-margin-top`：`.tc-body` 的 `scrollIntoView` 落点再留 12px 余量，
+   结果标题不会正好贴着页头分割线（配合 `.tc-body` 的 `scroll-padding-top`）。 */
+.tc-results { display: flex; flex-direction: column; gap: 14px; scroll-margin-top: 12px; }
+.tc-results-cap { display: flex; align-items: center; gap: 6px; margin: 0; color: #64748b; font-size: 11px; }
+.tc-results-cap > svg { flex: none; color: #cbd5e1; }
+.tc-group { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid #eef2f6; }
+.tc-group-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.tc-group-head h3 { margin: 0; color: #334155; font-size: 12px; font-weight: 600; }
+.tc-group-head > span { display: inline-flex; align-items: center; gap: 4px; color: #64748b; font-size: 11px; }
+/* 「已匹配 N 条政策」用绿字：绿 = 已就绪 / 已经有结果（与输入框右侧绿勾同一套语义） */
+.tc-group-head > span.ok { color: #047857; font-weight: 500; }
+/* 空态：**一行带图标的提示**（原先是 44px 的虚线占位块，白占纵向空间） */
+
+
+/* ===== 匹配结果栏（2026-09-15 用户反馈 3/4）=================================
+   用户原话：「置信度 99%」过于抢眼，但**用户真正要确认的是匹配到了哪个事项**。
+   而且成功信号曾经有四处在说同一件事：绿色匹配标签 + 输入框绿勾 + 「已生成下列预览」+ 底部「已采用」。
+   现在收敛成**这一条**：① 结果栏（唯一结果位）② 空输入态禁用且图标位空着（不算成功信号）
+   ③ 候选帽改为中性文案「必须点选一项…」 ④ 底注退回纯操作提示，不再复述「已采用」。
+   ⚠️ 置信度**彻底不再上屏**：数字对用户没有可执行含义（真正能核的是模板名与受理单位）。 */
+.tc-matchbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; padding: 9px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 12px; }
+.tc-matchbar > svg { flex: none; color: #047857; }
+.tc-matchbar.is-miss { background: #f8fafc; border-style: dashed; }
+.tc-matchbar.is-miss > svg { color: #94a3b8; }
+/* 匹配结果的三个事实：事项名 / 受理单位 / 更换事项。
+   `flex-wrap` + `margin-left:auto` 让窄屏时「更换事项」自然落到下一行右端。 */
+.tc-match-facts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+.tc-match-label { flex: none; color: #64748b; }
+.tc-match-name { color: var(--ink); font-weight: 600; }
+.tc-match-org { display: inline-flex; align-items: center; gap: 4px; color: #64748b; }
+.tc-match-org > svg { flex: none; color: #cbd5e1; }
+.tc-matchbar > button { flex: none; margin-left: auto; padding: 3px 9px; color: #1e293b; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 11px; font-weight: 500; }
+.tc-matchbar > button:hover { background: #f1f5f9; }
+
+/* 「发起后需完成」条：把**发起前拿不到的补充项**集中一处说明（用户反馈 1）。
+   用户指出的是**指引冲突**：待补说明写着「请说明补办原因」「请上传近期证件照」，
+   但下面没有任何输入框 / 上传按钮；而材料说明又写「提交后在任务详情上传」。
+   两种指引同时出现，用户不知道现在该干什么。
+   取舍：**补充说明留在发起时填写**（它就是「申报事由」，任务详情里仍有编辑入口、不阻塞）；
+   材料上传统一写「发起后需完成」，发起前一个上传口都不开（附件只有建单后能挂到材料项上）。 */
+.tc-todo { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; padding: 10px 12px; background: rgba(217, 119, 6, .05); border: 1px solid rgba(217, 119, 6, .22); border-radius: 10px; }
+.tc-todo-head { display: flex; align-items: center; gap: 6px; color: #92400e; font-size: 11px; font-weight: 600; }
+.tc-todo-head > svg { flex: none; color: #d97706; }
+.tc-todo-head em { color: #64748b; font-size: 11px; font-style: normal; font-weight: 400; }
+.tc-todo label { display: flex; flex-direction: column; gap: 5px; }
+.tc-todo label > b { color: #475569; font-size: 11px; font-weight: 600; }
+.tc-todo-upload { display: flex; align-items: center; gap: 8px; padding: 7px 10px; color: #64748b; background: #fff; border: 1px dashed #dbe1ea; border-radius: 8px; font-size: 11px; }
+.tc-todo-upload > svg { flex: none; color: #94a3b8; }
+.tc-todo-upload > b { color: #475569; font-weight: 600; }
+.tc-todo ul { display: flex; flex-direction: column; gap: 3px; margin: 0; padding-left: 18px; }
+.tc-todo ul li { color: #92400e; font-size: 11px; line-height: 1.6; }
+.tc-todo ul li em { color: #64748b; font-style: normal; }
+/* 补充说明输入框：与其它字段同高（38px），但**底色用白** —— 它在琥珀底板上，
+   用默认的浅灰底会和底板糊在一起。 */
+.tc-todo input { height: 38px; padding: 0 12px; color: var(--ink); background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; outline: 0; font-size: 12px; }
+.tc-todo input::placeholder { color: #94a3b8; }
+.tc-todo input:focus { border-color: #1e293b; }.tc-preview-line { display: flex; align-items: center; gap: 6px; margin: 0; color: #64748b; font-size: 11px; line-height: 1.6; }
+.tc-preview-line > svg { flex: none; color: #cbd5e1; }
+/* 命中项那一行（政策依据）：图标 + 文本 + 查阅 */
+.tc-line { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.tc-line > svg { flex: none; color: #94a3b8; }
+.tc-line > span { min-width: 0; overflow: hidden; color: #334155; text-overflow: ellipsis; white-space: nowrap; }
+.tc-line > button { display: inline-flex; flex: none; align-items: center; gap: 4px; color: #1e293b; font-size: 11px; font-weight: 500; }
+.tc-line > button:hover { color: #0f172a; text-decoration: underline; }
+
+/* —— 办理依据那一行（2026-09-15 接入 `POST /v2/tasks/document/match`）——
+   命中后除标题与文号，后端还可能给命中理由与得分，两者都属于「补充说明」，
+   所以那一行改成**两行**：第一行标题 + 文号 + 得分，第二行理由（自动换行，不再 nowrap 省略）。
+   原先 `.tc-line > span` 是 nowrap + 省略号 —— 标题被截断时用户根本看不出匹配到的是哪一份规章。 */
+.tc-line-doc { align-items: flex-start; }
+.tc-line-doc > svg { margin-top: 2px; }
+.tc-line-doc > span { display: flex; flex-direction: column; gap: 3px; overflow: visible; white-space: normal; }
+/* 得分：低调的等宽小字，只说明「为什么是这一份」，不做成徽章（避免又一枚抢眼的成功信号）。 */
+.tc-doc-score { margin-left: 6px; color: #64748b; font-size: 11px; font-style: normal; font-weight: 400; }
+.tc-doc-reason { color: #94a3b8; font-size: 11px; line-height: 1.5; }
+/* 「重试」入口：只用于**规章匹配失败**（接口 404 / 502 / 超时），
+   与「查过了但没匹配到」严格分开 —— 后者是业务结论，不该出现重试按钮。 */
+.tc-group-head .tc-reload { margin-left: 6px; color: #1e293b; font-size: 11px; font-weight: 500; text-decoration: underline; }
+.tc-group-head .tc-reload:hover { color: #0f172a; }
+
+/* ⚠️ `.tc-policy*` / `.tc-panel` / `.tc-placeholder` 2026-09-14 已删除：
+   政策（命中项）改成 `.tc-line`，材料与节点改成 `.tc-group` + `.tc-preview-line`（普通分组 + 分割线），
+   三块都不再是独立的大容器 —— 整屏只保留「AI 协同分析中枢」一张重点容器。 */
+
+/* —— 表单字段 —— */
+.tc-field { display: flex; flex-direction: column; gap: 6px; }
+.tc-label { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; color: var(--ink); font-size: 12px; font-weight: 600; }
+.tc-label b { color: #e0564c; font-weight: 600; }
+.tc-label em { display: inline-flex; align-items: center; gap: 4px; color: #64748b; font-size: 11px; font-style: normal; font-weight: 400; }
+.tc-label em svg { color: #10b981; }
+.tc-label em.plain { color: #64748b; }
+/* 匹配徽标做成绿色胶囊（对齐 v15 设计稿标签右侧那枚「已匹配标准办事模板」）：
+   它是**校验通过**这类语义，所以绿底绿字、和输入框右侧的绿勾同一套颜色。 */
+.tc-label em.matched { padding: 2px 9px; color: #047857; background: rgba(236, 253, 245, .9); border: 1px solid #a7f3d0; border-radius: 999px; font-weight: 500; }
+.tc-label em.matched svg { color: #059669; }
+.tc-field input, .tc-field textarea, .tc-select { width: 100%; height: 38px; padding: 0 12px; color: var(--ink); background: rgba(241, 245, 249, .9); border: 1px solid #e2e8f0; border-radius: 8px; outline: 0; font-size: 12px; }
+.tc-field input::placeholder, .tc-field textarea::placeholder { color: #94a3b8; }
+.tc-field input:focus, .tc-field textarea:focus, .tc-select:focus { background: #fff; border-color: #1e293b; }
+.tc-field textarea { height: 96px; padding: 10px 12px; line-height: 1.7; resize: vertical; }
+/* ⚠️ `.tc-readonly`（事项申报标题的只读输入框）2026-09-15 已删除：
+   标题与申请人信息合并成 `.tc-meta-line` 一行辅助条（用户要求降低第一步高度）。 */
+.tc-input-wrap { position: relative; }
+/* 输入框左侧的文档图标（对齐 v15 设计稿）：提示这一格填的是「一件要办的事」。
+   左右都要让位：左侧留图标位，右侧留给匹配状态位（转圈 / 绿勾）。 */
+.tc-input-wrap input { padding-right: 34px; padding-left: 36px; }
+.tc-input-lead { position: absolute; top: 50%; left: 12px; color: #94a3b8; pointer-events: none; transform: translateY(-50%); }
+.tc-input-ok { position: absolute; top: 50%; right: 11px; color: #10b981; transform: translateY(-50%); }
+/* 输入框右侧的状态位：**匹配中转圈（灰），匹配成功才变绿勾** —— 不是「有字就打勾」。
+   ⚠️ 不能直接套 `.tc-spin`：它的 `to{transform:rotate(360deg)}` 会盖掉上面的 `translateY(-50%)`，
+   图标会往下掉半个身位。所以转圈单独写一组带 translate 的 keyframes。 */
+.tc-input-ok.loading { color: #94a3b8; animation: tc-input-spin .8s linear infinite; }
+@keyframes tc-input-spin {
+  from { transform: translateY(-50%) rotate(0deg); }
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+/* 起点输入框「拟发起事项名称」——整条流程的第一个动作，所以它比别处的输入框
+   **更高、字更大、白底 + 略深描边 + 一点投影**（2026-09-14 用户要求「强化第一个输入框」）。
+   玻璃底上铺实白 + 描边，是这一步唯一的「凸起」，一眼就知道从哪儿开始。 */
+.tc-lead { gap: 8px; }
+.tc-lead .tc-label { font-size: 13px; }
+.tc-input-wrap.lead input { height: 46px; padding-left: 40px; padding-right: 38px; color: #0f172a; background: #fff; border-color: #cbd5e1; border-radius: 10px; font-size: 14px; font-weight: 600; letter-spacing: -.01em; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
+.tc-input-wrap.lead input::placeholder { color: #a8b3c2; font-weight: 400; }
+.tc-input-wrap.lead input:focus { background: #fff; border-color: #1e293b; }
+.tc-input-wrap.lead .tc-input-lead { left: 14px; }
+.tc-input-wrap.lead .tc-input-ok { right: 14px; }
+
+/* 输入框 + 匹配按钮一行（2026-09-15 用户要求「给一个明确的匹配按钮」）：
+   输入框占满剩余宽度，按钮固定不缩；按钮高度对齐输入框的 46px（`.tc-input-wrap.lead input`）。 */
+.tc-input-row { display: flex; align-items: center; gap: 8px; }
+.tc-input-row > .tc-input-wrap { flex: 1; min-width: 0; }
+.tc-match-btn { display: inline-flex; flex: none; align-items: center; gap: 6px; height: 46px; padding: 0 16px; color: #1a1c1c; background: #fff; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13px; font-weight: 600; white-space: nowrap; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); transition: background .18s ease, border-color .18s ease, color .18s ease; }
+.tc-match-btn:hover:not(:disabled) { color: #0f172a; background: #f1f5f9; border-color: #94a3b8; }
+/* 空输入 / 匹配在途时不可点：压成浅灰底深灰字（与底栏禁用主按钮同一套口径） */
+.tc-match-btn:disabled { color: #94a3b8; background: #f1f5f9; border-color: #eef2f6; box-shadow: none; cursor: not-allowed; }
+/* 匹配按钮的箭头位不再让位给绿勾：输入框右侧留白收回来（按钮已经承担了动作） */
+.tc-input-row .tc-input-wrap.lead input { padding-right: 38px; }
+
+/* 事项名称联想：办事模板候选下拉。锚在输入框下方，不参与玻璃层级（普通浮层）
+   候选结果块 —— **浮层**，盖在下方内容之上。`.tc-input-wrap` 是它的定位基准（relative）。 */
+.tc-suggest { position: absolute; z-index: 6; top: calc(100% + 6px); left: 0; right: 0; max-height: 236px; padding: 6px; overflow-y: auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 18px 36px rgba(15, 23, 42, .14); }
+.tc-suggest-head { padding: 4px 8px 6px; color: #64748b; font-size: 11px; }
+.tc-suggest-item { display: flex; flex-direction: column; gap: 3px; padding: 8px 10px; border-radius: 8px; cursor: pointer; }
+.tc-suggest-item.active, .tc-suggest-item:hover { background: #f1f5f9; }
+.tc-suggest-item b { color: var(--ink); font-size: 12px; font-weight: 600; }
+.tc-suggest-item small { overflow: hidden; color: #64748b; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ⚠️ `.tc-grid-2`（业务大类｜标题两列）2026-09-14 已删除：手动申报第一步改纵向排布（用户要求），
+   两列并排要左右跳视线、窄屏还得再断一次。 */
+
+/* 字段下方的状态提示：办事模板拉不到时用来交代原因并给一个「重试」，
+   替代以前塞进 <option> 里那句「模板列表暂不可用」——那句话既看不出原因，也没法重试。 */
+.tc-field-hint { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px; color: #64748b; font-size: 11px; font-style: normal; line-height: 1.5; }
+.tc-field-hint.warn { color: #92400e; }
+.tc-field-hint button { flex: none; padding: 2px 8px; color: #1e293b; background: #fff; border: 1px solid #e2e8f0; border-radius: 999px; font-size: 11px; font-weight: 500; }
+.tc-field-hint button:hover { background: #f1f5f9; }
+
+/* —— 匹配命中后的材料清单 / 审批节点 / 待补充追问 ——
+   数据来自 `POST /v2/tasks/templates/match` 的 requirements / steps / clarifying_questions
+   （`GET /tasks/templates` 不下发这些，只有匹配命中那一次才拿得到）。
+   2026-09-14 二改：去掉每行的白底卡片，改成**行 + 细分隔线**（用户要求减少容器与边框）。 */
+.tc-checklist { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.tc-checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-top: 1px solid #f1f5f9; }
+.tc-checklist li:first-child { padding-top: 0; border-top: 0; }
+/* 文件类型片：只按 `allowed_content_types` 归类（PDF / 图片 / 表格 / 文档 / 文件）。
+   2026-09-14 三改：**统一成灰色**，不再按格式给红/蓝/绿/靛四种色调 ——
+   用户要求整屏颜色收到三类（绿=已就绪 · 蓝黑=主要操作 · 灰=辅助信息），
+   格式差异由片上的文字承担，不靠颜色。 */
+.tc-material-chip { display: grid; flex: none; place-items: center; width: 32px; height: 32px; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 10px; font-weight: 700; letter-spacing: -.02em; }
+.tc-material-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.tc-material-title { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.tc-material-name { color: var(--ink); font-size: 12px; font-weight: 600; }
+/* 必交 / 选交：琥珀只留在这一个小标签上（= 待办档），不再铺底色与描边。
+   红在本弹窗仍然只留给校验错误与超期，「必交」不是错误。 */
+.tc-material-title em { flex: none; padding: 1px 7px; color: #64748b; background: #f1f5f9; border-radius: 4px; font-size: 10px; font-style: normal; font-weight: 500; }
+.tc-material-title em.need { color: #b45309; background: rgba(217, 119, 6, .08); }
+.tc-material-main small { color: #64748b; font-size: 11px; line-height: 1.6; }
+/* 「提交后在任务详情逐项上传」——设计稿这里是一排动作按钮，我们没有可用的上传/取底片接口，
+   改成把上传时机写在说明行里（摆一个点了没反应的按钮比不摆更糟）。 */
+.tc-material-when { color: #64748b; }
+/* 审批节点：序号圆 + 节点名 + 状态胶囊。2026-09-14 二改：去掉卡片外框，
+   分级改由「序号圆」承担 —— 当前节点是**蓝黑实心**（= 主要操作），其余灰底。
+   ⚠️ 状态只有「需你操作 / 待流转」两种真实口径，没有时限字段，所以不写「预计 24h」。
+   2026-09-15 六改（用户反馈 2）：这只是**预览**，任务还没建 —— 所以
+   ① 不再写「当前 · 需你操作」这种**运行态**措辞，改成「发起后由你完成」；
+   ② 第二步起标**办理部门**（`/v2/agents`… 不，是 match 响应里的 `organization_id`，
+      名称经 `organizationNameOf()` 由**办事模板全量清单的 `responsible_organization_name`** 解析）。
+      接口给不出机构名的节点**直接不写**，不编「学院 / 教务处」。 */
+.tc-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 14px; margin: 0; padding: 0; list-style: none; }
+.tc-steps li { display: flex; flex-direction: column; gap: 6px; }
+.tc-node-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.tc-node-head > i { display: grid; flex: none; place-items: center; width: 22px; height: 22px; color: #64748b; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 50%; font-size: 10px; font-style: normal; font-weight: 700; }
+/* 首节点仍然强调（它是用户的第一个动作），但**不再是「当前」**：
+   现在是「发起后由你完成」，所以序号圆用描边 + 深墨字，而不是实心深墨（实心 = 正在跑）。 */
+.tc-steps li.current .tc-node-head > i { color: #1e293b; background: #e2e8f0; border-color: #94a3b8; }
+/* 名称与状态胶囊**紧挨着**（不是把胶囊推到列右缘）：三列栅格下名称长短不一，
+   右对齐会让三个胶囊参差错落；跟随名称则每一行都读成「序号 · 名称 · 状态」。 */
+.tc-node-head > span { min-width: 0; flex: 0 1 auto; color: var(--ink); font-size: 12px; font-weight: 600; }
+.tc-node-head > em { flex: none; color: #64748b; font-size: 10px; font-style: normal; font-weight: 500; }
+/* 首节点标「发起后由你完成」：琥珀（= 你的待办），与「需你操作」同一档语义 */
+.tc-node-head > em.now { padding: 1px 7px; color: #b45309; background: rgba(217, 119, 6, .08); border-radius: 4px; }
+/* 第二节起：办理部门（灰，机构名）。**没有机构名的节点这一行直接不渲染。** */
+.tc-steps li > small { color: #64748b; font-size: 11px; line-height: 1.6; }
+/* 待你补充确认：**不再铺琥珀底色**，只留一枚琥珀小图标 + 加粗标题（用户要求收色）。 */
+.tc-asks { display: flex; flex-direction: column; gap: 6px; padding-top: 4px; }
+.tc-asks b { display: inline-flex; align-items: center; gap: 5px; color: #475569; font-size: 11px; font-weight: 600; }
+.tc-asks b > svg { flex: none; color: #d97706; }
+.tc-asks ul { margin: 0; padding-left: 18px; }
+.tc-asks li { color: #64748b; font-size: 11px; line-height: 1.7; }
+
+/* —— 手动申报：说明行 / 事务摘要 / 附件 —— */
+/* 说明条：2026-09-14 四改 —— 不再是浅灰卡（用户要求减少容器），改成一行带图标的说明。 */
+.tc-intro { display: flex; align-items: center; gap: 8px; margin: 0; color: #64748b; font-size: 11px; line-height: 1.6; }
+.tc-intro-icon { flex: none; color: #94a3b8; }
+.tc-intro b { margin-right: 6px; color: #475569; font-weight: 600; }
+/* 模板摘要：手动申报的骨架感 —— 选完模板立刻给出「N 项材料 · M 个审批节点 · 责任机构」。
+   以前选完模板什么都没发生，标签上那句「决定材料清单与审批节点」就是一句没有兑现的提示语。 */
+.tc-template-summary { display: flex; align-items: flex-start; gap: 8px; margin-top: 10px; padding: 10px 12px; background: rgba(16, 185, 129, .08); border: 1px solid rgba(16, 185, 129, .28); border-radius: 10px; }
+.tc-template-summary > svg { margin-top: 1px; flex: none; color: #047857; }
+.tc-template-summary b { display: block; color: var(--ink); font-size: 12px; font-weight: 600; }
+.tc-template-summary span { display: block; margin-top: 3px; color: #64748b; font-size: 11px; line-height: 1.5; }
+/* 摘要卡现在多了一枚「匹配办理依据与材料」按钮（2026-09-15 手动模式的匹配入口：
+   事务是下拉选的、没有输入框可回车，所以给一个等价动作）。文字块吃掉剩余宽度，按钮靠右不换行。 */
+.tc-template-summary > div { min-width: 0; flex: 1; }
+.tc-template-summary .tc-match-btn.compact { align-self: center; height: 32px; padding: 0 12px; font-size: 12px; }
+/* 手动模式下那两个接口的「正在匹配」也要有个全局可见的指示：手动模式没有
+   `.tc-hub-meta` 那条状态行（那是 AI 模式的协作区），不提示的话点完按钮像没反应。 */
+.tc-section-head .tc-section-busy { display: inline-flex; align-items: center; gap: 5px; color: #64748b; font-size: 11px; font-weight: 500; }
+.tc-section-head .tc-section-busy svg { color: #94a3b8; }
+
+/* 附件行（分区三内）：净白行 + 细描边 + 28px 图标片；未关联/失败用琥珀提示（不是红）。 */
+.tc-files { display: flex; flex-direction: column; gap: 6px; margin: 0 0 8px; padding: 0; list-style: none; }
+.tc-files li { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; }
+.tc-files li > .tc-file-icon { display: grid; flex: none; place-items: center; width: 28px; height: 28px; color: #475569; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; }
+.tc-files li > .tc-file-name { min-width: 0; flex: 1; overflow: hidden; color: var(--ink); font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.tc-files li > small { flex: none; color: #64748b; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+/* 删除改成**带文字的小按钮**（用户要求文件行明确有名字/大小/删除），不再是纯图标 */
+.tc-files li > .tc-file-remove { display: inline-flex; flex: none; align-items: center; gap: 4px; padding: 3px 8px; color: #64748b; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 11px; }
+.tc-files li > .tc-file-remove:hover { color: #b91c1c; border-color: #fecaca; background: #fef2f2; }
+.tc-files li > .tc-file-state { display: inline-flex; flex: none; align-items: center; gap: 3px; color: #64748b; font-size: 11px; font-style: normal; }
+.tc-files li.pending > .tc-file-state, .tc-files li.uploading > .tc-file-state { color: #64748b; }
+.tc-files li.linked > .tc-file-state { color: #047857; }
+.tc-files li.unlinked > .tc-file-state, .tc-files li.failed > .tc-file-state { color: #92400e; }
+.tc-files li.unlinked, .tc-files li.failed { background: rgba(217, 119, 6, .07); border-color: rgba(217, 119, 6, .32); }
+
+/* 上传区（2026-09-15 用户要求再压一档）：压成**一行高的紧凑操作条** ——
+   图标片在左、两级文案在右（主句「点击上传或拖拽文件」/ 次句格式与大小上限），
+   高度约为旧版六成，把第一视觉还给「申报事由」文本域。 */
+.tc-dropzone { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px 14px; color: var(--ink); background: #f6f8fb; border: 1px dashed #cbd5e1; border-radius: 10px; text-align: left; cursor: pointer; transition: border-color .18s ease, background .18s ease; }
+.tc-dropzone:hover { background: #fff; border-color: #64748b; }
+.tc-dropzone-icon { display: grid; flex: none; place-items: center; width: 32px; height: 32px; color: #475569; background: #fff; border: 1px solid #e2e8f0; border-radius: 9px; }
+.tc-dropzone-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.tc-dropzone b { color: var(--ink); font-size: 13px; font-weight: 600; }
+.tc-dropzone small { color: #64748b; font-size: 11px; }
+.tc-file-input { display: none; }
+
+.tc-error { display: flex; align-items: center; gap: 6px; margin: 12px 0 0; padding: 9px 12px; color: #ad312b; background: rgba(255, 218, 214, .6); border: 1px solid rgba(224, 86, 76, .4); border-radius: 8px; font-size: 12px; }
+.tc-error svg { flex: none; }
+.tc-settled { display: flex; gap: 8px; margin: 12px 0 0; padding: 10px 12px; color: #92400e; background: rgba(217, 119, 6, .08); border: 1px solid rgba(217, 119, 6, .32); border-radius: 8px; font-size: 12px; line-height: 1.6; }
+.tc-settled > svg { margin-top: 2px; flex: none; }
+
+/* 底栏：2026-09-14 用户要求「提示别离提交按钮半个屏」—— 提示挪进按钮行、
+   排在「存为草稿」与主按钮**中间**（放按钮正上方会把底栏撑高一行）。
+   2026-09-15 三改（用户第 5 条）：提示 `flex:1` 吃掉中间全部宽度并**左对齐**，
+   文字重新从正文左边缘起排（原来 `max-width:400px` 紧贴按钮，折两行、左边空一大块），
+   按钮组保持右侧；提示恒为一行，过长省略（详细解释已上移到会话选择框附近）。 */
+/* 底栏：**必须 `flex:none`**（`flex:none` == `0 0 auto`）—— 否则正文一长，底栏会被压缩。
+   2026-09-15 六改：与页头一起固定，正文是唯一滚动区（用户反馈 4）。 */
+.tc-foot { display: flex; flex: none; align-items: center; gap: 16px; padding: 14px 24px; background: rgba(255, 255, 255, .72); border-top: 1px solid rgba(226, 232, 240, .8); }
+.tc-foot-note { display: flex; min-width: 0; flex: 1; align-items: center; gap: 8px; margin: 0; color: #64748b; font-size: 12px; text-align: left; }
+.tc-foot-note > svg { flex: none; color: #10b981; }
+/* 底注图标要跟着语义走：下一句可能是「请先选定要办理的事务…」—— 那是待办（琥珀），不是完成。 */
+.tc-foot-note.warn > svg { color: #d97706; }
+/* 校验提示（warn）整行上琥珀 + 加半档字重：它是「下一步要先做什么」的行动指令，
+   不只是一行灰色注释（用户要求：提交键旁边看得见还差什么）。 */
+.tc-foot-note.warn { color: #92400e; font-weight: 500; }
+.tc-foot-note > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* ⚠️ 手动模式下正文包在 `.tc-sheet`（左 20 内边距）里，底栏仍按 24 排 ——
+   要让底部提示与**正文内容的左边缘**对齐，这一档把底栏左内边距补成「分栏内边距 + 面板内边距」。
+   这是唯一让两边真正对齐的写法：光靠 `flex:1` 只能让它排在底栏左边缘（还差一个面板内边距）。 */
+.task-create.manual .tc-foot { padding-left: 44px; }
+.tc-foot-actions { display: flex; width: 100%; flex: 1; align-items: center; gap: 10px; }
+.tc-ghost { padding: 9px 16px; color: #1a1c1c; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 12px; font-weight: 600; }
+/* 主按钮旁的小字（「将启动智能流转」）：把主按钮的长句降级成一行说明，
+   按钮只留动词，扫读更快（2026-09-14 用户要求）。 */
+.tc-primary-note { color: #64748b; font-size: 11px; white-space: nowrap; }
+.tc-ghost:hover:not(:disabled) { background: #f3f4f3; }
+.tc-primary { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; color: #fff; background: var(--ink); border-radius: 10px; font-size: 12px; font-weight: 600; box-shadow: 0 6px 16px rgba(9, 20, 38, .2); }
+.tc-primary:hover:not(:disabled) { background: #0f172a; }
+/* 禁用态（2026-09-15 用户要求二改）：不用 opacity 把整枚按钮压扁 ——
+   主按钮改成「**浅灰底 + 深灰字**」的实色：看起来是「还没轮到它」，条件齐了变回深墨；
+   幽灵按钮同步压灰描边。busy 期间同样适用（转圈在提示行里，不靠按钮表达）。 */
+.tc-primary:disabled { color: #475569; background: #e2e8f0; box-shadow: none; cursor: not-allowed; }
+.tc-ghost:disabled { color: #94a3b8; background: #f8fafc; border-color: #eef2f6; cursor: not-allowed; }
+.tc-spin { animation: tc-spin .8s linear infinite; }
+@keyframes tc-spin { to { transform: rotate(360deg); } }
+
+/* ===== 响应式（宽度断点） ============================================================ */
+/*
+ * 矮窗口：把外留白与各块留白让给正文（两级）。
+ * 2026-09-14 四改后重校：手动申报第一步改**纵向排布**（用户要求）+ 上传区加了图标片，
+ * 表单比卡片版高约 100px —— 790/800（-91/-81）与 944（-35）三档都从「不用滚」变成要滚。
+ * 两级都**只动留白、字号与图标尺寸**：输入框 38px、起点 select 46px→42px（矮窗档）、
+ * 正文 11-12px 一律不动；断言在 `_probe-create-fit.mjs`（h≥790 的档位不许滚）。
+ */
+
+@media (max-width: 900px) {
+  /* 移动端底栏高 64px，悬浮球抬到它上方；审批节点卡（设计稿 md 起三列）竖排 */
+  .task-create-fab { right: 18px; bottom: 84px; }
+  .tc-steps { grid-template-columns: minmax(0, 1fr); }
+}
+/* 页头一行放不下时（标题 + 在线智能体徽章 + 模式切换 + 关闭）：整组换到标题下方一行，
+   仍然**靠右** —— 用户要求这个切换就在右上角，换行后别跑到左边去。 */
+@media (max-width: 820px) {
+  .tc-head { flex-wrap: wrap; }
+  .tc-head-side { width: 100%; justify-content: flex-end; }
+}
+@media (max-width: 700px) {
+  .task-create-layer { padding: 16px 10px; }
+  .task-create { max-height: calc(100vh - 32px); }
+  .tc-head { padding: 14px 16px 12px; }
+  .tc-head-title h2 { font-size: 16px; }
+  .tc-body { padding: 16px; }
+  /* 窄屏放不下「输入框 + 匹配按钮」一行：按钮落到输入框下方、占满整宽（更好点） */
+  .tc-input-row { flex-wrap: wrap; }
+  .tc-match-btn { width: 100%; justify-content: center; }
+  .tc-foot { flex-direction: column; align-items: stretch; padding: 12px 16px; }
+  .tc-foot-actions { justify-content: flex-end; }
+}
+@media (max-height: 1000px) {
+  .task-create-layer { padding: 20px 16px 16px; }
+  .task-create { max-height: calc(100vh - 36px); }
+  .tc-head { padding: 14px 24px 12px; }
+  .tc-body { padding: 16px 24px; }
+  .tc-view { gap: 12px; }
+  .tc-field { gap: 5px; }
+  .tc-section { gap: 10px; }
+  .tc-section + .tc-section { padding-top: 14px; margin-top: 2px; }
+  .tc-field textarea { height: 70px; }
+  .tc-dropzone { padding: 12px 14px; }
+  .tc-dropzone-icon { width: 32px; height: 32px; }
+  .tc-template-summary { margin-top: 8px; }
+  .tc-sheet { padding: 14px 16px; }
+  .tc-meta-line { padding: 7px 10px; }
+}
+@media (max-height: 820px) {
+  .tc-body { padding: 12px 20px; }
+  .tc-view { gap: 8px; }
+  .tc-field { gap: 4px; }
+  .tc-section { gap: 8px; }
+  .tc-section + .tc-section { padding-top: 12px; margin-top: 0; }
+  /* 矮窗档：匹配按钮与起点输入框同步降到 42px（同 `.tc-select.lead` 的矮窗口径） */
+  .tc-input-wrap.lead input { height: 42px; }
+  .tc-match-btn { height: 42px; }
+  /* 设计稿的文本域是 rows=3（≈66px），这一档取 64：仍能看到约 3 行。 */
+  .tc-field textarea { height: 64px; }
+  .tc-select.lead { height: 42px; }
+  .tc-dropzone { padding: 10px 14px; }
+  .tc-dropzone-icon { width: 28px; height: 28px; }
+  .tc-dropzone b { font-size: 12px; }
+  .tc-template-summary { margin-top: 4px; }
+  .tc-sheet { padding: 12px 14px; }
+  .tc-meta-line { padding: 6px 10px; }
+  .tc-intro { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .task-pill-dot.ping,
+  .task-badge.warn .task-badge-dot { animation: none; }
+  .task-create { animation: none; }
+  .tc-online i, .tc-ping::after { animation: none; }
+  .task-create-fab { transition: none; }
+}
+

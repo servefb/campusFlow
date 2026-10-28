@@ -1,0 +1,18 @@
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { AppShell } from './AppShell'
+import { ProtectedRoute } from './ProtectedRoute'
+import { LoginPage } from '../pages/LoginPage'
+import { TasksPage } from '../pages/TasksPage'
+import { KnowledgePage } from '../pages/KnowledgePage'
+import { HistoryPage } from '../pages/HistoryPage'
+import { SettingsPage } from '../pages/SettingsPage'
+import { ConversationPage } from '../pages/ConversationPage'
+import { AdminKnowledgePage } from '../pages/AdminKnowledgePage'
+import { DashboardPage } from '../pages/DashboardPage'
+import { LandingPage } from '../pages/LandingPage'
+import { CampusNewsPage } from '../pages/CampusNewsPage'
+import { HomePage } from '../pages/HomePage'
+import { AssistantPage } from '../pages/AssistantPage'
+import { CoursesPage } from '../pages/CoursesPage'
+
+export function App() { return <BrowserRouter><Routes><Route path="/login" element={<LoginPage />} /><Route path="/welcome" element={<LandingPage />} /><Route element={<ProtectedRoute />}><Route element={<AppShell />}><Route index element={<HomePage />} /><Route path="/workspace" element={<AssistantPage />} /><Route path="/news" element={<CampusNewsPage />} /><Route path="/courses" element={<CoursesPage />} /><Route path="/conversations/:id" element={<ConversationPage />} /><Route path="/tasks" element={<TasksPage />} /><Route path="/knowledge" element={<KnowledgePage />} /><Route path="/history" element={<HistoryPage />} /><Route path="/settings" element={<SettingsPage />} /><Route path="/dashboard" element={<ProtectedRoute roles={['admin']} />}><Route index element={<DashboardPage />} /></Route><Route path="/knowledge/admin" element={<ProtectedRoute roles={['admin']} />}><Route index element={<AdminKnowledgePage />} /></Route></Route></Route><Route path="*" element={<Navigate to="/" replace />} /></Routes></BrowserRouter> }

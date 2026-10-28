@@ -1,0 +1,193 @@
+/* ⚠️ 「校园脉络 + logo」品牌块是**跨页共用**的（AppShell 顶栏），它此前寄生在 landing.css 里
+   （`.landing-brand,.brand-home-link{display:flex;...}`）。2026-09-15 介绍页重写时那条被一并删掉，
+   顶栏品牌块立刻塌成竖排、溢出 72px 顶栏。现收回本文件（结构样式归它该在的地方），并补齐尺寸。
+   改这里前请记得：landing.css 只管介绍页自己的类名，别再托管 shell 的结构。 */
+.brand-home-link {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--ink);
+  text-decoration: none;
+}
+/* logo 摆放规则（2026-09-16 修；09-17 曾换 v5 一轮后撤回，仍用 v4）。
+   素材 campus-flow-logo-v4.png 是**透明底**、图形已裁边居中成正方形 → 这里只负责「原样铺满」。
+   （v5 = 自带满幅磁贴底的 app-icon，存于 public/assets 备用，引用已撤。）
+   曾经踩的坑两层叠在一起，看起来就是「灰方块 + 图形被切」：
+     ① 旧素材 v3 是不透明底（#f4f4f4），埋在深色 `--ink` 品牌砖上，白顶栏里就露出一个灰方块；
+     ② 放大裁切规则 `object-fit:cover` + `transform:scale(1.12)` 写在了 login-redesign.css（登录页样式
+        托管 shell 元素），而 v3 图形上边距只有 3px，被放大的裁切框直接切掉屋顶尖。
+   所以这里一并把 background / object-fit / transform 三件都钉住，别再回退到「裁切」思路。 */
+.brand-home-link .brand-mark { flex: none; background: transparent; }
+.brand-home-link .brand-mark img { width: 100%; height: 100%; object-fit: contain; transform: none; }
+.brand-home-link .brand-copy { min-width: 0; }
+.topbar .brand-home-link { min-width:228px; padding-right:22px; border-right:1px solid #eef2f6; }
+.global-search { position:absolute; top:50%; left:50%; display:flex; align-items:center; gap:9px; width:min(720px,45vw); height:40px; padding:0 11px; color:#64748b; background:#f8fafc; border:1px solid #e4e9ef; border-radius:8px; box-shadow:0 2px 7px rgba(15,23,42,.035); transform:translate(-50%,-50%); }
+.global-search:focus-within { color:#334155; background:#fff; border-color:#aebdcb; box-shadow:0 3px 10px rgba(15,23,42,.06); }
+.global-search input { min-width:0; flex:1; color:var(--ink); font-size:12px; background:transparent; border:0; outline:0; }
+.global-search input::placeholder { color:#7f8b9c; }
+.global-search kbd { padding:3px 6px; color:#64748b; font:9px ui-monospace,monospace; background:#fff; border:1px solid #e2e8f0; border-radius:4px; box-shadow:0 1px 2px rgba(15,23,42,.04); }
+
+.app-shell .nav-rail { position:sticky; top:var(--topbar-h); width:96px; min-width:96px; height:calc(100vh - var(--topbar-h)); padding:12px 8px 10px; align-self:flex-start; gap:4px; background:#f8fafc; border-right:1px solid #e5eaf0; }
+.app-shell .nav-item { width:100%; min-height:72px; height:72px; gap:7px; color:#6b7d93; font-size:11px; line-height:1; white-space:nowrap; border-radius:8px; outline:0; box-shadow:none; transition:color 150ms ease,background-color 150ms ease; }
+.app-shell .nav-item svg { flex:none; width:22px; height:22px; color:#6f8198; transition:color 150ms ease; }
+.app-shell .nav-item:hover { color:var(--primary); background:#f0f3f6; }
+.app-shell .nav-item:hover svg { color:var(--coral); }
+.app-shell .nav-item:focus-visible { color:var(--primary); background:#eef2f6; outline:2px solid #aab7c5; outline-offset:-2px; }
+.app-shell .nav-item:active { background:#e8edf2; }
+.app-shell .nav-item.active { color:var(--ink); font-weight:650; background:#eef2f6; box-shadow:none; }
+.app-shell .nav-item.active svg { color:var(--coral); }
+.app-shell .nav-item.active::before { top:10px; bottom:10px; left:-8px; width:3px; background:var(--coral); border-radius:0 3px 3px 0; }
+.nav-settings-group { display:flex; width:100%; flex-direction:column; gap:8px; padding-top:10px; margin-top:auto; border-top:1px solid #e6ebf0; }
+.nav-settings-group .nav-settings { margin-top:0; }
+
+/* ===== 侧栏双形态（nav-mode-top：导航进顶栏 ⇄ 默认固定左侧竖栏）==========
+   开关在 AppShell 顶栏（PanelTop / PanelLeft 图标），状态记 localStorage。
+   顶部形态（09-15 二次定稿）：导航不是顶栏下面的独立一条，而是**直接嵌进顶栏**——
+   （顶栏高度走 `--topbar-h` 这个 token，09-23 起是 60px，别再写死字面量。）
+   品牌 | 横排导航项（末尾分隔后跟 首页/设置）| 搜索框靠右 | 切换/通知/头像。
+   内容区（.main-canvas）按左侧形态的可用宽度封顶并居中 —— 切过去页面不拉长。 */
+.app-shell.nav-mode-top .topbar-nav { display:flex; align-items:center; gap:2px; height:100%; margin-left:8px; padding-left:14px; border-left:1px solid #eef2f6; }
+.app-shell.nav-mode-top .topbar-nav .nav-item { flex-direction:row; justify-content:flex-start; gap:7px; width:auto; min-width:0; height:40px; min-height:0; padding:0 10px; }
+.app-shell.nav-mode-top .topbar-nav .nav-item svg { width:19px; height:19px; }
+.app-shell.nav-mode-top .topbar-nav .nav-item.active::before { left:10px; right:10px; top:auto; bottom:3px; width:auto; height:3px; border-radius:3px; }
+.app-shell.nav-mode-top .topbar-nav .nav-settings-group { flex-direction:row; width:auto; margin-top:0; margin-left:6px; padding:0 0 0 10px; border-top:0; border-left:1px solid #e6ebf0; }
+/* 搜索框靠右：脱离绝对居中，用 order 排到通知 / 头像左边（仅顶部形态，左侧形态保持居中） */
+.app-shell.nav-mode-top .global-search { position:static; transform:none; order:6; width:min(320px,24vw); min-width:150px; }
+.app-shell.nav-mode-top .topbar .icon-button { order:7; }
+.app-shell.nav-mode-top .topbar .notif-wrap { order:7; }
+.app-shell.nav-mode-top .topbar .user-chip { order:8; }
+/* 内容不拉长：顶部形态下画布按「左侧形态的内容宽」封顶后整体居中。
+   首页（全幅横带）、会话页（满高布局）、问助手页的侧边栏形态（左侧竖栏要贴住视口边缘）
+   都是全幅设计，豁免封顶，保持原样。
+   ⚠️ 侧边栏那条是必需的：不豁免的话 sidebar 会被居中留白（本宽下每侧 48px）推离视口左边缘，
+   截图上就是侧边栏左边那条 48px 的缝 —— 竖栏贴边是它的基本形态。 */
+.app-shell.nav-mode-top .main-canvas { width:auto; max-width:calc(100% - 96px); margin:0 auto; }
+.app-shell.nav-mode-top .main-canvas:has(.home-page),
+.app-shell.nav-mode-top .main-canvas:has(.convo-page),
+.app-shell.nav-mode-top .main-canvas:has(.assistant-modern.sidebar-open) { width:100%; max-width:none; margin:0; }
+/* 设置页底部保存条是 fixed 层，left:89px 是按左侧竖栏硬编码的；顶部形态没有侧栏，
+   改成全视口定位 —— savebar-inner 本身按 min(1254px, 100%-96px) 居中，正好与画布同轴。 */
+.app-shell.nav-mode-top .settings-savebar { left:0; right:0; }
+
+@media (max-width:1180px) {
+  .global-search { width:38vw; }
+  .topbar .brand-home-link { min-width:210px; }
+  /* 顶栏塞了导航之后，中窄屏要把搜索再收一收（快捷键角标先让位） */
+  .app-shell.nav-mode-top .global-search kbd { display:none; }
+  .app-shell.nav-mode-top .topbar .brand-home-link { min-width:0; padding-right:12px; }
+  .app-shell.nav-mode-top .global-search { width:200px; min-width:110px; }
+  .app-shell.nav-mode-top .topbar-nav .nav-item { padding:0 8px; gap:5px; }
+}
+@media (max-width:980px) {
+  .global-search { display:none; }
+  .topbar .brand-home-link { min-width:0; padding-right:0; border-right:0; }
+}
+@media (max-width:900px) {
+  .app-shell .nav-rail { display:none; }
+  /* 窄屏本来就收进底部 tab 栏，顶栏内的导航一并隐藏（特异性需 ≥ 上面的 nav-mode-top 规则） */
+  .app-shell.nav-mode-top .topbar-nav { display:none; }
+  .app-shell .mobile-nav { height:66px; padding:0 4px; }
+  .app-shell .mobile-nav a { position:relative; width:auto; min-width:0; flex:1; color:#718096; white-space:nowrap; }
+  .app-shell .mobile-nav a svg { width:19px; height:19px; }
+  .app-shell .mobile-nav a:hover,.app-shell .mobile-nav a:focus-visible { color:var(--primary); background:#f8fafc; outline:0; }
+  .app-shell .mobile-nav a.active { color:var(--ink); font-weight:600; background:#f1f5f9; }
+  .app-shell .mobile-nav a.active svg { color:var(--coral); }
+  .app-shell .mobile-nav a.active::before { position:absolute; top:0; right:24%; left:24%; height:3px; content:''; background:var(--coral); border-radius:0 0 3px 3px; }
+}
+@media (max-width:420px) {
+  .app-shell .mobile-nav a { font-size:9px; }
+  .app-shell .mobile-nav a svg { width:18px; height:18px; }
+}
+
+/* ===== 通知铃铛（顶栏，2026-10-09）=====================================
+   铃铛沿用 .icon-button 外观；未读徽标是珊瑚点。下拉面板 = 临时浮层，
+   打开期间它是顶栏上唯一的焦点玻璃（玻璃纪律：同屏一块焦点玻璃），
+   材质走 glass.css 的 focus token（近白半透明 + 细砂 + 重投影）。 */
+.topbar .notif-wrap { position:relative; display:flex; }
+.topbar .notif-bell { position:relative; }
+.topbar .notif-bell[aria-expanded='true'] { background:#eef2f6; }
+.topbar .notif-badge {
+  position:absolute; top:2px; right:1px; z-index:1;
+  min-width:15px; height:15px; padding:0 4px;
+  display:grid; place-items:center;
+  color:#fff; font-size:9px; font-weight:700; line-height:1;
+  background:var(--coral); border:1.5px solid #fff; border-radius:8px;
+  pointer-events:none;
+}
+.topbar .notif-panel {
+  position:absolute; top:calc(100% + 10px); right:-4px; z-index:60;
+  width:min(360px, calc(100vw - 32px));
+  max-height:min(480px, calc(100vh - var(--topbar-h) - 24px));
+  display:flex; flex-direction:column;
+  border:1px solid var(--glass-focus-line);
+  border-radius:16px;
+  background-color:var(--glass-focus-bg);
+  background-image:var(--glass-noise);
+  backdrop-filter:blur(var(--glass-blur)) saturate(150%);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(150%);
+  box-shadow:var(--glass-focus-shadow);
+  overflow:hidden;
+}
+.topbar .notif-head {
+  flex:none; display:flex; align-items:center; justify-content:space-between;
+  padding:12px 16px 10px;
+}
+.topbar .notif-head strong { font-size:13px; color:var(--ink); }
+.topbar .notif-mark-all { padding:3px 8px; color:var(--primary); font-size:11px; border-radius:7px; transition:background-color 150ms ease; }
+.topbar .notif-mark-all:hover { background:rgba(255,255,255,.9); }
+.topbar .notif-list { flex:1; overflow-y:auto; padding:0 8px 10px; display:flex; flex-direction:column; gap:2px; }
+/* 条目行直接落在玻璃上（同设置页导航项的层级语感）；未读行浮一层实色白 = 凸。 */
+.topbar .notif-item {
+  position:relative; display:flex; gap:9px; width:100%;
+  padding:10px 10px 10px 14px; text-align:left;
+  border-radius:10px; transition:background-color 150ms ease;
+}
+.topbar .notif-item:hover { background:rgba(255,255,255,.92); }
+.topbar .notif-item.unread { background:rgba(255,255,255,.72); }
+.topbar .notif-item.unread:hover { background:rgba(255,255,255,.95); }
+.topbar .notif-item .notif-dot {
+  flex:none; width:6px; height:6px; margin-top:6px;
+  background:var(--coral); border-radius:50%; opacity:0;
+}
+.topbar .notif-item.unread .notif-dot { opacity:1; }
+.topbar .notif-item-body { min-width:0; display:flex; flex-direction:column; gap:2px; }
+.topbar .notif-item-title { color:var(--ink); font-size:12px; font-weight:600; line-height:1.4; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.topbar .notif-item.unread .notif-item-title { font-weight:700; }
+.topbar .notif-item-content { color:var(--muted); font-size:11px; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.topbar .notif-item-time { color:#94a3b8; font-size:10px; line-height:1.3; }
+.topbar .notif-state { padding:28px 16px; color:var(--muted); font-size:12px; text-align:center; }
+.topbar .notif-state-error { display:flex; flex-direction:column; gap:8px; align-items:center; color:#b45309; }
+.topbar .notif-state-error button { padding:4px 12px; color:var(--ink); font-size:11px; background:#fff; border:1px solid var(--border); border-radius:7px; }
+.topbar .notif-state-error button:hover { background:#f8fafc; }
+
+/* ===== 广播 toast（/topic/notices 全页提示，2026-10-09；10-10 换玻璃材质）========
+   由 NotificationBell 用 createPortal 挂到 body（不能放 .topbar 里：顶栏的
+   backdrop-filter 会把 fixed 后代的包含块改成顶栏，toast 会被压在顶栏里）。
+   材质 = 焦点玻璃（同铃铛面板）：近白半透明 + 细砂 + 重投影 —— 全站浮层只有这一种语言；
+   公告身份靠珊瑚色「公告」小标签，不再用整块深色底（用户口径：黑框太丑）。 */
+.notif-broadcast-layer {
+  position:fixed; top:calc(var(--topbar-h) + 16px); left:50%; transform:translateX(-50%); z-index:110;
+  display:flex; flex-direction:column; gap:10px;
+  width:min(520px, calc(100vw - 32px));
+  pointer-events:none;
+}
+.notif-broadcast-toast {
+  pointer-events:auto; display:flex; align-items:flex-start; gap:10px;
+  padding:12px 12px 12px 14px;
+  border:1px solid var(--glass-focus-line);
+  border-radius:14px;
+  background-color:var(--glass-focus-bg);
+  background-image:var(--glass-noise);
+  backdrop-filter:blur(var(--glass-blur)) saturate(150%);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(150%);
+  box-shadow:var(--glass-focus-shadow);
+  animation:notif-broadcast-in 220ms ease;
+}
+@keyframes notif-broadcast-in { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:none; } }
+.notif-broadcast-tag { flex:none; margin-top:1px; padding:2px 8px; color:var(--coral); font-size:10px; font-weight:700; line-height:1.4; background:rgba(224,86,76,.12); border:1px solid rgba(224,86,76,.28); border-radius:6px; }
+.notif-broadcast-body { min-width:0; display:flex; flex-direction:column; gap:3px; cursor:pointer; }
+.notif-broadcast-body strong { color:var(--ink); font-size:12.5px; line-height:1.4; }
+.notif-broadcast-body span { color:var(--muted); font-size:11px; line-height:1.5; }
+.notif-broadcast-body:hover strong { text-decoration:underline; text-underline-offset:2px; }
+.notif-broadcast-close { flex:none; width:22px; height:22px; display:grid; place-items:center; color:#94a3b8; font-size:14px; line-height:1; border-radius:6px; transition:color 150ms ease,background-color 150ms ease; }
+.notif-broadcast-close:hover { color:var(--ink); background:rgba(15,23,42,.06); }

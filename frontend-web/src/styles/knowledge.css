@@ -1,0 +1,559 @@
+/* ============================================================================
+   校园资料阅览室 /knowledge
+   ----------------------------------------------------------------------------
+   版式取自 stitch 第 11 版设计稿（三栏：主题分类 / 条目流 / 条款精读）。
+   设计稿顶栏里的检索框与「普通师生视图 / 治理与向量化轨道」切换器**没有搬进来** ——
+   应用已有自己的 topbar 与左侧导航栏，页头只保留左上角标题（用户 2026-09-12 明确）。
+
+   2026-09-13 大改（基于用户反馈 11 条）：
+   · 三栏栏宽由 CSS 变量 `--kb-left-w` / `--kb-right-w` 驱动，左右两侧均可拖拽
+     调整（持久化到 localStorage）；专注阅读模式下整体隐藏左栏与左 resizer。
+   · 效力筛选从胶囊改成 **分段控件**（.kb-segmented），数字与文字各占固定列宽，
+     数量变化不会顶动相邻按钮。
+   · 左栏把「全部校规与指南」提升为独立分段入口，与具体分类拉开层级；
+     徽标右对齐保留。
+   · 整张卡片可点击进精读，底部只保留「向智能体提问」与来源路径。
+   · 章节导航改为**横向滚动**，顶部固定显示「第 X / N 章」；
+     正文标题按章节 / 条号 / 条目分两层，行高与段间距加大。
+   · 数字签名校验从正文挤进文档元信息区；下载改为下拉菜单（PDF / 当前章节）；
+     全屏按钮改名为「专注阅读」。
+   · 提问舱加上下文提示 + 3 个快捷问题模板。
+   · 状态文案统一：效力待核验 / 已过期 / 即将失效 等；配色避免红色同时承担
+     选中 / 警示 / 品牌（`--coral` 只用在选中与品牌强调，状态用绿 / 琥珀 / 紫灰）。
+
+   ⚠️ 层级仍在 glass.css 里，本文件不写玻璃配方：
+     承托板（凹） `.knowledge-page .document-list-panel`
+     内容卡（凸） `.knowledge-page .document-list-panel > .document-card`（实色白）
+     焦点玻璃（浮）`.knowledge-page .reading-panel` —— 每屏唯一一块，别在栏内再套玻璃。
+   卡片尺寸基准抄 `tasks.css`（同为 12px 圆角 / 1px 细边 / 双层微投影），两页放一起看不出拼缝。
+   ============================================================================ */
+
+/* ===== 1. 三栏栅格 + 拖拽 ============================================== */
+/* 页头压缩：knowledge 页头描述行已经走 .history-summary 同一档尺寸（见 layout-and-discipline.md
+   §一.例外），但玻璃托盘自带 padding 18/22 + margin-bottom 28 → 14，
+   让列表更早进入首屏（用户 09-13 反馈「降低首屏顶部占用」）。 */
+.knowledge-page .page-heading { padding: 12px 22px; margin-bottom: 14px; }
+.knowledge-page .page-heading h1 { margin-bottom: 0; }
+.knowledge-page .page-heading .muted { margin: 7px 0 0; color: #475569; font-size: 12px; }
+
+.knowledge-page .knowledge-layout {
+  display: grid;
+  /* 栏宽：默认走**百分比**（跟视口伸缩），用户拖过之后由 `--kb-left-w` / `--kb-right-w` 覆盖成固定 px。
+     百分比按 19% / 37% 标定 —— 1280px 视口下中栏仍能留 ~400px；写死 240+480 的话只剩 ~300px。
+     左栏下限 206px：再窄分类名会被 ellipsis 截掉（「学籍与教学管理」7 字 ≈ 88px + 图标 + 徽标）。 */
+  grid-template-columns:
+    minmax(206px, var(--kb-left-w, 19%))
+    8px
+    minmax(0, 1fr)
+    8px
+    minmax(300px, var(--kb-right-w, 37%));
+  gap: 14px;
+  margin-top: 0;
+  align-items: start;
+}
+/* 专注阅读：左栏 + 左 resizer 一起让位（左栏走 display:none，左 resizer 直接不渲染），
+   grid item 由 5 个减到 3 个 → 列定义也同步换成 3 列。
+   中栏收窄到 400px（只当「翻页器」用），右栏吃掉剩余空间 —— 正文本身再靠 max-width 限行宽。 */
+.knowledge-page .knowledge-layout.reader-focused {
+  grid-template-columns: minmax(320px, 400px) 8px minmax(0, 1fr);
+}
+
+/* 拖拽分隔条：4px 透明区方便命中，内部竖线 hover 时变深；拖拽期间 cursor:col-resize */
+.knowledge-page .kb-resizer {
+  align-self: stretch;
+  position: relative;
+  display: grid;
+  place-items: center;
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+}
+.knowledge-page .kb-resizer::before {
+  content: '';
+  position: absolute;
+  top: 18px; bottom: 18px;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-0.5px);
+  background: #e2e8f0;
+  transition: background-color .15s ease;
+}
+.knowledge-page .kb-resizer:hover::before { background: #cbd5e1; }
+.knowledge-page .kb-resizer svg {
+  position: relative;
+  z-index: 1;
+  color: #cbd5e1;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 2px 1px;
+  transition: color .15s ease, border-color .15s ease;
+}
+.knowledge-page .kb-resizer:hover svg { color: #64748b; border-color: #cbd5e1; }
+
+/* ===== 2. 左栏：主题分类 / 时效凭证 / 多智能体协同 ====================== */
+.knowledge-page .kb-rail { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.knowledge-page .kb-rail[aria-hidden="true"] { display: none; }
+.knowledge-page .kb-panel {
+  padding: 14px 14px 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .04), 0 1px 2px rgba(15, 23, 42, .02);
+}
+.knowledge-page .kb-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #eef2f6;
+}
+.knowledge-page .kb-panel-head h3 { margin: 0; color: var(--ink); font-size: 14px; font-weight: 600; letter-spacing: -.01em; }
+.knowledge-page .kb-count { flex: none; padding: 3px 8px; color: #64748b; font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; background: #f3f4f3; border-radius: 999px; }
+
+/* 全部 = 独立分段控件入口：和具体分类拉开层级（用户 09-13 反馈）。 */
+.knowledge-page .kb-cat-all { padding-bottom: 10px; margin-bottom: 8px; border-bottom: 1px dashed #eef2f6; }
+.knowledge-page .kb-cat-all button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  color: #334155;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: left;
+  background: #f3f4f3;
+  border-radius: 8px;
+  transition: background-color .18s ease, color .18s ease;
+}
+.knowledge-page .kb-cat-all button:hover { background: #e8e8e7; color: var(--ink); }
+.knowledge-page .kb-cat-all button.active { color: #fff; background: var(--ink); }
+.knowledge-page .kb-cat-all button.active svg { color: var(--coral); }
+.knowledge-page .kb-cat-all button span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.knowledge-page .kb-cat-all button em {
+  flex: none;
+  min-width: 28px;
+  padding: 2px 6px;
+  color: var(--muted);
+  font: 11px ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-style: normal;
+  text-align: center;
+  background: #fff;
+  border-radius: 999px;
+}
+.knowledge-page .kb-cat-all button.active em { color: var(--ink); }
+
+/* 紧凑分类列表：行高收到 32px，徽标右对齐（保持），左侧 3px 竖条只在选中态出现 */
+.knowledge-page .kb-cat-list { display: flex; flex-direction: column; gap: 1px; }
+.knowledge-page .kb-cat-list button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 7px 9px;
+  color: #475569;
+  font-size: 12.5px;
+  text-align: left;
+  border-radius: 7px;
+  transition: background-color .18s ease, color .18s ease;
+}
+.knowledge-page .kb-cat-list button svg { flex: none; color: #8b95a5; }
+.knowledge-page .kb-cat-list button:hover { color: var(--ink); background: #f5f7f8; }
+.knowledge-page .kb-cat-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.knowledge-page .kb-cat-count { flex: none; min-width: 24px; padding: 2px 5px; color: #64748b; font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; text-align: center; background: #f3f4f3; border-radius: 999px; }
+.knowledge-page .kb-cat-list button.active { color: var(--ink); font-weight: 600; background: #f3f4f3; }
+.knowledge-page .kb-cat-list button.active::before { position: absolute; top: 6px; bottom: 6px; left: 0; width: 3px; content: ''; background: var(--coral); border-radius: 0 3px 3px 0; }
+.knowledge-page .kb-cat-list button.active svg { color: var(--coral); }
+.knowledge-page .kb-cat-list button.active .kb-cat-count { color: var(--ink); background: #e2e2e2; }
+
+.knowledge-page .kb-trust { display: flex; flex-direction: column; gap: 10px; }
+.knowledge-page .kb-trust-head { display: flex; align-items: center; gap: 10px; }
+.knowledge-page .kb-trust-icon { display: grid; flex: none; place-items: center; width: 30px; height: 30px; color: #0b8a63; background: #e8f7f1; border-radius: 8px; }
+.knowledge-page .kb-trust strong { color: var(--ink); font-size: 14px; }
+.knowledge-page .kb-trust p { margin: 0; color: #475569; font-size: 12.5px; line-height: 1.7; }
+.knowledge-page .kb-trust-foot { display: flex; align-items: center; gap: 8px; padding: 8px 10px; color: #64748b; font-size: 11px; background: #f5f7f8; border-radius: 8px; }
+.knowledge-page .kb-trust-foot i { flex: none; width: 7px; height: 7px; background: var(--green); border-radius: 50%; animation: kb-pulse 1.8s ease-in-out infinite; }
+.knowledge-page .kb-trust-foot b { margin-left: auto; color: #334155; font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; }
+@keyframes kb-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+
+.knowledge-page .kb-agent {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  color: #fff;
+  background: #1e293b;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(9, 20, 38, .16);
+}
+.knowledge-page .kb-agent-head { display: flex; align-items: center; justify-content: space-between; }
+.knowledge-page .kb-agent-head span { color: #8590a6; font: 600 10px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .14em; text-transform: uppercase; }
+.knowledge-page .kb-agent-head svg { color: #ffb4ab; }
+.knowledge-page .kb-agent p { margin: 0; color: #d8e3fb; font-size: 12.5px; line-height: 1.75; }
+.knowledge-page .kb-agent-foot { display: flex; align-items: center; gap: 7px; color: #bcc7de; font-size: 11px; }
+
+/* ===== 3. 中栏：筛选条 + 条目卡流（承托板见 glass.css） ================== */
+.knowledge-page .knowledge-filter-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.knowledge-page .kb-filter-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+
+/* 分段控件（用户 09-13 反馈）：选中态与普通态对比更强；数字与文字各占固定列宽。 */
+.knowledge-page .kb-segmented {
+  display: flex;
+  gap: 0;
+  padding: 3px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+}
+.knowledge-page .kb-segmented button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+  border-radius: 6px;
+  transition: background-color .18s ease, color .18s ease, box-shadow .18s ease;
+}
+.knowledge-page .kb-segmented button:hover { color: var(--ink); }
+.knowledge-page .kb-segmented button.active {
+  color: var(--ink);
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .08), 0 0 0 1px rgba(15, 23, 42, .04);
+  font-weight: 600;
+}
+/* 文字列宽固定，数字列宽也固定 —— 任何一边变长都不会顶动另一侧 */
+.knowledge-page .kb-segmented button > span { display: inline-block; min-width: 2.6em; text-align: center; }
+.knowledge-page .kb-segmented button > em {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 1px 5px;
+  color: var(--muted);
+  font: 11px ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-style: normal;
+  text-align: center;
+  background: #e2e8f0;
+  border-radius: 999px;
+}
+.knowledge-page .kb-segmented button.active > em { color: var(--ink); background: #e2e8f0; }
+
+/* ⚠️ flex-basis 必须给具体值（不能用 `flex:1`）：`flex:1` 的 basis 是 0%，
+   浏览器认为「放得下」就压缩到 0 宽，搜索框会在窄中栏里直接消失（1280px 实测踩过）。
+   给 190px 的 basis 后，剩余空间不够时它会老老实实换行。 */
+.knowledge-page .knowledge-filter-panel .search-field { flex: 1 1 190px; max-width: 280px; min-width: 0; height: 36px; padding: 0 10px; border-radius: 8px; }
+.knowledge-page .knowledge-filter-panel .search-field input { width: 100%; min-width: 0; font-size: 12.5px; }
+
+.knowledge-page .kb-sort-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; color: #64748b; font-size: 11.5px; background: #f5f7f8; border-radius: 8px; }
+.knowledge-page .kb-sort-row b { color: var(--ink); font-weight: 600; }
+.knowledge-page .kb-sort-row span:last-child { font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+.knowledge-page .document-card {
+  position: relative;
+  padding: 16px 18px 14px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .04), 0 1px 2px rgba(15, 23, 42, .02);
+  cursor: pointer;
+  transition: box-shadow .2s ease, border-color .2s ease;
+}
+.knowledge-page .document-card:hover { border-color: #cbd5e1; box-shadow: 0 4px 12px -2px rgba(15, 23, 42, .06), 0 2px 4px -1px rgba(15, 23, 42, .03); }
+.knowledge-page .document-card.selected { padding-left: 22px; border-color: #1e293b; box-shadow: 0 4px 16px rgba(15, 23, 42, .08); }
+.knowledge-page .document-card.selected::before { position: absolute; top: 0; bottom: 0; left: 0; width: 4px; content: ''; background: #fe6c61; border-radius: 12px 0 0 12px; }
+/* 已归档条目：压一档底色 + 标题删除线（特异性要压过 glass.css 的实色白指令） */
+.knowledge-page .document-list-panel > .document-card.kb-archived { background: #f7f8f8; opacity: .9; }
+.knowledge-page .document-card.kb-archived h2 { color: #45474c; text-decoration: line-through; text-decoration-color: #c5c6cd; }
+
+.knowledge-page .kb-card-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.knowledge-page .kb-card-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.knowledge-page .kb-doc-no { color: #64748b; font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; white-space: nowrap; }
+.knowledge-page .document-card h2 { margin: 8px 0 6px; color: var(--ink); font-size: 16.5px; font-weight: 600; line-height: 1.45; letter-spacing: -.01em; }
+.knowledge-page .kb-card-meta { margin: 0; color: #475569; font-size: 12.5px; line-height: 1.6; }
+/* 底部只保留「向智能体提问」+ 一个弱提示「进入精读 →」（用户 09-13 反馈「减少重复操作」）。 */
+.knowledge-page .document-actions { display: flex; gap: 10px; align-items: center; padding-top: 10px; margin-top: 12px; border-top: 1px solid #eef2f6; }
+.knowledge-page .document-actions button { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; color: var(--ink); font-size: 11.5px; font-weight: 500; background: #eeeeed; border-radius: 7px; transition: background-color .18s ease; }
+.knowledge-page .document-actions button:hover { background: #e8e8e7; }
+.knowledge-page .kb-card-enter {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: #94a3b8;
+  font-size: 11px;
+  transition: color .18s ease, transform .18s ease;
+}
+.knowledge-page .document-card:hover .kb-card-enter { color: var(--coral); transform: translateX(2px); }
+
+/* ===== 4. 右栏：条款精读与验真（焦点玻璃见 glass.css） ================== */
+.knowledge-page .reading-panel { top: 88px; display: flex; flex-direction: column; gap: 10px; padding: 14px; }
+.knowledge-page .kb-reader-head { display: flex; align-items: flex-start; gap: 10px; }
+.knowledge-page .kb-reader-icon { display: grid; flex: none; place-items: center; width: 28px; height: 28px; color: var(--coral); background: #fff0ed; border-radius: 8px; margin-top: 1px; }
+.knowledge-page .kb-reader-title { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 3px; }
+.knowledge-page .kb-reader-title strong { color: var(--ink); font-size: 14.5px; }
+.knowledge-page .kb-source-path {
+  overflow: hidden;
+  color: #475569;
+  font: 11.5px ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.knowledge-page .kb-reader-tools { display: flex; flex: none; gap: 2px; }
+.knowledge-page .kb-reader-tools button { display: grid; place-items: center; width: 28px; height: 28px; color: #425168; border-radius: 7px; }
+.knowledge-page .kb-reader-tools button:hover { color: var(--ink); background: #f1f5f9; }
+.knowledge-page .kb-reader-tools button[aria-pressed="true"] { color: var(--ink); background: #e2e8f0; }
+
+/* 下载下拉菜单 */
+.knowledge-page .kb-download-wrap { position: relative; }
+.knowledge-page .kb-reader-tools button[aria-haspopup="menu"] { display: inline-flex; align-items: center; gap: 1px; padding: 0 4px; }
+.knowledge-page .kb-download-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 6;
+  min-width: 170px;
+  padding: 4px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, .16);
+}
+.knowledge-page .kb-download-menu button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  color: #334155;
+  font-size: 12px;
+  text-align: left;
+  background: transparent;
+  border-radius: 6px;
+}
+.knowledge-page .kb-download-menu button:hover { background: #f1f5f9; color: var(--ink); }
+
+/* 文档元信息（可见范围 + 签名），从正文区独立出来（用户 09-13 反馈） */
+.knowledge-page .kb-doc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 2px;
+}
+.knowledge-page .kb-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  font: 11px ui-monospace, SFMono-Regular, Menlo, monospace;
+  border-radius: 999px;
+}
+.knowledge-page .kb-meta-visibility { color: #31599f; background: #e5edff; }
+/* 签名状态：验证通过 = 绿，未通过 = 琥珀；统一不与品牌色/警示色撞色 */
+.knowledge-page .kb-meta-signature.is-verified { color: #087443; background: #e8f7f0; }
+.knowledge-page .kb-meta-signature.is-unverified { color: #a15c00; background: #fff3dc; }
+
+/* 章节索引：横向滚动 + 顶部「第 X / N 章」 */
+.knowledge-page .kb-index { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; background: #f3f4f3; border-radius: 10px; }
+.knowledge-page .kb-index-title { display: flex; align-items: center; gap: 8px; color: #64748b; font: 600 10.5px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .06em; text-transform: uppercase; }
+.knowledge-page .kb-index-title em { font-style: normal; color: var(--ink); letter-spacing: 0; text-transform: none; }
+.knowledge-page .kb-index p { margin: 0; font-size: 12px; }
+.knowledge-page .kb-chapter-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  /* 滚动条留个浅浅的轨道 */
+  scrollbar-width: thin;
+}
+.knowledge-page .kb-chapter-tabs::-webkit-scrollbar { height: 4px; }
+.knowledge-page .kb-chapter-tabs::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+/* 溢出的横向滚动条：右缘留一道渐隐，暗示「后面还有」。仅在真的溢出时才加（JS 检测）。 */
+.knowledge-page .kb-chapter-tabs.is-scrollable {
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 22px), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 22px), transparent);
+}
+.knowledge-page .kb-chapter-tabs button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  color: #475569;
+  font-size: 11.5px;
+  background: #fff;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+.knowledge-page .kb-chapter-tabs button:hover { color: var(--ink); }
+.knowledge-page .kb-chapter-tabs button.active { color: #fff; background: var(--ink); }
+.knowledge-page .kb-chapter-tabs button.active::before { width: 5px; height: 5px; content: ''; background: var(--coral); border-radius: 50%; }
+.knowledge-page .kb-chapter-tabs button em { font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; font-style: normal; opacity: .7; }
+.knowledge-page .kb-section-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.knowledge-page .kb-section-tabs button { padding: 5px 9px; color: #526176; font-size: 11px; background: #f0f2f2; border-radius: 7px; }
+.knowledge-page .kb-section-tabs button:hover { color: var(--ink); }
+.knowledge-page .kb-section-tabs button.active { color: var(--ink); font-weight: 600; background: #e2e2e2; }
+
+/* 阅读正文区：行高加大（1.95），段间距 14px，关键词高亮 .kb-mark */
+.knowledge-page .kb-read-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: min(440px, 50vh);
+  padding: 14px 16px;
+  overflow-y: auto;
+  background: #f9f9f8;
+  border-radius: 10px;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, .04);
+}
+.knowledge-page .kb-clause { display: flex; flex-direction: column; gap: 10px; }
+.knowledge-page .kb-clause-chapter {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+.knowledge-page .kb-clause-chapter span { color: var(--muted); font: 600 11px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .04em; }
+.knowledge-page .kb-clause-chapter strong { color: var(--ink); font-size: 13.5px; font-weight: 600; }
+.knowledge-page .kb-clause-title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0;
+}
+.knowledge-page .kb-clause-no {
+  flex: none;
+  padding: 3px 8px;
+  color: #fff;
+  font: 600 11px ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: var(--ink);
+  border-radius: 6px;
+  letter-spacing: .04em;
+}
+.knowledge-page .kb-clause-title > span:last-child { color: var(--ink); font-size: 14px; font-weight: 600; }
+.knowledge-page .kb-clause-body p { margin: 0 0 14px; color: #334155; font-size: 13px; line-height: 1.95; letter-spacing: .01em; }
+.knowledge-page .kb-clause-body p:last-child { margin-bottom: 0; }
+.knowledge-page .kb-mark {
+  padding: 1px 4px;
+  color: #6b4118;
+  background: #fff3dc;
+  border-radius: 4px;
+}
+.knowledge-page .kb-verify { padding: 10px 12px; margin-top: 6px; background: #fff; border-left: 3px solid var(--green); border-radius: 0 8px 8px 0; box-shadow: 0 1px 2px rgba(15, 23, 42, .05); }
+.knowledge-page .kb-verify span { display: inline-flex; align-items: center; gap: 6px; color: #087443; font-size: 11px; font-weight: 600; }
+.knowledge-page .kb-verify em { display: block; margin-top: 5px; color: #64748b; font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; font-style: normal; }
+.knowledge-page .kb-read-foot { margin: 0; color: #64748b; font-size: 11px; }
+.knowledge-page .kb-reader-message { margin: 0; font-size: 11.5px; }
+
+/* 提问舱：上下文提示 + 快捷问题（用户 09-13 反馈） */
+.knowledge-page .kb-dock { display: flex; flex-direction: column; gap: 8px; padding: 10px; background: #f3f4f3; border-radius: 10px; }
+.knowledge-page .kb-dock-context {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.knowledge-page .kb-dock-context > svg { color: #c98a3c; }
+.knowledge-page .kb-dock-context > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.knowledge-page .kb-exit-focus {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  color: #475569;
+  font-size: 11px;
+  background: #fff;
+  border-radius: 6px;
+}
+.knowledge-page .kb-exit-focus:hover { background: #e2e2e2; color: var(--ink); }
+
+.knowledge-page .kb-quick-prompts { display: flex; flex-wrap: wrap; gap: 5px; }
+.knowledge-page .kb-quick-prompts button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  color: #475569;
+  font-size: 11px;
+  background: #fff;
+  border-radius: 999px;
+  transition: background-color .18s ease, color .18s ease;
+}
+.knowledge-page .kb-quick-prompts button:hover { color: var(--ink); background: #fff5f3; }
+.knowledge-page .kb-quick-prompts button > svg { color: #c98a3c; }
+
+.knowledge-page .kb-dock textarea { width: 100%; min-height: 52px; padding: 6px; color: #334155; font-size: 12.5px; line-height: 1.7; background: transparent; border: 0; outline: 0; resize: none; }
+.knowledge-page .kb-dock-bar { display: flex; align-items: center; gap: 8px; padding-top: 8px; border-top: 1px solid #e5e8eb; }
+.knowledge-page .kb-dock-bar > button:first-child { display: grid; flex: none; place-items: center; width: 28px; height: 28px; color: #526176; border-radius: 7px; }
+.knowledge-page .kb-dock-bar > button:first-child:hover { background: #e6eaed; }
+.knowledge-page .kb-dock-hint { flex: 1; min-width: 0; overflow: hidden; color: #64748b; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.knowledge-page .kb-send { display: inline-flex; flex: none; align-items: center; gap: 6px; padding: 7px 12px; color: #fff; font-size: 12px; font-weight: 600; background: var(--ink); border-radius: 8px; }
+.knowledge-page .kb-send:hover { background: #0f172a; }
+.knowledge-page .kb-send:disabled { opacity: .5; cursor: not-allowed; }
+
+/* 正文字号切换 + 专注阅读 */
+.knowledge-page .reading-panel.large-text .kb-clause-body p { font-size: 14.5px; line-height: 2; }
+.knowledge-page .reading-panel.large-text .kb-clause-title > span:last-child { font-size: 16px; }
+.knowledge-page .reading-panel.large-text .kb-clause-chapter strong { font-size: 15px; }
+/* 专注阅读模式：右栏占满剩余宽度；正文本身限行宽（长行超过 ~48 字会丢行）。
+   ⚠️ 只对**正文块**限宽居中，`.kb-read-body` / 导航 / 提问舱保持全宽 —— 它们是「工具」，不是「文本」。 */
+.knowledge-page .reading-panel.focus-mode { padding: 18px; box-shadow: 0 24px 60px rgba(15, 23, 42, .16), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(15, 23, 42, .04); }
+.knowledge-page .reading-panel.focus-mode .kb-read-body { max-height: none; min-height: 380px; }
+.knowledge-page .reading-panel.focus-mode .kb-clause,
+.knowledge-page .reading-panel.focus-mode .kb-read-foot {
+  width: 100%;
+  max-width: 720px;
+  margin-right: auto;
+  margin-left: auto;
+}
+.knowledge-page .reading-panel.focus-mode .kb-clause-body p { font-size: 14.5px; line-height: 2; }
+
+/* ===== 5. 状态徽章统一色档 =============================================
+   ⚠️ 不要让红色承担状态语义 —— 状态统一：绿（通过）/ 琥珀（警示 / 变更）/ 紫灰（归档）/ 中性（待返回）。
+   主题选择器精度要够，避免被 .document-list-panel > .document-card 的 specificity 吃掉。 */
+.knowledge-page .kb-card-badges .status-badge.success { background: #dcfce7; color: #087443; }
+.knowledge-page .kb-card-badges .status-badge.warning { background: #fff3dc; color: #a15c00; }
+.knowledge-page .kb-card-badges .status-badge.archive { background: #ede9fe; color: #5b21b6; }
+.knowledge-page .kb-card-badges .status-badge.pending { background: #e2e8f0; color: #475569; }
+.knowledge-page .kb-card-badges .status-badge.danger { background: #ffe4e0; color: #b42318; }
+.knowledge-page .kb-card-badges .status-badge.info { background: #e5edff; color: #31599f; }
+
+/* ===== 6. 窄屏：三栏叠成单栏 ==========================================
+   ⚠️ 窄屏下 kb-rail 变成 2 列 grid，它的**直接子元素**只有 .kb-panel / .kb-trust / .kb-agent
+   （.kb-cat-all 在 .kb-panel 内部，不是 grid item，别在这里写 grid-column）。 */
+@media (max-width: 1100px) {
+  .knowledge-page .knowledge-layout { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .knowledge-page .knowledge-layout.reader-focused { grid-template-columns: minmax(0, 1fr); }
+  .knowledge-page .kb-resizer { display: none; }
+  .knowledge-page .kb-rail { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .knowledge-page .kb-agent { grid-column: 1 / -1; }
+  .knowledge-page .reading-panel { position: static; top: auto; }
+  .knowledge-page .kb-chapter-tabs { overflow-x: auto; }
+}
+@media (max-width: 700px) {
+  .knowledge-page .kb-rail { grid-template-columns: 1fr; }
+  .knowledge-page .kb-filter-row { align-items: stretch; flex-direction: column; }
+  /* 分段控件窄屏可横滚，避免 4 个按钮把行撑爆 */
+  .knowledge-page .kb-segmented { max-width: 100%; overflow-x: auto; }
+  .knowledge-page .knowledge-filter-panel .search-field { max-width: none; }
+  .knowledge-page .kb-doc-no { white-space: normal; }
+  .knowledge-page .kb-doc-no, .knowledge-page .kb-sort-row span:last-child { margin-left: 0; }
+  .knowledge-page .kb-dock-hint { display: none; }
+  .knowledge-page .kb-source-path { white-space: normal; }
+  .knowledge-page .kb-clause-title { flex-direction: column; align-items: flex-start; gap: 6px; }
+}
