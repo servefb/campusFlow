@@ -24,3 +24,5 @@ unsloth_compiled_cache/
 logs/
 debug.log
 *.log
+_resume_*.pdf
+_resume_*_out.*

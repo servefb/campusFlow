@@ -1,6 +1,15 @@
+import os
+
+from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
-DATABASE_URL = "mysql+aiomysql://root:0706@192.168.150.100:3306/campus_flow"
+# 自带一次 load_dotenv：不依赖别的模块的 import 顺序
+load_dotenv()
+
+DATABASE_URL = os.getenv(
+    "MYSQL_DATABASE_URL",
+    "mysql+aiomysql://root@127.0.0.1:3306/campus_flow",
+)
 engine_mysql = create_async_engine(DATABASE_URL, pool_pre_ping=True)
 AsyncSessionLocal = async_sessionmaker(
     engine_mysql,

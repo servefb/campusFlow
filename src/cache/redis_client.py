@@ -1,4 +1,11 @@
+import os
+
 import redis.asyncio as aioredis
+from dotenv import load_dotenv
+
+# 自带一次 load_dotenv：本模块可能先于 llm_node 被导入，
+# 不能依赖别人的 import 顺序才读到 .env
+load_dotenv()
 
 _redis_client: aioredis.Redis | None = None
 
@@ -6,9 +13,9 @@ def get_redis_client() -> aioredis.Redis:
     global _redis_client
     if _redis_client is None:
         _redis_client = aioredis.Redis(
-            host='192.168.150.100',
-            port=6379,
-            password='0706',
+            host=os.getenv("REDIS_HOST", "127.0.0.1"),
+            port=int(os.getenv("REDIS_PORT", "6379")),
+            password=os.getenv("REDIS_PASSWORD") or None,
             decode_responses=True,
             max_connections=50,            # 连接池上限
             socket_connect_timeout=5,      # 建连超时
